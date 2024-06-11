@@ -1,0 +1,40 @@
+/*
+ * pwix:forms/src/client/components/coreFieldTypeIndicator.less
+ */
+
+.ca-field-type-indicator {
+    svg.svg-inline--fa {
+        width: 0.65em;
+        height: 0.65em;
+        border: 1px solid gray;
+        border-radius: 0.55em;
+        padding: 0.25em;
+    }
+    .fti-info {
+        color: gray;
+        svg {
+            border-color: gray;
+        }
+    }
+    .fti-save {
+        color: var( --bs-danger );
+        svg {
+            border-color: var( --bs-danger );
+        }
+    }
+    .fti-optional,
+    .fti-work {
+        color: var( --bs-primary );
+        svg {
+            border-color: var( --bs-primary );
+        }
+    }
+    .fti-optional.disabled,
+    .fti-save.disabled,
+    .fti-work.disabled {
+        color: gray;
+        svg {
+            border-color: gray;
+        }
+    }
+}

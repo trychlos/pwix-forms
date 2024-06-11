@@ -1,0 +1,49 @@
+/*
+ * pwix:forms/src/client/components/coreFieldCheckIndicator.less
+ */
+
+.ca-field-check-indicator {
+    svg.svg-inline--fa {
+        width: 0.75em;
+        height: 0.75em;
+        border: 1px solid gray;
+        border-radius: 0.4375em;    // 0.75+0.125 / 2
+        padding: 0.125em;
+    }
+    .visible {
+        display: block;
+    }
+    .hidden {
+        display: none;
+    }
+    .fci-invalid {
+        color: var( --bs-danger );
+        svg {
+            border-color: var( --bs-danger );
+        }
+    }
+    .fci-none {
+        color: x-transparent;
+        svg {
+            border-color: x-transparent;
+        }
+    }
+    .fci-uncomplete {
+        color: orange;
+        svg {
+            border-color: orange;
+        }
+    }
+    .fci-valid {
+        color: var( --bs-success );
+        svg {
+            border-color: var( --bs-success );
+        }
+    }
+    .ca-display.disabled {
+        color: gray;
+        svg {
+            border-color: gray;
+        }
+    }
+}
