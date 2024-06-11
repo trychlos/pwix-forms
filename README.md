@@ -46,15 +46,29 @@ Remind too that Meteor packages are instanciated at application level. They are 
 
 `Forms` global variable provides following items:
 
-### Methods
+### Functions
 
-#### `Forms.configure()`
+- `Forms.configure()`
 
-See above.
+    See above.
 
-#### `Forms.i18n.namespace()`
+-  `Forms.i18n.namespace()`
 
-Returns the i18n namespace used by the package. Used to add translations at runtime.
+    Returns the i18n namespace used by the package. Used to add translations at runtime.
+
+    Available both on the client and the server.
+
+-  `Forms.toSchema( fields<Array> )`
+
+    Returns a SimpleSchema instance from the provided fields.
+
+    Available both on the client and the server.
+
+-  `Forms.toTabular( fields<Array> )`
+
+    Returns an array suitable to `pwix:tabular-ext` usage
+
+    Available both on the client and the server.
 
 ### Blaze components
 
@@ -77,7 +91,7 @@ Parameters:
 
 ## NPM peer dependencies
 
-Starting with v 0.3.0, and in accordance with advices from [the Meteor Guide](https://guide.meteor.com/writing-atmosphere-packages.html#peer-npm-dependencies), we no more hardcode NPM dependencies in the `Npm.depends` clause of the `package.js`. 
+Starting with v 0.3.0, and in accordance with advices from [the Meteor Guide](https://guide.meteor.com/writing-atmosphere-packages.html#peer-npm-dependencies), we no more hardcode NPM dependencies in the `Npm.depends` clause of the `package.js`.
 
 Instead we check npm versions of installed packages at runtime, on server startup, in development environment.
 

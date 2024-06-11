@@ -21,8 +21,8 @@ Template.coreFieldCheckIndicator.onRendered( function(){
     const self = this;
 
     self.autorun(() => {
-        self.$( '.ca-field-check-indicator .ca-display' ).removeClass( 'visible' ).addClass( 'hidden' );
-        self.$( '.ca-field-check-indicator .ca-display[data-type="'+Template.currentData().type+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        self.$( '.field-check-indicator .fci-display' ).removeClass( 'visible' ).addClass( 'hidden' );
+        self.$( '.field-check-indicator .fci-display[data-type="'+Template.currentData().type+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
     });
 });
 

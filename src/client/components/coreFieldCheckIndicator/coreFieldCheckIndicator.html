@@ -1,8 +1,8 @@
 <template name="coreFieldCheckIndicator">
-    <div class="ca-field-check-indicator">
+    <div class="field-check-indicator">
 
         {{#each it in itemsList }}
-            <span class="{{ itClass it }} {{ classes }} ca-display" data-type="{{ it }}" title="{{ itTitle it }}">
+            <span class="{{ itClass it }} {{ classes }} fci-display" data-type="{{ it }}" title="{{ itTitle it }}">
                 <span class="fa-solid fa-fw {{ itIcon it }}"></span>
             </span>
         {{/each}}

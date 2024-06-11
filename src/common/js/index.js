@@ -9,8 +9,7 @@ import './global.js';
 import './constants.js';
 //
 import './configure.js';
-import './date.js';
-import './env-settings.js';
+import './functions.js';
 import './i18n.js';
 
 Forms.FieldCheck = FieldCheck;

@@ -28,10 +28,12 @@ function configure( api ){
         api.imply( ...arguments );
     };
     api.versionsFrom([ '2.9.0', '3.0-rc.0' ]);
+    _use( 'aldeed:simple-schema@1.13.1' );
     _use( 'check' );
     _use( 'blaze-html-templates@2.0.0 || 3.0.0-alpha300.0', 'client' );
     _use( 'ecmascript' );
     _use( 'less@4.0.0', 'client' );
+    _use( 'pwix:ui-fontawesome6@1.0.0' );
     _use( 'reactive-var' );
     _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-beta.0', 'server' );
 }
