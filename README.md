@@ -18,6 +18,10 @@ In the above example, the whole page should be checked for consistency, so anoth
 
 And, because a tab may itself include a tab, which itself may include another level of tabs, and so on, the level of checks ust be left undetermined.
 
+So each field definition (see below) can be included in a panel, and will be managed by a Checker associated to this panel.
+
+Each Checker may itself be a child of some other Checker (for example the page of tabbed panes) up to having no more parent. We build an arbitrary depth of Checker's hierarchy.
+
 ## Configuration
 
 The package's behavior can be configured through a call to the `Forms.configure()` method, with just a single javascript object argument, which itself should only contains the options you want override.
@@ -41,6 +45,38 @@ Known configuration options are:
 Please note that `Forms.configure()` method should be called in the same terms both in client and server sides.
 
 Remind too that Meteor packages are instanciated at application level. They are so only configurable once, or, in other words, only one instance has to be or can be configured. Addtionnal calls to `Forms.configure()` will just override the previous one. You have been warned: **only the application should configure a package**.
+
+## Field definition
+
+Our applications use to use `aldeed:simple-schema` to define collections, [Datatables](https://datatables.net) to display list of items, and a form checker to input data. Each of these resources expects a slightly different description of the data, which leads the developer to reproduce several times and in several places almost the same code. Hence this common field declaration.
+
+Fields definition used by below `Forms.toSchema()` family functions are ordered in an array. Even if this is of no interest for a collection schema, this is required for a tabular display as this reflect the order of the columns.
+
+Each item of a fields definition array is an object, with following keys:
+
+- `field`
+
+    optional, the name of the field.
+
+    When set, defines a field in the collection schema, a column in the tabular display, an input element in the edition panel.
+
+- `dt_tabular`
+
+    optional, whether to have this field in the columns of a tabular display, defaulting to `true`.
+
+    The whole field definition is ignored from tabular point of view when `dt_tabular` is false.
+
+- `dt_data`
+
+    optional, whether to have this field as a data definsubscription in a tabular display, defaulting to `true`.
+
+    A named field defaults to be subscribed to by a tabular display. This option prevents to have a useless data subscription.
+
+All `SimpleSchema` keys can be set in this field definition, and will be passed to the `SimpleSchema()` instanciation.
+
+All `Datatables` column options can be passed with a `dt_` prefix.
+
+All `Forms` keys can be passed with a `form_` prefix.
 
 ## Provides
 

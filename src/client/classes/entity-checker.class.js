@@ -4,23 +4,23 @@
  * EntityChecker has for goal to:
  * - manage error messages inside of a dialog as well as a page, whether they embed a single panel or several multi-levels tabbed sub-components
  * - manage the global validity status at this same level.
- * 
+ *
  * Most often, EntityChecker will receives its events from FormChecker, but not only, and any component is able to triggers EntityChecker, either
  * through jQuery events or by calling its methods.
  * An EntityChecker doesn't manage any form by itself, but manages a global result for a whole entity, and typically an aggregation of the validity status
  * of several forms.
- * 
+ *
  * Error messages:
  *  Even if we are talking about error messages, we actually manage any typed TypedMessage emitted by the sub-components. All messages sents are
  *  stacked. The object responsible for the messages display may call the IMessagesOrderedSetLast() interface to get the last message to be displayed.
  *  Because FormChecker re-checks all data every time a field is valid, then the messages stack can be cleared through the IMessagesSetClear() interface,
  *  before being pushed again.
- * 
+ *
  * Validity status:
  *  Correlatively to recurrent elementary and global checks, the validity status of the edited entiy (resp. entities) is recomputed.
  *  EntityChecker considers that TypedMessage of 'ERROR' type are blocking and errors. All other messages do not prevent the dialog/page
  *  to be saved.
- * 
+ *
  * Instanciation:
  *  The EntiyChecker must be instanciated as a ReactiveVar content inside of an autorun() from onRendered():
  *  ```
@@ -37,7 +37,7 @@
  *          });
  *      });
  *  ```
- * 
+ *
  * Validity consolidation:
  *  All underlying components/pane/panels/FormChecker's may advertize their own validity status through:
  *  - a 'panel-validity' event, holding data as { emitter, ok, ... }
@@ -46,9 +46,9 @@
  *       > emitter must uniquely identify the panel, among all validity periods if relevant
  *       > ok must be true or false, and will be and-ed with other individual validity status to provide the global one
  *       > other datas are up to the emitter, and not kept here.
- * 
+ *
  * Configuration options are provided at instanciation time as an object with following keys:
- * 
+ *
  *  - $topmost: if set, a jQuery object which holds the main (top) dialog or page, and on which EntityChecker can connect to handle events
  *  - $ok: if set, the jQuery object which defines the OK button (to enable/disable it)
  *  - okSetFn( valid<Boolean> ): if set, a function to be called when OK button must be enabled / disabled
@@ -68,14 +68,14 @@ import { check } from 'meteor/check';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { ReactiveVar } from 'meteor/reactive-var';
 
-import { caBase } from '../../common/classes/base.class.js';
+import { Base } from '../../common/classes/base.class.js';
 
 import { IMessagesOrderedSet } from '../../common/interfaces/imessages-ordered-set.iface.js';
 import { IMessagesSet } from '../../common/interfaces/imessages-set.iface.js';
 import { ITypedMessage } from '../../common/interfaces/ityped-message.iface.js';
 
 //export class LooseDynRegistrar extends mix( izProvider ).with( IRegistrant, IIDGenerator, ISecretGenerator ){
-export class EntityChecker extends mix( caBase ).with( IMessagesOrderedSet, IMessagesSet ){
+export class EntityChecker extends mix( Base ).with( IMessagesOrderedSet, IMessagesSet ){
 
     // static data
 
@@ -192,7 +192,7 @@ export class EntityChecker extends mix( caBase ).with( IMessagesOrderedSet, IMes
      *  - msgerr: if set, says if error message are to be displayed, defaulting to true
      *  - update: if set, then says whether the value found in the form should update the edited object, defaulting to true
      *  - $parent: if set, a jQuery element which acts as the parent of the form
-     * 
+     *
      * This doesn't return anything.
      */
     check( opts={} ){

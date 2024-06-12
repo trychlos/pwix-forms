@@ -4,9 +4,9 @@
 
 import '../../common/js/index.js';
 
-// provides base classes in Forms global object
-import { EntityChecker } from '../classes/entity-checker.class';
-import { FormChecker } from '../classes/form-checker.class';
+// provides base classes to Forms global object
+//import { EntityChecker } from '../classes/entity-checker.class';
+//import { FormChecker } from '../classes/form-checker.class';
 
-Forms.EntityChecker = EntityChecker;
-Forms.FormChecker = FormChecker;
+//Forms.EntityChecker = EntityChecker;
+//Forms.FormChecker = FormChecker;
