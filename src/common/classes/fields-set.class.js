@@ -7,12 +7,6 @@
 import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 
-//import { check } from 'meteor/check';
-//import { ReactiveVar } from 'meteor/reactive-var';
-//import { FormChecker } from './form-checker.class.js';
-//import { IFieldCheck } from '../interfaces/ifield-check.iface.js';
-//import { IFieldType } from '../interfaces/ifield-type.iface.js';
-
 import SimpleSchema from 'meteor/aldeed:simple-schema';
 
 import { Base } from './base.class.js';

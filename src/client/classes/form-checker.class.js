@@ -25,7 +25,7 @@
  *  ```
  *
  * Fields:
- *  This is a madantory hash which defines the fields to be checked, where:
+ *  This is a mandatory hash which defines the fields to be checked, where:
  *  <key> the name of the field in the 'checks' object
  *  <value> is a hash wih define the field and its behavior:
  *    > children: a hash of sub-fields, for example if the schema is an array
