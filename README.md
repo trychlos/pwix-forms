@@ -22,6 +22,163 @@ So each field definition (see below) can be included in a panel, and will be man
 
 Each Checker may itself be a child of some other Checker (for example the page of tabbed panes) up to having no more parent. We build an arbitrary depth of Checker's hierarchy.
 
+## Installation
+
+This Meteor package is installable with the usual command:
+
+```
+    meteor add pwix:forms
+```
+
+## Usage
+
+```
+    import { Forms } from 'meteor/pwix:forms';
+```
+
+## Provides
+
+### `Forms`
+
+The exported `Forms` global object provides following items:
+
+#### Functions
+
+##### `Forms.configure()`
+
+    See [below](#configuration).
+
+#####  `Forms.i18n.namespace()`
+
+    Returns the i18n namespace used by the package. Used to add translations at runtime.
+
+    Available both on the client and the server.
+
+#### Classes
+
+##### `Forms.FieldsSet`
+
+An ordered collection of `Forms.Field` objects.
+
+It should be instanciated by the caller with a list of fields definitions plain javascript objects. For example:
+
+```
+    app.fieldsSet = new Forms.FieldsSet(
+        {
+            field: '_id',
+            type: String,
+            dt_tabular: false
+        },
+        {
+            field: 'emails',
+            type: Array,
+            optional: true,
+            dt_visible: false
+        },
+        {
+            field: 'emails.$',
+            type: Object,
+            optional: true,
+            dt_tabular: false
+        },
+        {
+            field: 'emails.$.address',
+            type: String,
+            regEx: SimpleSchema.RegEx.Email,
+            dt_data: false,
+            dt_title: pwixI18n.label( I18N, 'list.email_address_th' ),
+            dt_template: Meteor.isClient && Template.email_address,
+            form_checkFn: AccountsManager.check?.emailAddress,
+            form_checkType: 'optional'
+        },
+        {
+            field: 'emails.$.verified',
+            type: Boolean,
+            dt_data: false,
+            dt_title: pwixI18n.label( I18N, 'list.email_verified_th' ),
+            dt_template: Meteor.isClient && Template.email_verified,
+            form_checkFn: AccountsManager.check?.emailVerified
+        },
+        {
+            dt_template: Meteor.isClient && Template.email_more
+        },
+        {
+            field: 'username',
+            type: String,
+            optional: true,
+            dt_title: pwixI18n.label( I18N, 'list.username_th' ),
+            form_checkFn: AccountsManager.check?.username
+        },
+        {
+            field: 'profile',
+            type: Object,
+            optional: true,
+            blackbox: true,
+            dt_tabular: false
+        },
+        Notes.field({
+            field: 'userNotes',
+            dt_title: pwixI18n.label( I18N, 'list.user_notes_th' ),
+            //dt_template: Meteor.isClient && Notes.template
+        })
+    );
+```
+
+Due to the aims of this set, both all fields of a Mongo document, and all columns of a tabular display must be defined here. Hence the different definitions.
+
+##### `Forms.Field`
+
+A class which provides the ad-hoc definitions for (almost) every use of a field in an application, and in particular:
+
+- to a `SimpleSchema` collection schema through the `Forms.ISchema` interface
+- to a [`Datatable`](https://datatables.net) tabular display through the `Forms.ITabular` interface
+- to our `Forms.Checker` class through the `Forms.IChecker` interface.
+
+A `Forms.Field` is instanciated with an object with some specific keys:
+
+- `field`
+
+    optional, the name of the field.
+
+    When set, defines a field in the collection schema, a column in the tabular display, an input element in the edition panel.
+
+- `dt_tabular`
+
+    optional, whether to have this field in the columns of a tabular display, defaulting to `true`.
+
+    The whole field definition is ignored from tabular point of view when `dt_tabular` is false.
+
+- `dt_data`
+
+    optional, whether to have this field as a data subscription in a tabular display, defaulting to `true` if a `field` is set.
+
+    A named field defaults to be subscribed to by a tabular display. This option prevents to have a useless data subscription.
+
+All `SimpleSchema` keys can be set in this field definition, and will be passed to the `SimpleSchema()` instanciation.
+
+All `Datatables` column options are to be be passed with a `dt_` prefix.
+
+All `Forms.Checker` keys must be passed with a `form_` prefix.
+
+### Blaze components
+
+#### `coreFieldCheckIndicator`
+
+Display an indicator about the validity status of a field.
+
+Parameters:
+
+- type: a `Forms.CheckResult` constant as `INVALID`, `NONE`, `UNCOMPLETE` or `VALID`.
+
+#### `coreFieldTypeIndicator`
+
+Display an indicator about the type of a field.
+
+Parameters:
+
+- type: a `Forms.FieldType` constant as `INFO`, `SAVE` or `WORK`
+- classes: if set, a list of classes to be added to the default ones.
+
 ## Configuration
 
 The package's behavior can be configured through a call to the `Forms.configure()` method, with just a single javascript object argument, which itself should only contains the options you want override.
@@ -45,85 +202,6 @@ Known configuration options are:
 Please note that `Forms.configure()` method should be called in the same terms both in client and server sides.
 
 Remind too that Meteor packages are instanciated at application level. They are so only configurable once, or, in other words, only one instance has to be or can be configured. Addtionnal calls to `Forms.configure()` will just override the previous one. You have been warned: **only the application should configure a package**.
-
-## Field definition
-
-Our applications use to use `aldeed:simple-schema` to define collections, [Datatables](https://datatables.net) to display list of items, and a form checker to input data. Each of these resources expects a slightly different description of the data, which leads the developer to reproduce several times and in several places almost the same code. Hence this common field declaration.
-
-Fields definition used by below `Forms.toSchema()` family functions are ordered in an array. Even if this is of no interest for a collection schema, this is required for a tabular display as this reflect the order of the columns.
-
-Each item of a fields definition array is an object, with following keys:
-
-- `field`
-
-    optional, the name of the field.
-
-    When set, defines a field in the collection schema, a column in the tabular display, an input element in the edition panel.
-
-- `dt_tabular`
-
-    optional, whether to have this field in the columns of a tabular display, defaulting to `true`.
-
-    The whole field definition is ignored from tabular point of view when `dt_tabular` is false.
-
-- `dt_data`
-
-    optional, whether to have this field as a data definsubscription in a tabular display, defaulting to `true`.
-
-    A named field defaults to be subscribed to by a tabular display. This option prevents to have a useless data subscription.
-
-All `SimpleSchema` keys can be set in this field definition, and will be passed to the `SimpleSchema()` instanciation.
-
-All `Datatables` column options can be passed with a `dt_` prefix.
-
-All `Forms` keys can be passed with a `form_` prefix.
-
-## Provides
-
-`Forms` global variable provides following items:
-
-### Functions
-
-- `Forms.configure()`
-
-    See above.
-
--  `Forms.i18n.namespace()`
-
-    Returns the i18n namespace used by the package. Used to add translations at runtime.
-
-    Available both on the client and the server.
-
--  `Forms.toSchema( fields<Array> )`
-
-    Returns a SimpleSchema instance from the provided fields.
-
-    Available both on the client and the server.
-
--  `Forms.toTabular( fields<Array> )`
-
-    Returns an array suitable to `pwix:tabular-ext` usage
-
-    Available both on the client and the server.
-
-### Blaze components
-
-#### `coreFieldCheckIndicator`
-
-Display an indicator about the validity status of a field.
-
-Parameters:
-
-- type: a `Forms.FieldCheck` constant as `INVALID`, `NONE`, `UNCOMPLETE` or `VALID`.
-
-#### `coreFieldTypeIndicator`
-
-Display an indicator about the type of a field.
-
-Parameters:
-
-- type: a `Forms.FieldType` constant as `INFO`, `SAVE` or `WORK`
-- classes: if set, a list of classes to be added to the default ones.
 
 ## NPM peer dependencies
 

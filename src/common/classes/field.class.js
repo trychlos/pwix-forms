@@ -74,4 +74,12 @@ export class Field extends mix( Base ).with( ISchema, ITabular ){
     def(){
         return this.#def;
     }
+
+    /**
+     * @locus Everywhere
+     * @returns {String} the 'field' value, or null if it is not set
+     */
+    field(){
+        return this.#def.field || null;
+    }
 }

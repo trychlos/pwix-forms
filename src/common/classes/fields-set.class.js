@@ -68,6 +68,41 @@ export class FieldsSet extends Base {
     }
 
     /**
+     * @locus Everywhere
+     * @param {String} field the name of the searched field
+     * @returns {Field} the found Field, or null
+     */
+    byField( field ){
+        let res = null;
+        this.#set.every(( it ) => {
+            if( it.field() === field ){
+                res = it;
+            }
+            return res === null;
+        });
+        return res;
+    };
+
+    /**
+     * @locus Everywhere
+     * @param {Array<String>} fields an array of string field names to be extracted
+     * @returns {Array<Field>} the array of Field definitions for the provided names
+     */
+    slice( fields ){
+        let res = [];
+        fields.forEach(( it ) => {
+            let field = this.byField( it );
+            if( field ){
+                res.push( field );
+            } else {
+                console.warn( it, 'field not known' );
+            }
+        });
+        return res;
+    };
+
+    /**
+     * @locus Everywhere
      * @returns {SimpleSchema} a new instance to be attached to the collection
      */
     toSchema(){
@@ -81,6 +116,7 @@ export class FieldsSet extends Base {
     };
 
     /**
+     * @locus Everywhere
      * @returns {Array<Object>} the list of datatable column definitions
      */
     toTabular(){
