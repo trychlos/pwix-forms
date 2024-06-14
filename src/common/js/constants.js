@@ -3,6 +3,14 @@
  */
 
 Forms.C = {
+
+    // the way to display the check result
+    CheckResult: {
+        NONE: 'CHECK_RESULT_NONE',
+        BOOTSTRAP: 'CHECK_RESULT_BOOTSTRAP',
+        INDICATOR: 'CHECK_RESULT_INDICATOR'
+    },
+
     // verbosity levels
     Verbose: {
         NONE: 0,

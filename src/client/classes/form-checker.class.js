@@ -3,10 +3,10 @@
  *
  * This client-only class manages the input checks inside of a form.
  * It is is designed so that the application can directly instanciate it, or may also derive it to build its own derived class.
- *
+ * 
  * This class aims to be able to manage static forms as well as array and dynamics. Remind so that there may NOT be a one-to-one relation
  * between a field definition and a DOM element.
- *
+ * 
  * Instanciation:
  *  The FormChecker must be instanciated as a ReactiveVar content inside of an autorun() from onRendered():
  *  ```
@@ -17,15 +17,15 @@
  *      Template.my_app_template.onRendered( function(){
  *          const self = this;
  *          self.autorun(() => {
- *              self.formChecker.set( new Forms.FormChecker( self, fields, {
+ *              self.formChecker.set( new CoreApp.FormChecker( self, fields, {
  *                  options
  *              }));
  *          });
  *      });
  *  ```
- *
+ * 
  * Fields:
- *  This is a mandatory hash which defines the fields to be checked, where:
+ *  This is a madantory hash which defines the fields to be checked, where:
  *  <key> the name of the field in the 'checks' object
  *  <value> is a hash wih define the field and its behavior:
  *    > children: a hash of sub-fields, for example if the schema is an array
@@ -35,9 +35,9 @@
  *    > valFrom(): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *    > valTo(): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
  *    > post: a function to be called after check with the ITypedMessage result of the corresponding 'checks.check_<field>()' function
- *
+ * 
  * Configuration options are provided at instanciation time as an object with following keys:
- *
+ * 
  *  - checks: an object which holds the check_<field>() functions:
  *      Proto is: <checks>.check_<field>( value, data, opts ) which returns a Promise which resolves to a ITypedMessage or null
  *      > value is the current value of the field
@@ -45,11 +45,11 @@
  *      > opts is provided by this FormChecker instance with following keys:
  *          - display: if set, whether or not having a UI feedback, defaulting to true
  *          - update: if set, whether or not update the current item (for example, do not update when re-checking all fields)
- *
+ * 
  *  - fnPrefix: if set, a string which prefixes the field name when addressing the 'checks.check_<field>()' check function
  *      e.g. for 'foo' field, the check function is expected to be 'check_foo()'
  *          if fnPrefix is 'bar_', then the check function becomes 'check_bar_foo()'
- *
+ * 
  *  - $ok: if set, the jQuery object which defines the OK button (to enable/disable it)
  *  - okSetFn( valid<Boolean>, data<any> ): if set, a function to be called when OK button must be enabled / disabled
  *  - $err: if set, the jQuery object which defines the error message place
@@ -60,18 +60,18 @@
  * or:
  *  - entityChecker: an EntityChecker instance which manages several components / panes / panels / FormChecker's
  *      Providing an EntityChecker will silently ignore $ok, okSetFn, $err, errSetFn, errClearFn
- *
+ * 
  *  - data: if set, an object which will be passed to every '<checks>.check_<fn>()' function
- *
+ * 
  *  - inputOkCheckAll: whether the form should be fully re-checked after each successful input of any field
  *      this is the default behavior, but may be not exactly what you want typically for example in case of an array
  *      this defaults to true
- *
+ * 
  *  - useBootstrapValidationClasses: defaulting to false
- *
+ * 
  *  - validFn( err<ITypedMessage>, field<String> ): if set, a function which computes the validity status of the form depending of the returned value of each check function
  *      default is that only messages of type MessageType.C.ERROR are said invalid
- *
+ * 
  * Notes:
  *  - The class defines:
  *      - a local 'check_<field>( [opts] })' function for each field which returns a Promise which resolves to a validity boolean for the relevant field
@@ -124,15 +124,15 @@ export class FormChecker extends caBase {
 
     // private methods
 
-    // compute the checked type (in the sense of CheckResult)
+    // compute the checked type (in the sense of FieldCheck)
     _computeCheck( eltData, err ){
         let check = 'NONE';
         if( err ){
             switch( err.ITypedMessageType()){
-                case Forms.MessageType.C.ERROR:
+                case CoreApp.MessageType.C.ERROR:
                     check = 'INVALID';
                     break;
-                case Forms.MessageType.C.WARNING:
+                case CoreApp.MessageType.C.WARNING:
                     check = 'UNCOMPLETE';
                     break;
             }
@@ -173,7 +173,7 @@ export class FormChecker extends caBase {
         if( this.#conf.validFn ){
             valid = this.#conf.validFn( err, field );
         } else {
-            valid = !err || err.ITypedMessageType() !== Forms.MessageType.C.ERROR;
+            valid = !err || err.ITypedMessageType() !== CoreApp.MessageType.C.ERROR;
         }
         //console.debug( 'err', err, 'field', field, 'valid', valid );
         return valid;
@@ -187,7 +187,7 @@ export class FormChecker extends caBase {
 
     // + attach to the DOM element addressed by the 'js' key an object:
     //   - value: a ReactiveVar which contains the individual value got from the form
-    //   - checked: a ReactiveVar which contains the individual checked type (in the sense of CheckResult class)
+    //   - checked: a ReactiveVar which contains the individual checked type (in the sense of FieldCheck class)
     //   - field: the field name
     //   - defn: the field definition
     //   - fn: the check function name
@@ -215,7 +215,7 @@ export class FormChecker extends caBase {
                 })
                 .then(( err ) => {
                     //console.debug( eltData, err );
-                    check( err, Match.OneOf( null, Forms.TypedMessage ));
+                    check( err, Match.OneOf( null, CoreApp.TypedMessage ));
                     const valid = self._computeValid( eltData, err );
                     self.#valid.set( valid );
                     // manage different err types
@@ -281,7 +281,7 @@ export class FormChecker extends caBase {
         let found = false;
         const cb = function( args, f, defn, parent ){
             if( f === field ){
-                found = true;
+                found = true; 
                 if( defn.js ){
                     const $js = self.#instance.$( defn.js );
                     if( $js.length === 1 ){
@@ -294,7 +294,7 @@ export class FormChecker extends caBase {
         this._fieldsIterate( cb );
         return data;
     }
-
+    
     // set our FormChecker data against the targeted DOM element
     //  this data may be set at construction time if field already exists
     //  or at input time
@@ -394,9 +394,9 @@ export class FormChecker extends caBase {
         } else {
             const $select = eltData.$js.closest( '.core-yesno-select' );
             if( $select.length ){
-                const def = Forms.YesNo.byValue( value );
+                const def = CoreApp.YesNo.byValue( value );
                 if( def ){
-                    eltData.$js.val( Forms.YesNo.id( def ));
+                    eltData.$js.val( CoreApp.YesNo.id( def ));
                 }
             } else {
                 eltData.$js.val( value );
@@ -431,7 +431,7 @@ export class FormChecker extends caBase {
             assert( !opts.$err || opts.$err instanceof jQuery, 'when set, options.$err must be a jQuery object' );
             assert( !opts.errSetFn || _.isFunction( opts.errSetFn ), 'when set, options.errSetFn must be a function' );
             assert( !opts.errClearFn || _.isFunction( opts.errClearFn ), 'when set, options.errClearFn must be a function' );
-            assert( !opts.entityChecker || opts.entityChecker instanceof Forms.EntityChecker, 'when set, options.entityChecker must be a Forms.EntityChecker');
+            assert( !opts.entityChecker || opts.entityChecker instanceof CoreApp.EntityChecker, 'when set, options.entityChecker must be a CoreApp.EntityChecker');
             if( opts.entityChecker && ( opts.$ok || opts.okFn || opts.$err || opts.errFn || opts.errClearFn )){
                 Meteor.isDevelopment && console.warn( 'An EntityChecker is specified, silently ignoring $ok, okFn, $err, errFn, errClearFn' );
             }
@@ -541,7 +541,7 @@ export class FormChecker extends caBase {
 
     /**
      * @param {String} field the name of the field we are interested of
-     * @returns {String} the corresponding current CheckResult type
+     * @returns {String} the corresponding current FieldCheck type
      */
     getFieldCheck( field ){
         const eltData = this._domDataByField( field );
@@ -573,13 +573,13 @@ export class FormChecker extends caBase {
      * @param {Object} opts an options object with following keys:
      *  - id: in case of array'ed fields, the id of the item
      *  - $parent: in case of dynamic fields, a DOM jQuery element which is a parent of this form
-     *
+     * 
      * The principle is that:
      * 1. we check the input field identified by its selector
      *      the check function returns an error message if not ok
      * 2. if ok, we check all fields (but this one) unless prevented to at the FormChecker construction
      *      (because an app may prefer to have a global check inside of an autorun which will so re-run after each update)
-     *
+     * 
      * @returns {Promise} which eventually resolves to the validity status (of the single current field if false, of the whole form else)
      */
     async inputHandler( event, opts={} ){

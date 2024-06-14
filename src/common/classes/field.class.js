@@ -23,12 +23,13 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
+import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { ISchema } from '../interfaces/ischema.iface.js';
 import { ITabular } from '../interfaces/itabular.iface.js';
 
 import { Base } from './base.class.js';
 
-export class Field extends mix( Base ).with( ISchema, ITabular ){
+export class Field extends mix( Base ).with( ICheckable, ISchema, ITabular ){
 
     // static data
 

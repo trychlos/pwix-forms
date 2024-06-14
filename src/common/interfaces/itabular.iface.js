@@ -2,6 +2,12 @@
  * pwix:forms/src/common/interfaces/itabular.iface.js
  *
  * Converts a field definition to its datatable tabular equivalent.
+ *
+ * All keys prefixed with 'dt_' are supposed to target the Databable columns definition with some specificities:
+ *
+ * - dt_tabular=false means that the field should be entirely ignored by the definition
+ * - dt_data=false means that the field must not be subscribed to
+ * - dt_template is replaced with 'tmpl'
  */
 
 import _ from 'lodash';

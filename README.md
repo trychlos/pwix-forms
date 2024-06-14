@@ -185,6 +185,26 @@ The package's behavior can be configured through a call to the `Forms.configure(
 
 Known configuration options are:
 
+- `displayCheckResultIndicator`
+
+    Whether input fields should be appended with the check result (valid/uncomplete/invalid) indicator, where available values are:
+
+    - `Forms.C.CheckResult.BOOTSTRAP`
+    - `Forms.C.CheckResult.INDICATOR`
+    - `Forms.C.CheckResult.NONE`
+
+    Defaults to `Forms.C.CheckResult.INDICATOR`
+
+    A field can still be defined to override this default value.
+
+- `displayFieldTypeIndicator`
+
+    Whether input fields should default to be prefixed with a type (mandatory/optional) indicator.
+
+    Defaults to `true`.
+
+    A field can still be defined to override this default value.
+
 - `verbosity`
 
     Define the expected verbosity level.

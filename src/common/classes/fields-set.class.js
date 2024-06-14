@@ -84,12 +84,32 @@ export class FieldsSet extends Base {
      */
     slice( fields ){
         let res = [];
+        const self = this;
         fields.forEach(( it ) => {
-            let field = this.byField( it );
+            let field = self.byField( it );
             if( field ){
                 res.push( field );
             } else {
                 console.warn( it, 'field not known' );
+            }
+        });
+        return res;
+    };
+
+    /**
+     * @locus Everywhere
+     * @param {Object} fields the objects defined to be edited in a form panel
+     * @returns {Object} the same population completed with the Field's definitions, suitable for Checker use
+     */
+    toForm( fields ){
+        let res = {};
+        const self = this;
+        Object.keys( fields ).forEach(( field ) => {
+            const f = self.byField( field );
+            if( f ){
+                res[field] = f.ICheckableDefinition( fields[field] );
+            } else {
+                console.error( 'field not found in the FieldSet:', field );
             }
         });
         return res;

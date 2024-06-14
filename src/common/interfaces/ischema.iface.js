@@ -2,6 +2,10 @@
  * pwix:forms/src/common/interfaces/ischema.iface.js
  *
  * Converts a field definition to its schema equivalent.
+ *
+ * All keys of the field definition object are expected to be suitable for a SimpleSchema definition, unless prefixed with:
+ * - 'dt_': definition targeting the Datatable (tabular)
+ * - 'form_': definition targeting the Checker.
  */
 
 import _ from 'lodash';

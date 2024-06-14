@@ -53,8 +53,9 @@ import { TM } from 'meteor/pwix:typed-message';
 
 import { Base } from '../../common/classes/base.class.js';
 
-//import { IMessagesOrderedSet } from '../../common/interfaces/imessages-ordered-set.iface.js';
-//import { IMessagesSet } from '../../common/interfaces/imessages-set.iface.js';
+import { CheckerHandled } from './checker-handled.class.js';
+
+import { IMessager } from '../../common/interfaces/imessager.iface.js';
 
 //export class EntityChecker extends mix( Base ).with( IMessagesOrderedSet, IMessagesSet ){
 export class Checker extends Base {
@@ -71,19 +72,18 @@ export class Checker extends Base {
     // configuration
     #defaultConf = {
         instance: null,
-        $top: null,
         parent: null,
-        tm: null,
-        $ok: null,
-        okSetFn: null,
-        $err: null,
-        errSetFn: null,
-        errClearFn: null,
-        validityEvent: 'form-validity'
-    };
+        messager: null,
+        fields: null,
+        validityEvent: 'checker-validity.forms'
+   };
     #conf = {};
 
-    //runtime data
+    // runtime data
+
+    // the event target
+    // this is the first top node of the Blaze instance DOM
+    #eventReceiver = null;
 
     // the consolidated data parts for each underlying component / pane / panel / FormChecker
     #dataParts = new ReactiveDict();
@@ -95,6 +95,96 @@ export class Checker extends Base {
     #forms = [];
 
     // private methods
+
+    // returns the field definition which is the source of this input event, or null
+    _fieldFromInputEvent( event ){
+        const fields = this._getFields();
+        const instance = this._getInstance();
+        let field = null;
+        if( instance && fields ){
+            Object.keys( fields ).every(( name ) => {
+                const def = fields[name];
+                if( def.js ){
+                    const js = def.js.substring( 1 );
+                    if( instance.$( event.target ).hasClass( js )){
+                        field = def;
+                    }
+                }
+                return field !== null;
+            });
+        }
+        return field;
+    }
+
+    // returns the fields definition, may be null or empty
+    _getFields(){
+        return this.#conf.fields;
+    }
+
+    // returns the Blaze.TemplateInstance defined at instanciation time, may be null
+    _getInstance(){
+        return this.#conf.instance;
+    }
+
+    // returns the validity event, always set
+    _getValidityEvent(){
+        return this.#conf.validityEvent;
+    }
+
+    // input handler
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event
+    // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
+    // - event is a jQuery.Event
+    _inputHandler( event ){
+        console.debug( 'inputHandler', event );
+        const field = this._fieldFromInputEvent( event );
+        if( field ){
+            console.debug( 'to be handled', field );
+        } else {
+            console.debug( 'already handled' );
+        }
+        //console.debug( 'inputHandler', event, 'handled', event.data.number(), event.data.handled());
+        //console.debug( event.currentTarget, typeof event.currentTarget );
+        //console.debug( this.#eventReceiver );
+        //console.debug( 'whether this input handler is our own or bubbled up from a child: ', _.isEqual( this.#eventReceiver, event.currentTarget ) ? 'our own' : 'bubbled up' );
+        /*
+        if( event.data.handled()){
+            console.debug( 'already handled' );
+        } else {
+            console.debug( 'to handle' );
+            //event.data = event.data || {};
+            //event.data.Checker = event.data.Checker || {};
+            event.data.handled( true );
+        }
+            */
+    }
+
+    // install the events handlers
+    //  - requires to have an (Blaze.TemplateInstance) instance
+    //  - install an input handler if we have fields
+    //  - always install a validity handler
+    _installEventsHandlers(){
+        const self = this;
+        const instance = self._getInstance();
+        if( instance ){
+            const node = instance.firstNode;
+            const $node = instance.$( node );
+            if( $node.length ){
+                self.#eventReceiver = node;
+                const fields = self._getFields();
+                if( fields && Object.keys( fields ).length ){
+                    $node.on( 'input', ( event ) => { self._inputHandler( event ); });
+                }
+                const validityEvent = self._getValidityEvent();
+                $node.on( validityEvent, ( event, data ) => { self._validityHandler( event, data ); });
+            }
+        }
+    }
+
+    // validity handler
+    _validityHandler( event, data ){
+        console.debug( 'validityHandler', event, data );
+    }
 
     // protected methods
 
@@ -114,8 +204,8 @@ export class Checker extends Base {
      *  - messager: an IMessager implementation
      *      > this is a caller's design decision to have a message zone per panel, ou globalized at a higher level
      *      > caller doesn't need to addresses a globalized messager at any lower panel: it is enough to identify the parent parent
-     *
-     *  - submitter: an ISubmitter implementation
+     *  - fields: an optional object which defines the managed fields
+     *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
 
     /////*  - $top: an optional jQuery object which should be a common ancestor of all managed fields, will act both as a common source for all fields searches and as an event receiver
      *  - tm: an optional object which implements the TM.ITypedMessage interface
@@ -128,7 +218,6 @@ export class Checker extends Base {
      *  - errClearFn(): an optional function to be called to clear all messages
      *      Because we want re-check all fields on each input event, in the same way each input event re-triggers all error messages
      *      So this function to let the application re-init its error messages stack.
-     *  - validityEvent: if set, the validity event sent by underlying components to advertize of their individual validity status, defaulting to 'form-validity'
      * @returns {Checker} this Checker instance
      */
     constructor( args={} ){
@@ -137,15 +226,8 @@ export class Checker extends Base {
             assert( !args.instance || args.instance instanceof Blaze.TemplateInstance, 'when set, instance must be a Blaze.TemplateInstance instance');
             assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
             assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
-
-            assert( !args.$top || ( args.$top instanceof jQuery && args.$top.length ), 'when set, $top must be a jQuery object' );
-            assert( !args.tm || args.tm instanceof TM.ITypedMessage, 'when set, parent must be a Checker instance' );
-            assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, options.$ok must be a jQuery object' );
-            assert( !args.okSetFn || _.isFunction( args.okSetFn ), 'when set, options.okSetFn must be a function' );
-            assert( !args.$err || ( args.$err instanceof jQuery && args.$err.length ), 'when set, options.$err must be a jQuery object' );
-            assert( !args.errSetFn || _.isFunction( args.errSetFn ), 'when set, options.errSetFn must be a function' );
-            assert( !args.errClearFn || _.isFunction( args.errClearFn ), 'when set, options.errClearFn must be a function' );
-            assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, options.validityEvent must be a string' );
+            assert( !args.fields || _.isObject( args.fields ), 'when set, fields must be a plain javascript object' );
+            assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a string' );
         }
 
         super( ...arguments );
@@ -159,12 +241,15 @@ export class Checker extends Base {
 
         // initialize runtime data
 
+        // install events handlers if we have an instance
+        this._installEventsHandlers();
+
         // connect to events receiver element to handle 'panel-data' (or 'form-validity') events
-        if( this.#conf.$top ){
-            this.#conf.$top.on( this.#conf.validityEvent, ( event, data ) => {
-                self.formValidity( data );
-            });
-        }
+        //if( this.#conf.$top ){
+        //    this.#conf.$top.on( this.#conf.validityEvent, ( event, data ) => {
+         //       self.formValidity( data );
+            //});
+        //}
 
         // define an autorun which reacts to dataParts changes to set the global validity status
         if( this.#conf.instance ){
