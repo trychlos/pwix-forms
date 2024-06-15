@@ -30,15 +30,15 @@ export const ISchema = DeclareMixin(( superclass ) => class extends superclass {
      * @rules
      *  - must participate to the schema
      *  - all SimpleSchema keys are accepted
-     *  - only SimpleSchema must be accepted as SimpleSchema doesn't want manage unknown keys
+     *  - only SimpleSchema must be accepted as SimpleSchema doesn't accept unknown keys
      */
-    ISchemaDefinition(){
-        assert( this.ISchemaParticipate(), 'field is not defined to participate to a schema' );
-        const def = this.def();
+    iSchemaDefinition(){
+        assert( this.iSchemaParticipate(), 'field is not defined to participate to a schema' );
+        const def = this._defn();
         let res = {};
         Object.keys( def ).forEach(( key ) => {
             // have to remove keys which are unknowned from SimpleSchema as this later doesn't accept them
-            if( key !== 'field' && !key.startsWith( 'dt_' ) && !key.startsWith( 'form_' )){
+            if( key !== 'name' && key !== 'schema' && !key.startsWith( 'dt_' ) && !key.startsWith( 'form_' )){
                 res[key] = def[key];
             }
         });
@@ -50,19 +50,19 @@ export const ISchema = DeclareMixin(( superclass ) => class extends superclass {
      * @rules
      *  - must participate to the schema
      */
-    ISchemaName(){
-        assert( this.ISchemaParticipate(), 'field is not defined to participate to a schema' );
-        return this.def().field;
+    iSchemaName(){
+        assert( this.iSchemaParticipate(), 'field is not defined to participate to a schema' );
+        return this.name();
     }
 
     /**
      * @returns {Boolean} whether this field definition participates to a SimpleSchema
      * @rules
-     *  - must have a set 'field'
+     *  - must have a set 'name'
      *  - must not have a 'schema=false' key
      */
-    ISchemaParticipate(){
-        const def = this.def();
-        return def.field && _.isString( def.field ) && def.schema !== false;
+    iSchemaParticipate(){
+        const def = this._defn();
+        return def.name && _.isString( def.name ) && def.schema !== false;
     }
 });

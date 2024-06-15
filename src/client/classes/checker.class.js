@@ -5,7 +5,10 @@
  * - maybe manage an error message stack at its level, unless it delegates this task to a parent Checker
  * - manage the global validity status at this same level.
  *
- * Checker will receive its events either from a child Checker, or from its own embedded Field's.
+ * Checker will receive its events either from a child Checker, or from its own input handler.
+ *
+ * Array-ed fields:
+ *  Checker expects array-ed records to each have their own identifier.
  *
  * Error messages:
  *  Even if we are talking about error messages, we actually manage the typed TM.TypedMessage emitted by the sub-components and check functions.
@@ -49,16 +52,16 @@ import mix from '@vestergaard-company/js-mixin';
 import { check } from 'meteor/check';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { TM } from 'meteor/pwix:typed-message';
 
 import { Base } from '../../common/classes/base.class.js';
 
-import { CheckerHandled } from './checker-handled.class.js';
-
 import { IMessager } from '../../common/interfaces/imessager.iface.js';
 
-//export class EntityChecker extends mix( Base ).with( IMessagesOrderedSet, IMessagesSet ){
-export class Checker extends Base {
+import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
+import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
+import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
+
+export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
 
     // static data
 
@@ -81,14 +84,13 @@ export class Checker extends Base {
 
     // runtime data
 
-    // the event target
-    // this is the first top node of the Blaze instance DOM
-    #eventReceiver = null;
+    // an object which holds the local check functions, keyed with the field name
+    #locals = {};
 
     // the consolidated data parts for each underlying component / pane / panel / FormChecker
     #dataParts = new ReactiveDict();
 
-    // the entity-level validity status
+    // the validity status for this checker
     #valid = new ReactiveVar( false );
 
     // the children Checker's
@@ -96,94 +98,136 @@ export class Checker extends Base {
 
     // private methods
 
-    // returns the field definition which is the source of this input event, or null
-    _fieldFromInputEvent( event ){
-        const fields = this._getFields();
-        const instance = this._getInstance();
-        let field = null;
-        if( instance && fields ){
-            Object.keys( fields ).every(( name ) => {
-                const def = fields[name];
-                if( def.js ){
-                    const js = def.js.substring( 1 );
-                    if( instance.$( event.target ).hasClass( js )){
-                        field = def;
+    // at construction time, define a local check function for each defined field
+    //  this local check function will always call the corresponding defined checks function (if exists)
+    //  returns a Promise which resolve to 'valid' status for the field
+    //  (while the checks check_<field>() is expected to return a Promise which resolves to a TypedMessage or null)
+
+    // + attach to the DOM element addressed by the 'js' key an object:
+    //   - value: a ReactiveVar which contains the individual value got from the form
+    //   - checked: a ReactiveVar which contains the individual checked type (in the sense of FieldCheck class)
+    //   - field: the field name
+    //   - defn: the field definition
+    //   - fn: the check function name
+    //   - parent: if set, the parent field name
+
+    _defineLocalCheckFunction( field, spec, arg ){
+        const self = this;
+        // do we have a check function for this field ? warn in dev...
+        spec.iFieldHaveCheck();
+        // local check function is called with element dom data
+        const localFn = spec.iFieldComputeLocalCheckFunctionName();
+        self.#locals[localFn] = async function( eltData, opts={} ){
+            if( eltData.$js.length ){
+                eltData.$js.removeClass( 'is-valid is-invalid' );
+            }
+            const value = self._valueFrom( eltData, opts );
+            eltData.value.set( value );
+            // this local function returns a Promise which resolves to a validity boolean
+            return Promise.resolve( true )
+                .then(() => {
+                    // the checks function returns a Promise which resolves to a TypedMessage or null
+                    return defn.check && _.isFunction( defn.check ) ? defn.check( value, self.#conf.data, opts ) : null;
+                })
+                .then(( err ) => {
+                    //console.debug( eltData, err );
+                    check( err, Match.OneOf( null, CoreApp.TypedMessage ));
+                    const valid = self._computeValid( eltData, err );
+                    self.#valid.set( valid );
+                    // manage different err types
+                    if( err && opts.msgerr !== false ){
+                        self._msgPush( err );
                     }
-                }
-                return field !== null;
-            });
+                    if( eltData.defn.post ){
+                        eltData.defn.post( err );
+                    }
+                    const checked_type = self._computeCheck( eltData, err );
+                    //console.debug( eltData.field, err, checked_type );
+                    eltData.checked.set( checked_type );
+                    // set valid/invalid bootstrap classes
+                    if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
+                        $js.addClass( valid ? 'is-valid' : 'is-invalid' );
+                    }
+                    return valid;
+                })
+                .catch(( e ) => {
+                    console.error( e );
+                });
+        };
+        // end_of_function
+        // needed by inputHandler so that we can get back our Checker data for this field from the event.target
+        //  take care of having one and only target DOM element for this definition at this time
+        const instance = self._getInstance();
+        const selector = spec.iFieldJsSelector();
+        if( instance && selector ){
+            const $js = instance.$( selector );
+            if( $js.length === 1 ){
+                this._domDataSet( $js, spec );
+            }
         }
-        return field;
+        return true;
     }
 
-    // returns the fields definition, may be null or empty
-    _getFields(){
-        return this.#conf.fields;
+    // search a field (and its field definition) when receiving an input event through the inputHandler()
+    //  maybe we already have set the data here, else find the correct DOM element and initialize the data object
+    //  returns the elementData or null
+    _domDataByEvent( event, fieldSpec ){
+        const instance = this._getInstance();
+        let data = null;
+        if( instance ){
+            const $target = instance.$( event.target );
+            data = $target.data( 'form-checker' );
+            if( !data ){
+                this._domDataSet( $target, fieldSpec );
+                data = $target.data( 'form-checker' );
+            }
+        }
+        return data;
+    }
+
+    // set our Checker data against the targeted DOM element
+    //  this data may be set at construction time if field already exists
+    //  or at input time
+    _domDataSet( $elt, fieldSpec ){
+        $elt.data( 'form-checker', {
+            spec: fieldSpec,
+            value: new ReactiveVar( null ),
+            checked: new ReactiveVar( null ),
+            $js: $elt
+        });
+    }
+
+    // iterate on each field definition, calling the provided 'cb' callback for each one
+    //  the recursive iteration stops as soon as the 'cb' doesn't return true
+    //  in other words, iterate while 'cb' returns true (same than 'every' instruction)
+    _fieldsIterate( cb, args=null ){
+        const self = this;
+        const _fields_iterate_f = function( name, spec, arg ){
+            return cb.bind( self )( name, spec, arg );
+        };
+        const panel = this._getPanelSpec();
+        if( panel ){
+            panel.iEnumerateKeys( _fields_iterate_f, args );
+        }
+    }
+
+    // returns the PanelSpec fields definition, may be null
+    _getPanelSpec(){
+        const panel = this.#conf.panel;
+        assert( !panel || panel instanceof IPanelSpec, 'panel is expected to be a IPanelSpec instance' );
+        return panel;
     }
 
     // returns the Blaze.TemplateInstance defined at instanciation time, may be null
     _getInstance(){
-        return this.#conf.instance;
+        const instance = this.#conf.instance;
+        assert( !instance || instance instanceof Blaze.TemplateInstance, 'instance is expected to be a Blaze.TemplateInstance instance' );
+        return instance;
     }
 
     // returns the validity event, always set
     _getValidityEvent(){
         return this.#conf.validityEvent;
-    }
-
-    // input handler
-    // https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event
-    // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
-    // - event is a jQuery.Event
-    _inputHandler( event ){
-        console.debug( 'inputHandler', event );
-        const field = this._fieldFromInputEvent( event );
-        if( field ){
-            console.debug( 'to be handled', field );
-        } else {
-            console.debug( 'already handled' );
-        }
-        //console.debug( 'inputHandler', event, 'handled', event.data.number(), event.data.handled());
-        //console.debug( event.currentTarget, typeof event.currentTarget );
-        //console.debug( this.#eventReceiver );
-        //console.debug( 'whether this input handler is our own or bubbled up from a child: ', _.isEqual( this.#eventReceiver, event.currentTarget ) ? 'our own' : 'bubbled up' );
-        /*
-        if( event.data.handled()){
-            console.debug( 'already handled' );
-        } else {
-            console.debug( 'to handle' );
-            //event.data = event.data || {};
-            //event.data.Checker = event.data.Checker || {};
-            event.data.handled( true );
-        }
-            */
-    }
-
-    // install the events handlers
-    //  - requires to have an (Blaze.TemplateInstance) instance
-    //  - install an input handler if we have fields
-    //  - always install a validity handler
-    _installEventsHandlers(){
-        const self = this;
-        const instance = self._getInstance();
-        if( instance ){
-            const node = instance.firstNode;
-            const $node = instance.$( node );
-            if( $node.length ){
-                self.#eventReceiver = node;
-                const fields = self._getFields();
-                if( fields && Object.keys( fields ).length ){
-                    $node.on( 'input', ( event ) => { self._inputHandler( event ); });
-                }
-                const validityEvent = self._getValidityEvent();
-                $node.on( validityEvent, ( event, data ) => { self._validityHandler( event, data ); });
-            }
-        }
-    }
-
-    // validity handler
-    _validityHandler( event, data ){
-        console.debug( 'validityHandler', event, data );
     }
 
     // protected methods
@@ -201,10 +245,10 @@ export class Checker extends Base {
      *      > provides the DOM element which will act as a global event receiver
      *      > provides the topmost DOM element to let us find all managed fields
      *  - parent: an optional parent Checker instance
-     *  - messager: an IMessager implementation
+     *  - messager: an optional IMessager implementation
      *      > this is a caller's design decision to have a message zone per panel, ou globalized at a higher level
      *      > caller doesn't need to addresses a globalized messager at any lower panel: it is enough to identify the parent parent
-     *  - fields: an optional object which defines the managed fields
+     *  - panel: an optional IPanelSpec iplementation which defines the managed fields
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
 
     /////*  - $top: an optional jQuery object which should be a common ancestor of all managed fields, will act both as a common source for all fields searches and as an event receiver
@@ -226,7 +270,7 @@ export class Checker extends Base {
             assert( !args.instance || args.instance instanceof Blaze.TemplateInstance, 'when set, instance must be a Blaze.TemplateInstance instance');
             assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
             assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
-            assert( !args.fields || _.isObject( args.fields ), 'when set, fields must be a plain javascript object' );
+            assert( !args.fields || args.fields instanceof IPanelSpec, 'when set, fields must be a IPanelSpec instance' );
             assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a string' );
         }
 
@@ -242,14 +286,7 @@ export class Checker extends Base {
         // initialize runtime data
 
         // install events handlers if we have an instance
-        this._installEventsHandlers();
-
-        // connect to events receiver element to handle 'panel-data' (or 'form-validity') events
-        //if( this.#conf.$top ){
-        //    this.#conf.$top.on( this.#conf.validityEvent, ( event, data ) => {
-         //       self.formValidity( data );
-            //});
-        //}
+        this.iEventsInstallHandlers();
 
         // define an autorun which reacts to dataParts changes to set the global validity status
         if( this.#conf.instance ){
@@ -275,6 +312,9 @@ export class Checker extends Base {
                 }
             });
         }
+
+        // for each defined field, define a local check function
+        this._fieldsIterate( this._defineLocalCheckFunction );
 
         console.debug( this );
         return this;

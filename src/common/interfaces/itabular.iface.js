@@ -48,20 +48,23 @@ export const ITabular = DeclareMixin(( superclass ) => class extends superclass 
      *  - data subscription is named along the 'field' key, unless dt_data=false
      *  - all 'dt_' keys are provided (minus this prefix)
      */
-    ITabularDefinition(){
-        assert( this.ITabularParticipate(), 'field is not defined to participate to a datatable tabular display' );
-        const def = this.def();
+    iTabularDefinition(){
+        assert( this.iTabularParticipate(), 'field is not defined to participate to a datatable tabular display' );
+        const def = this._defn();
         let res = {};
         // we have a 'data' key if we have a field name and not dt_data=false
-        if( def.field && def.dt_data !== false ){
-            res.data = def.field;
+        if( def.name && def.dt_data !== false ){
+            res.data = def.name;
         }
         Object.keys( def ).forEach(( key ) => {
-            if( key !== 'field' && key != 'dt_data' ){
+            if( key !== 'name' && key != 'dt_data' ){
                 if( key.startsWith( 'dt_' )){
                     let dtkey = key.substring( 3 );
                     if( dtkey === 'template' ){
                         dtkey = 'tmpl';
+                    }
+                    if( dtkey === 'templateContext' ){
+                        dtkey = 'tmplContext';
                     }
                     res[dtkey] = def[key];
                 }
@@ -77,8 +80,8 @@ export const ITabular = DeclareMixin(( superclass ) => class extends superclass 
      *  - must have either a set 'field' which will be transformed to a 'data' which is used to subscribe to the collection
      *    or any 'dt_'-prefixed key
      */
-    ITabularParticipate(){
-        const def = this.def();
-        return def.dt_tabular !== false && (( def.field && _.isString( def.field )) || this._haveDTKey( def ));
+    iTabularParticipate(){
+        const def = this._defn();
+        return def.dt_tabular !== false && (( def.name && _.isString( def.name )) || this._haveDTKey( def ));
     }
 });

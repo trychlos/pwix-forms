@@ -34,6 +34,20 @@ This Meteor package is installable with the usual command:
 
 ```js
     import { Forms } from 'meteor/pwix:forms';
+
+    // define your fields specifications, both suitable for schema collection, tabular display and form edition
+    // this is mainly a SimpleSchema extenstion
+    const fieldSet = new Forms.FieldsSet(
+        {
+            name: 'name'
+            type: String
+        },
+        {
+            name: 'surname',
+            type: String,
+            optional: true
+        }
+    );
 ```
 
 ## Provides
@@ -60,73 +74,89 @@ The exported `Forms` global object provides following items:
 
 An ordered collection of `Forms.Field` objects.
 
-It should be instanciated by the caller with a list of fields definitions plain javascript objects. For example:
+It should be instanciated by the caller with a list of fields definitions as plain javascript objects. For example:
 
 ```js
     app.fieldsSet = new Forms.FieldsSet(
         {
-            field: '_id',
+            name: '_id',
             type: String,
             dt_tabular: false
         },
         {
-            field: 'emails',
+            name: 'emails',
             type: Array,
             optional: true,
             dt_visible: false
         },
         {
-            field: 'emails.$',
+            name: 'emails.$',
             type: Object,
             optional: true,
             dt_tabular: false
         },
         {
-            field: 'emails.$.address',
+            name: 'emails.$.address',
             type: String,
             regEx: SimpleSchema.RegEx.Email,
             dt_data: false,
             dt_title: pwixI18n.label( I18N, 'list.email_address_th' ),
             dt_template: Meteor.isClient && Template.email_address,
-            form_checkFn: AccountsManager.check?.emailAddress,
+            form_check: AccountsManager.check?.emailAddress,
             form_checkType: 'optional'
         },
         {
-            field: 'emails.$.verified',
+            name: 'emails.$.verified',
             type: Boolean,
             dt_data: false,
             dt_title: pwixI18n.label( I18N, 'list.email_verified_th' ),
             dt_template: Meteor.isClient && Template.email_verified,
-            form_checkFn: AccountsManager.check?.emailVerified
+            form_check: AccountsManager.check?.emailVerified
         },
         {
             dt_template: Meteor.isClient && Template.email_more
         },
         {
-            field: 'username',
+            name: 'username',
             type: String,
             optional: true,
             dt_title: pwixI18n.label( I18N, 'list.username_th' ),
-            form_checkFn: AccountsManager.check?.username
+            form_check: AccountsManager.check?.username
         },
         {
-            field: 'profile',
+            name: 'profile',
             type: Object,
             optional: true,
             blackbox: true,
             dt_tabular: false
         },
         Notes.field({
-            field: 'userNotes',
+            name: 'userNotes',
             dt_title: pwixI18n.label( I18N, 'list.user_notes_th' ),
             //dt_template: Meteor.isClient && Notes.template
         })
     );
 ```
 
-Due to the aims of this set, both all fields of a Mongo document, and all columns of a tabular display must be defined here. Hence the different definitions.
+Both all fields of a Mongo document, all columns of a tabular display based on this collection, and all fields managed in an editing panel must be defined here. Hence the different definitions.
 
-##### `Forms.Field`
+###### Methods
+
+- `Forms.FieldsSet.byName( name )`
+
+    Returns the named Field object, or null.
+
+    Because the `name` key is optional when defining a field, then not all Field's are retrievable by this method.
+
+- `Forms.FieldsSet.toTabular()`
+
+    Returns an ordered list of columns definitions suitable to [Datatable](https://datatables.net/) initialization.
+
+- `Forms.FieldsSet.toSchema()`
+
+    Returns a [SimpleSchema](https://github.com/Meteor-Community-Packages/meteor-simple-schema) suitable for the collection setup.
+
+###### `Forms.Field`
 
 A class which provides the ad-hoc definitions for (almost) every use of a field in an application, and in particular:
 

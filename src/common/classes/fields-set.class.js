@@ -2,17 +2,24 @@
  * pwix:forms/src/common/classes/fields-set.class.js
  *
  * Gathers an ordered set of Fields.
+ *
+ * Note: it would have been rather logic to have here a 'toForm()' method. But we are here in common code, and we would have to test for 'Meteor.isClient'.
+ * This is so the PanelSpec object which handles the form part of this FieldsSet.
  */
 
 import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
+import mix from '@vestergaard-company/js-mixin';
 
 import SimpleSchema from 'meteor/aldeed:simple-schema';
 
 import { Base } from './base.class.js';
 import { Field } from './field.class.js';
 
-export class FieldsSet extends Base {
+import { IEnumerable } from '../interfaces/ienumerable.iface.js';
+import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
+
+export class FieldsSet extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
     // static data
 
@@ -20,9 +27,6 @@ export class FieldsSet extends Base {
 
     // private data
     #set = null;
-
-    // instanciation parameters
-    #list = null;
 
     // runtime data
 
@@ -38,8 +42,7 @@ export class FieldsSet extends Base {
      * @summary Instanciates a new FieldsSet instance
      * @param {List<Object>} list a list of field definitions
      *  The constructor is expected to be called as `new FieldsSet( {def_1}, { def_2 }, { def_3 }, ... );`
-     *  Here we so have an object as: { '0': { def_1 }, '1': { def_2 }, '2': { def_3 }, ... }
-     *  We have to respect the order of provided definitions, so order on the numeric keys
+     *  which happens to be a list of plain javascript objects whom we do not know the count of arguments.
      * @returns {FieldsSet} this FieldsSet instance
      */
     constructor( list ){
@@ -48,14 +51,16 @@ export class FieldsSet extends Base {
         super( ...arguments );
         const self = this;
 
-        // keep the provided params
-        this.#list = [ ...arguments ];
-
-        // initialize runtime data
+        // instanciate a Field object for each field description
         this.#set = [];
-        this.#list.forEach(( it ) => {
-            this.#set.push( new Field( it ));
-        });
+        const cb = function( it ){
+            self.#set.push( new Field( it ));
+            return true;
+        };
+        this.iEnumerate( cb );
+
+        // setup the new enumeration reference
+        this.iEnumerableBase( this.#set );
 
         //console.debug( this );
         return this;
@@ -63,56 +68,20 @@ export class FieldsSet extends Base {
 
     /**
      * @locus Everywhere
-     * @param {String} field the name of the searched field
+     * @param {String} name the name of the searched field
      * @returns {Field} the found Field, or null
+     *  Note that not all Field's have a 'field' key, so not all these Field's are foundable here
      */
-    byField( field ){
-        let res = null;
-        this.#set.every(( it ) => {
-            if( it.field() === field ){
-                res = it;
+    byName( name ){
+        let found = null;
+        const cb = function( it, name ){
+            if( it.name() === name ){
+                found = it;
             }
-            return res === null;
-        });
-        return res;
-    };
-
-    /**
-     * @locus Everywhere
-     * @param {Array<String>} fields an array of string field names to be extracted
-     * @returns {Array<Field>} the array of Field definitions for the provided names
-     */
-    slice( fields ){
-        let res = [];
-        const self = this;
-        fields.forEach(( it ) => {
-            let field = self.byField( it );
-            if( field ){
-                res.push( field );
-            } else {
-                console.warn( it, 'field not known' );
-            }
-        });
-        return res;
-    };
-
-    /**
-     * @locus Everywhere
-     * @param {Object} fields the objects defined to be edited in a form panel
-     * @returns {Object} the same population completed with the Field's definitions, suitable for Checker use
-     */
-    toForm( fields ){
-        let res = {};
-        const self = this;
-        Object.keys( fields ).forEach(( field ) => {
-            const f = self.byField( field );
-            if( f ){
-                res[field] = f.ICheckableDefinition( fields[field] );
-            } else {
-                console.error( 'field not found in the FieldSet:', field );
-            }
-        });
-        return res;
+            return found === null;
+        };
+        this.iEnumerate( cb, name );
+        return found;
     };
 
     /**
@@ -121,11 +90,13 @@ export class FieldsSet extends Base {
      */
     toSchema(){
         let res = {};
-        this.#set.forEach(( field ) => {
-            if( field.ISchemaParticipate()){
-                res[field.ISchemaName()] = field.ISchemaDefinition();
+        const cb = function( it ){
+            if( it.iSchemaParticipate()){
+                res[it.iSchemaName()] = it.iSchemaDefinition();
             }
-        });
+            return true;
+        };
+        this.iEnumerate( cb );
         return new SimpleSchema( res );
     };
 
@@ -135,11 +106,13 @@ export class FieldsSet extends Base {
      */
     toTabular(){
         let res = [];
-        this.#set.forEach(( field ) => {
-            if( field.ITabularParticipate()){
-                res.push( field.ITabularDefinition());
+        const cb = function( it ){
+            if( it.iTabularParticipate()){
+                res.push( it.iTabularDefinition());
             }
-        });
+            return true;
+        };
+        this.iEnumerate( cb );
         return res;
     };
 }
