@@ -1,5 +1,5 @@
 /*
- * /imports/client/components/coreFieldCheckIndicator/coreFieldCheckIndicator.js
+ * pwix:forms/src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js
  *
  * A small icon indicator to exhibit the result of the check of the field.
  *
@@ -12,21 +12,21 @@
  *  - title: if set, a text to replace the default title
  */
 
-import { CheckResult } from '../../../common/definitions/field-check.def.js';
+import { CheckStatus } from '../../common/definitions/check-status.def.js';
 
-import './coreFieldCheckIndicator.html';
-import './coreFieldCheckIndicator.less';
+import './FormsCheckStatusIndicator.html';
+import './FormsCheckStatusIndicator.less';
 
-Template.coreFieldCheckIndicator.onRendered( function(){
+Template.FormsCheckStatusIndicator.onRendered( function(){
     const self = this;
 
     self.autorun(() => {
-        self.$( '.field-check-indicator .fci-display' ).removeClass( 'visible' ).addClass( 'hidden' );
-        self.$( '.field-check-indicator .fci-display[data-type="'+Template.currentData().type+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        self.$( '.field-check-indicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
+        self.$( '.field-check-indicator .fcsi-display[data-type="'+Template.currentData().type+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
     });
 });
 
-Template.coreFieldCheckIndicator.helpers({
+Template.FormsCheckStatusIndicator.helpers({
     // a class which encapsulates the icon
     //  determines the color through the stylesheet
     itClass( it ){

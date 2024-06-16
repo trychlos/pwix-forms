@@ -215,17 +215,22 @@ The package's behavior can be configured through a call to the `Forms.configure(
 
 Known configuration options are:
 
-- `displayCheckResultIndicator`
+- `checkStatusShow`
 
-    Whether input fields should be appended with the check result (valid/uncomplete/invalid) indicator, where available values are:
+    Whether input fields should be appended with their check result (valid/uncomplete/invalid) indicator, where available values are:
 
-    - `Forms.C.CheckResult.BOOTSTRAP`
-    - `Forms.C.CheckResult.INDICATOR`
-    - `Forms.C.CheckResult.NONE`
+    - `Forms.C.CheckStatus.BOOTSTRAP_ALWAYS`
+    - `Forms.C.CheckStatus.BOOTSTRAP_OVERRIDABLE`
+    - `Forms.C.CheckStatus.INDICATOR_ALWAYS`
+    - `Forms.C.CheckStatus.INDICATOR_OVERRIDABLE`
+    - `Forms.C.CheckStatus.NONE_OVERRIDABLE`
+    - `Forms.C.CheckReCheckStatussult.NEVER`
 
-    Defaults to `Forms.C.CheckResult.INDICATOR`
+    Defaults to `Forms.C.CheckStatus.INDICATOR_OVERRIDABLE`.
 
-    A field can still be defined to override this default value.
+    The application may choose an `..._ALWAYS` value to decide that the indicator is always displayed. This is a design decision to have a consistent and homogeneous user interface.
+
+    When the application chooses an `..._OVERRIDABLE` value, then the caller may override it at the `Checker` level or at the field level.
 
 - `displayFieldTypeIndicator`
 

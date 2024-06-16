@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/classes/messager.class.js
+ * pwix:forms/src/client/classes/messager.class.js
  */
 
 import _ from 'lodash';

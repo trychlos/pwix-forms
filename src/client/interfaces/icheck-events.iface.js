@@ -8,6 +8,10 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { check } from 'meteor/check';
+
+import { IFieldSpec } from './ifield-spec.iface.js';
+
 export const ICheckEvents = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
@@ -32,13 +36,15 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
         console.debug( 'inputHandler', event );
         const field = this._fieldFromEvent( event );
         if( field ){
-            const eltData = this._domDataByEvent( event, field );
-            console.debug( 'eltData', eltData );
-            if( field.iFieldHaveCheck()){
-                //const tm = await field.check();
+            check( field, IFieldSpec );
+            const messager = this._getIMessager();
+            if( messager ){
+                messager.iMessagerClear();
             }
-            console.debug( 'to be handled', field );
-            console.debug( 'array-ed', field.iFieldIsArrayed());
+            const eltData = this.iDatasetFromEvent( event, field );
+            if( eltData ){
+                this._local_check( eltData );
+            }
         } else {
             console.debug( 'not handleable here' );
         }
@@ -58,12 +64,13 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @summary Install the events handlers
+     * @summary Initialization
+     *  Install events handlers
      *  - requires to have an (Blaze.TemplateInstance) instance
      *  - install an input handler if we have fields
      *  - always install a validity handler
      */
-    iEventsInstallHandlers(){
+    iEventsInit(){
         const self = this;
         const instance = self._getInstance();
         if( instance ){

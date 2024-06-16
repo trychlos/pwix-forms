@@ -9,6 +9,7 @@
  *
  * Array-ed fields:
  *  Checker expects array-ed records to each have their own identifier.
+ *  Checker is limited to a single array. If the application have to manage several arrays, then it must define several Checker's.
  *
  * Error messages:
  *  Even if we are talking about error messages, we actually manage the typed TM.TypedMessage emitted by the sub-components and check functions.
@@ -52,16 +53,18 @@ import mix from '@vestergaard-company/js-mixin';
 import { check } from 'meteor/check';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { ReactiveVar } from 'meteor/reactive-var';
+import { TM } from 'meteor/pwix:typed-message';
 
 import { Base } from '../../common/classes/base.class.js';
 
-import { IMessager } from '../../common/interfaces/imessager.iface.js';
-
+import { ICheckDataset } from '../interfaces/icheck-dataset.iface.js';
 import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
+import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
+import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
+export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, ICheckHierarchy, ICheckStatus ){
 
     // static data
 
@@ -78,7 +81,9 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
         parent: null,
         messager: null,
         fields: null,
-        validityEvent: 'checker-validity.forms'
+        data: null,
+        validityEvent: 'checker-validity.forms',
+        datasetName: 'form-checker'
    };
     #conf = {};
 
@@ -93,10 +98,33 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
     // the validity status for this checker
     #valid = new ReactiveVar( false );
 
-    // the children Checker's
-    #forms = [];
-
     // private methods
+
+    // an error message returned by the check function is only considered a validity error if it is of type ERROR or greater
+    //  else keep it cool
+    _computeValid( eltData, err ){
+        let valid = true;
+        //if( this.#conf.validFn ){
+        //    valid = this.#conf.validFn( err, field );
+        //} else {
+            if( err ){
+                if( err instanceof TM.TypedMessage ){
+                    valid = ( TM.TypeOrder.compare( err.iTypedMessageType(), TM.MessageType.C.ERROR ) < 0 );
+                } else if( err instanceof Array ){
+                    err.every(( tm ) => {
+                        if( tm instanceof TM.TypedMessage ){
+                            valid = ( TM.TypeOrder.compare( tm.iTypedMessageType(), TM.MessageType.C.ERROR ) < 0 );
+                        } else {
+                            console.warn( 'expected ITypedMessage, found', tm );
+                        }
+                        return valid;
+                    });
+                }
+            }
+        //}
+        //console.debug( 'err', err, 'field', field, 'valid', valid );
+        return valid;
+    }
 
     // at construction time, define a local check function for each defined field
     //  this local check function will always call the corresponding defined checks function (if exists)
@@ -127,27 +155,27 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
             return Promise.resolve( true )
                 .then(() => {
                     // the checks function returns a Promise which resolves to a TypedMessage or null
-                    return defn.check && _.isFunction( defn.check ) ? defn.check( value, self.#conf.data, opts ) : null;
+                    return spec.iFieldCheck( value, self._getData(), opts );
                 })
-                .then(( err ) => {
+                .then(( errs ) => {
                     //console.debug( eltData, err );
-                    check( err, Match.OneOf( null, CoreApp.TypedMessage ));
-                    const valid = self._computeValid( eltData, err );
+                    check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
+                    const valid = self._computeValid( eltData, errs );
                     self.#valid.set( valid );
                     // manage different err types
-                    if( err && opts.msgerr !== false ){
-                        self._msgPush( err );
-                    }
-                    if( eltData.defn.post ){
-                        eltData.defn.post( err );
-                    }
-                    const checked_type = self._computeCheck( eltData, err );
+                    //if( err && opts.msgerr !== false ){
+                    //    self._msgPush( err );
+                    //}
+                    //if( eltData.defn.post ){
+                    //    eltData.defn.post( err );
+                    //}
+                    const status = self.iStatusCompute( eltData, errs );
                     //console.debug( eltData.field, err, checked_type );
-                    eltData.checked.set( checked_type );
+                    eltData.status.set( status );
                     // set valid/invalid bootstrap classes
-                    if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
-                        $js.addClass( valid ? 'is-valid' : 'is-invalid' );
-                    }
+                    //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
+                    //    $js.addClass( valid ? 'is-valid' : 'is-invalid' );
+                    //}
                     return valid;
                 })
                 .catch(( e ) => {
@@ -161,40 +189,9 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
         const selector = spec.iFieldJsSelector();
         if( instance && selector ){
             const $js = instance.$( selector );
-            if( $js.length === 1 ){
-                this._domDataSet( $js, spec );
-            }
+            this.iDatasetSet( $js, spec );
         }
         return true;
-    }
-
-    // search a field (and its field definition) when receiving an input event through the inputHandler()
-    //  maybe we already have set the data here, else find the correct DOM element and initialize the data object
-    //  returns the elementData or null
-    _domDataByEvent( event, fieldSpec ){
-        const instance = this._getInstance();
-        let data = null;
-        if( instance ){
-            const $target = instance.$( event.target );
-            data = $target.data( 'form-checker' );
-            if( !data ){
-                this._domDataSet( $target, fieldSpec );
-                data = $target.data( 'form-checker' );
-            }
-        }
-        return data;
-    }
-
-    // set our Checker data against the targeted DOM element
-    //  this data may be set at construction time if field already exists
-    //  or at input time
-    _domDataSet( $elt, fieldSpec ){
-        $elt.data( 'form-checker', {
-            spec: fieldSpec,
-            value: new ReactiveVar( null ),
-            checked: new ReactiveVar( null ),
-            $js: $elt
-        });
     }
 
     // iterate on each field definition, calling the provided 'cb' callback for each one
@@ -211,11 +208,119 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
         }
     }
 
+    // call the local check function which itself calls the field-defined check
+    _local_check( eltData, opts ){
+        check( eltData, Object );
+        const localFn = eltData.spec.iFieldComputeLocalCheckFunctionName();
+        return this.#locals[localFn]( eltData, opts );
+    }
+
+    /*
+     * @summary Clears the messages place, and the error messages stack
+     */
+    _msgClear(){
+        const messager = this._getIMessager();
+        if( messager ){
+            messager.iMessagerClear();
+        }
+        /*
+        this.IMessagesSetClear();
+        this.#dataParts.clear();
+        if( this.#conf.$err && this.#conf.$err.length ){
+            $err.val( '' );
+        }
+        if( this.#conf.errSetFn ){
+            this.#conf.errSetFn( '' );
+        }
+        if( this.#conf.errClearFn ){
+            this.#conf.errClearFn();
+        }
+        */
+    }
+
+    // get the value from the form
+    //  when are dealing with children, the options may hold a '$parent' which includes all the fields of the array
+    _valueFrom( eltData, opts ){
+        const tagName = eltData.$js.prop( 'tagName' );
+        const eltType = eltData.$js.attr( 'type' );
+        let value;
+        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+            value = eltData.$js.prop( 'checked' );
+            //value = eltData.$js.find( ':checked' ).val();
+        } else {
+            value = eltData.$js.val() || '';
+            // a small hack to handle 'true' and 'false' values from coreYesnoSelect
+            const $select = eltData.$js.closest( '.core-yesno-select' );
+            if( $select.length ){
+                if( value === 'true' || value === 'false' ){
+                    value = ( value === 'true' );
+                }
+            }
+        }
+        return value;
+    }
+
+    // set the value from the item to the form field according to the type of field
+    _valueTo( eltData, item ){
+        let value = null;
+        if( eltData.spec.valTo ){
+            value = eltData.spec.valTo( item );
+        } else {
+            value = item[eltData.spec.name()];
+        }
+        const tagName = eltData.$js.prop( 'tagName' );
+        const eltType = eltData.$js.attr( 'type' );
+        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+            eltData.$js.prop( 'checked', value );
+            //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
+        } else {
+            /*
+            const $select = eltData.$js.closest( '.core-yesno-select' );
+            if( $select.length ){
+                const def = CoreApp.YesNo.byValue( value );
+                if( def ){
+                    eltData.$js.val( CoreApp.YesNo.id( def ));
+                }
+            } else {
+             */
+                eltData.$js.val( value );
+            //}
+        }
+    }
+
+    // protected methods
+
+    // returns the data to be passed to field-defined check functions, may be null
+    _getData(){
+        return this.#conf.data;
+    }
+
+    // returns the name of the dataset installed on DOM elements, always set
+    _getDatasetName(){
+        const name = this.#conf.datasetName;
+        assert( !name || _.isString( name ), 'datasetName is expected to be a non empty string' );
+        return name;
+    }
+
+    // returns the IMessager interface, may be null
+    _getIMessager(){
+        const messager = this.#conf.messager;
+        assert( !messager || messager instanceof IMessager, 'messager is expected to be a IMessager instance' );
+        return messager;
+    }
+
     // returns the PanelSpec fields definition, may be null
     _getPanelSpec(){
         const panel = this.#conf.panel;
         assert( !panel || panel instanceof IPanelSpec, 'panel is expected to be a IPanelSpec instance' );
         return panel;
+    }
+
+    // returns the parent Checker if any, may be null
+    _getParent(){
+        const parent = this.#conf.parent;
+        assert( !parent || parent instanceof Checker, 'parent is expected to be a Checker instance' );
+        return parent;
     }
 
     // returns the Blaze.TemplateInstance defined at instanciation time, may be null
@@ -227,10 +332,10 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
 
     // returns the validity event, always set
     _getValidityEvent(){
-        return this.#conf.validityEvent;
+        const event = this.#conf.validityEvent;
+        assert( !event || _.isString( event ), 'validityEvent is expected to be a non empty string' );
+        return event;
     }
-
-    // protected methods
 
     // public data
 
@@ -246,20 +351,26 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
      *      > provides the topmost DOM element to let us find all managed fields
      *  - parent: an optional parent Checker instance
      *  - messager: an optional IMessager implementation
-     *      > this is a caller's design decision to have a message zone per panel, ou globalized at a higher level
-     *      > caller doesn't need to addresses a globalized messager at any lower panel: it is enough to identify the parent parent
+     *      > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
+     *      > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
      *  - panel: an optional IPanelSpec iplementation which defines the managed fields
+     *  - data: an optional data object to be passed to check functions as additional argument
+     *  - id: when the panel is array-ed, a function "( event ) : string" which returns the row identifier
+     *  - displayCheckResultIndicator: whether to display a check result indicator on the right of the field
+     *    only considered if the corresponding package configured value is overridable
+     *
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
+     *  - datasetName: if set, the name of the data set on each DOM element, defaulting to 'form-checker'
 
     /////*  - $top: an optional jQuery object which should be a common ancestor of all managed fields, will act both as a common source for all fields searches and as an event receiver
-     *  - tm: an optional object which implements the TM.ITypedMessage interface
+    ///// *  - tm: an optional object which implements the TM.ITypedMessage interface
      /////*  - fieldsSet: a FieldSet instance which contains all fields definitions
-     *  - fields: an array of fields to be managed here
-     *  - $ok: an optional jQuery object which defines the OK button (to enable/disable it)
-     *  - okSetFn( valid<Boolean> ): an optional function to be called when OK button must be enabled / disabled
-     *  - $err: an optional jQuery object which defines the error message place
-     *  - errSetFn( message<String> ): an optional function to be called to display an error message
-     *  - errClearFn(): an optional function to be called to clear all messages
+     ///*  - $ok: an optional jQuery object which defines the OK button (to enable/disable it)
+     ///*  - okSetFn( valid<Boolean> ): an optional function to be called when OK button must be enabled / disabled
+     ///*  - $err: an optional jQuery object which defines the error message place
+     ///*  - errSetFn( message<String> ): an optional function to be called to display an error message
+     ///*  - errClearFn(): an optional function to be called to clear all messages
+     *
      *      Because we want re-check all fields on each input event, in the same way each input event re-triggers all error messages
      *      So this function to let the application re-init its error messages stack.
      * @returns {Checker} this Checker instance
@@ -284,9 +395,9 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
         // initialize runtime data
-
-        // install events handlers if we have an instance
-        this.iEventsInstallHandlers();
+        // have to wait for having returned from super() and have built the configuration
+        this.iEventsInit();
+        this.iHierarchyInit();
 
         // define an autorun which reacts to dataParts changes to set the global validity status
         if( this.#conf.instance ){
@@ -321,55 +432,67 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
     }
 
     /**
-     * @summary The EntityChecker's correspondant of FormChecker.check() method
-     *  In FormChecker: the corresponding field is checked on each input event. If the current value of the field is valid, then all other fields of the form
-     *  (but this one) are re-checked so that we get the full error message set.
-     *  When we have an EntityChecker, then it is able to re-cgeck every registered FormChecker with these same parms.
-     * @param {Object} args an option object with following keys:
-     *  - field: if set, indicates a field to not check (as just already validated from an input handler)
-     *      (note that this field is only relevant for the FormChecker which has triggered us)
-     *  - display: if set, then says whether checks have any effect on the display, defaulting to true
-     *  - msgerr: if set, says if error message are to be displayed, defaulting to true
-     *  - update: if set, then says whether the value found in the form should update the edited object, defaulting to true
-     *  - $parent: if set, a jQuery element which acts as the parent of the form
+     * @summary a general function which check each field of the panel successively
+     *  From the application point of view, this is mostly called at initialization time, in an autorun, after Checker instanciation and when the data context is ready.
+     * @param {Object} opts an option object with following keys:
+     *  - $parent: if set, a jQuery element which acts as the parent of the (array-ed) form
+     *  - update: if true, then says whether the value found in the form should update the edited object, defaulting to false
      *
-     * This doesn't return anything.
+     *  - display: if set, then says whether checks have any effect on the display, defaulting to true
+     *  - field: if set, indicates a field to not check (as just already validated from an input handler)
+     *  - msgerr: if set, says if error message are to be displayed, defaulting to true
+     * @returns {Promise} which eventually resolves to the global validity status of the form
      */
-    check( args={} ){
-        this.errorClear();
+    async check( opts={} ){
+        let valid = true;
         let promises = [];
-        this.#forms.every(( form ) => {
-            promises.push( form.check( args ).then(( valid ) => {
-                if( _.isBoolean( valid )){
-
+        const self = this;
+        this._fieldsIterate(( name, spec ) => {
+            const js = spec.iFieldJsSelector();
+            if( js ){
+                let $js = null;
+                if( opts.$parent ){
+                    $js = opts.$parent.find( js );
+                } else {
+                    const instance = self._getInstance();
+                    if( instance ){
+                        $js = instance.$( js );
+                    }
                 }
-                return valid;
-            }));
+                const eltData = this.iDatasetFromFieldSpec( $js, spec );
+                if( eltData ){
+                    promises.push( self._local_check( eltData, opts )
+                        .then(( v ) => {
+                            valid &&= v;
+                            return valid;
+                        }));
+                }
+            }
             return true;
         });
-        Promise.allSettled( promises ).then(( results ) => {
-            results.forEach(( res ) => {
-                Meteor.isDevelopment && res.status === 'rejected' && console.warn( res );
+        return Promise.allSettled( promises )
+            .then(() => {
+                if( opts.display === false ){
+                    self.clear();
+                }
+                //self.#conf.entityChecker && console.debug( self.#conf.entityChecker );
+                return valid;
             });
-            Meteor.isDevelopment && this.IMessagesSetDump();
-        });
     }
 
     /**
-     * @summary Clears the error message place, and the error messages stack
+     * @summary Clears the validity indicators
      */
-    errorClear(){
-        this.IMessagesSetClear();
-        this.#dataParts.clear();
-        if( this.#conf.$err && this.#conf.$err.length ){
-            $err.val( '' );
-        }
-        if( this.#conf.errSetFn ){
-            this.#conf.errSetFn( '' );
-        }
-        if( this.#conf.errClearFn ){
-            this.#conf.errClearFn();
-        }
+    clear(){
+        /*
+        const self = this;
+        Object.keys( self.#fields ).every(( f ) => {
+            self.#instance.$( self.#fields[f].js ).removeClass( 'is-valid is-invalid' );
+            return true;
+        });
+        // also clears the error messages if any
+        this.iHierarchyUp( '_msgClear' )
+        */
     }
 
     /**
@@ -387,15 +510,6 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
     }
 
     /**
-     * @summary Register a child FormChecker
-     *  When registered, FormChecker's are re-checked every time the need arises
-     * @param {FormChecker} form
-     */
-    formRegister( form ){
-        this.#forms.push( form );
-    }
-
-    /**
      * @summary Let an underlying component / pane / panel / FormChecker advertize of its individual validity status
      * @param {Object} o with following keys:
      *  - emitter: a unique emitter identifier
@@ -407,4 +521,47 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy ){
         assert( _.isBoolean( o.ok ), 'EntityChecker.formValidity() wants a boolean validity status' );
         this.#dataParts.set( o.emitter, o.ok );
     }
+
+    /**
+     * @summary initialize the form with the given data
+     * @param {Object} item
+     * @param {Object} opts an option object with following keys:
+     *  $parent: when set, the DOM parent of the targeted form - in case of an array-ed form
+     * @returns {FormChecker} this instance
+     */
+    /*
+    setForm( item, opts={} ){
+        const self = this;
+        console.warn( 'setForm' );
+        const cb = function( name, field ){
+            const js = field.iFieldJsSelector();
+            if( js ){
+                let $js = null;
+                if( opts.$parent ){
+                    $js = opts.$parent.find( js );
+                } else {
+                    const instance = self._getInstance();
+                    if( instance ){
+                        $js = instance.$( js );
+                    }
+                }
+                if( $js && $js.length === 1 ){
+                    eltData = $js.data( 'form-checker' );
+                    if( !eltData ){
+                        this._domDataSet( $js, field );
+                        eltData = $js.data( 'form-checker' );
+                    }
+                    if( eltData ){
+                        self._valueTo( eltData, item );
+                    } else {
+                        Meteor.isDevelopment && console.warn( name, field, 'eltData not set' );
+                    }
+                }
+            }
+            return true;
+        };
+        this._fieldsIterate( cb );
+        return this;
+    }
+    */
 }

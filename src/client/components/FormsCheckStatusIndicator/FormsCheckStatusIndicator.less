@@ -1,8 +1,8 @@
 /*
- * pwix:forms/src/client/components/coreFieldCheckIndicator.less
+ * pwix:forms/src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.less
  */
 
-.field-check-indicator {
+.FormsCheckStatusIndicator {
     svg.svg-inline--fa {
         width: 0.75em;
         height: 0.75em;
@@ -16,31 +16,31 @@
     .hidden {
         display: none;
     }
-    .fci-invalid {
+    .fcsi-invalid {
         color: var( --bs-danger );
         svg {
             border-color: var( --bs-danger );
         }
     }
-    .fci-none {
+    .fcsi-none {
         color: x-transparent;
         svg {
             border-color: x-transparent;
         }
     }
-    .fci-uncomplete {
+    .fcsi-uncomplete {
         color: orange;
         svg {
             border-color: orange;
         }
     }
-    .fci-valid {
+    .fcsi-valid {
         color: var( --bs-success );
         svg {
             border-color: var( --bs-success );
         }
     }
-    .fci-display.disabled {
+    .fcsi-display.disabled {
         color: gray;
         svg {
             border-color: gray;

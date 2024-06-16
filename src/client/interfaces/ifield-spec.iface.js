@@ -9,8 +9,6 @@
  *  - checkResult: whether the field should be appended with an indicator to show valid|invalid state
  *  - valFrom(): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - valTo(): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
- *  - post: a function to be called after check with the ITypedMessage result of the corresponding 'checks.check_<field>()' function
- *  - parent: when the field is array-ed, the css selector of the DOM element which maintains the row identifier, defaulting to 'tr'
  */
 
 import _ from 'lodash';
@@ -34,6 +32,21 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      */
     iFieldComputeLocalCheckFunctionName(){
         return this.name();
+    }
+
+    /**
+     * @summary calls the field-defined check function (if any)
+     * @param {Any} value the value to be checked
+     * @param {Any} data the optional data passed at Checker instanciation
+     * @param {Any} opts some behaviour options
+     * @returns {Promise} a TypedMessage or an array of TypedMessage's or null
+     */
+    async iFieldCheck( value, data, opts ){
+        const defn = this._defn();
+        if( defn.check && _.isFunction( defn.check )){
+            return await defn.check( value, data, opts );
+        }
+        return null;
     }
 
     /**

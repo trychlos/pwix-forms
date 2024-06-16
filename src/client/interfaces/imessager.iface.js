@@ -1,5 +1,5 @@
 /*
- * /imports/common/interfaces/imessager.iface.js
+ * /imports/client/interfaces/imessager.iface.js
  *
  * Provide to Checker a simple interface to IStack to manage messages.
  *
@@ -33,15 +33,15 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     /**
      * @summary Ask to clear the message(s) displayed in the message zone
      */
-    clear(){
-
+    iMessagerClear(){
+        this.iStackClear();
     }
 
     /**
      * @summary Ask to display a message in the message zone
      * @param {Any} message
      */
-    set( message ){
+    iMessagerSet( message ){
 
     }
 });

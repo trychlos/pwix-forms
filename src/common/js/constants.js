@@ -4,11 +4,14 @@
 
 Forms.C = {
 
-    // the way to display the check result
-    CheckResult: {
-        NONE: 'CHECK_RESULT_NONE',
-        BOOTSTRAP: 'CHECK_RESULT_BOOTSTRAP',
-        INDICATOR: 'CHECK_RESULT_INDICATOR'
+    // the way to display the check status
+    CheckStatus: {
+        NEVER: 'CHECK_STATUS_NEVER',
+        NONE_OVERRIDABLE: 'CHECK_STATUS_NONE_OVERRIDABLE',
+        BOOTSTRAP_ALWAYS: 'CHECK_STATUS_BOOTSTRAP_ALWAYS',
+        BOOTSTRAP_OVERRIDABLE: 'CHECK_STATUS_BOOTSTRAP_OVERRIDABLE',
+        INDICATOR_ALWAYS: 'CHECK_STATUS_INDICATOR_ALWAYS',
+        INDICATOR_OVERRIDABLE: 'CHECK_STATUS_INDICATOR_OVERRIDABLE'
     },
 
     // verbosity levels

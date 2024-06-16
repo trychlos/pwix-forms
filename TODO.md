@@ -10,7 +10,8 @@
 
 |   Id | Date       | Description and comment(s) |
 | ---: | :---       | :---                       |
-|   1  |  |  |
+|   1  | 2024- 6-15 | get rid of Meteor.isDevelopment |
+|   2  |  |  |
 
 ---
 ## Done

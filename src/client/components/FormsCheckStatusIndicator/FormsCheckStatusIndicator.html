@@ -1,0 +1,11 @@
+<template name="FormsCheckStatusIndicator">
+    <div class="FormsCheckStatusIndicator">
+
+        {{#each it in itemsList }}
+            <span class="{{ itClass it }} {{ classes }} fcsi-display" data-type="{{ it }}" title="{{ itTitle it }}">
+                <span class="fa-solid fa-fw {{ itIcon it }}"></span>
+            </span>
+        {{/each}}
+
+    </div>
+</template>
