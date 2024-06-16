@@ -5,7 +5,7 @@
 import { Field } from '../classes/field.class.js';
 import { FieldsSet } from '../classes/fields-set.class.js';
 
-import { CheckResult } from '../definitions/check-result.def';
+import { CheckStatus } from '../definitions/check-status.def';
 import { FieldType } from '../definitions/field-type.def';
 
 import { ISchema } from '../interfaces/ischema.iface';
@@ -21,7 +21,7 @@ import './functions.js';
 Forms.Field = Field;
 Forms.FieldsSet = FieldsSet;
 
-Forms.CheckResult = CheckResult;
+Forms.CheckStatus = CheckStatus;
 Forms.FieldType = FieldType;
 
 Forms.ISchema = ISchema;

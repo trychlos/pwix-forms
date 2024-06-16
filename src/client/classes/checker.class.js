@@ -100,32 +100,6 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
 
     // private methods
 
-    // an error message returned by the check function is only considered a validity error if it is of type ERROR or greater
-    //  else keep it cool
-    _computeValid( eltData, err ){
-        let valid = true;
-        //if( this.#conf.validFn ){
-        //    valid = this.#conf.validFn( err, field );
-        //} else {
-            if( err ){
-                if( err instanceof TM.TypedMessage ){
-                    valid = ( TM.TypeOrder.compare( err.iTypedMessageType(), TM.MessageType.C.ERROR ) < 0 );
-                } else if( err instanceof Array ){
-                    err.every(( tm ) => {
-                        if( tm instanceof TM.TypedMessage ){
-                            valid = ( TM.TypeOrder.compare( tm.iTypedMessageType(), TM.MessageType.C.ERROR ) < 0 );
-                        } else {
-                            console.warn( 'expected ITypedMessage, found', tm );
-                        }
-                        return valid;
-                    });
-                }
-            }
-        //}
-        //console.debug( 'err', err, 'field', field, 'valid', valid );
-        return valid;
-    }
-
     // at construction time, define a local check function for each defined field
     //  this local check function will always call the corresponding defined checks function (if exists)
     //  returns a Promise which resolve to 'valid' status for the field
@@ -160,8 +134,10 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
                 .then(( errs ) => {
                     //console.debug( eltData, err );
                     check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
-                    const valid = self._computeValid( eltData, errs );
-                    self.#valid.set( valid );
+                    const fullStatus = self.iStatusCompute( eltData, errs );
+                    self.#valid.set( fullStatus.valid ); //? are we sure ??
+                    eltData.valid.set( fullStatus.valid );
+                    eltData.status.set( fullStatus.status );
                     // manage different err types
                     //if( err && opts.msgerr !== false ){
                     //    self._msgPush( err );
@@ -169,14 +145,13 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
                     //if( eltData.defn.post ){
                     //    eltData.defn.post( err );
                     //}
-                    const status = self.iStatusCompute( eltData, errs );
+                    //const status = self.iStatusCompute( eltData, errs );
                     //console.debug( eltData.field, err, checked_type );
-                    eltData.status.set( status );
                     // set valid/invalid bootstrap classes
                     //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
                     //    $js.addClass( valid ? 'is-valid' : 'is-invalid' );
                     //}
-                    return valid;
+                    return fullStatus.valid;
                 })
                 .catch(( e ) => {
                     console.error( e );

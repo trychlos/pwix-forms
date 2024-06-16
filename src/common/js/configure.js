@@ -7,7 +7,8 @@ import _ from 'lodash';
 Forms._conf = {};
 
 Forms._defaults = {
-    checkStatusShow: Forms.C.CheckStatus.INDICATOR_OVERRIDABLE,
+    checkStatusOverridable: true,
+    checkStatusShow: Forms.C.CheckStatus.INDICATOR,
     verbosity: Forms.C.Verbose.CONFIGURE
 };
 

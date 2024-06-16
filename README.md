@@ -217,20 +217,35 @@ Known configuration options are:
 
 - `checkStatusShow`
 
-    Whether input fields should be appended with their check result (valid/uncomplete/invalid) indicator, where available values are:
+    Whether input fields should have a check status (valid/uncomplete/invalid) indicator, where available values are:
 
-    - `Forms.C.CheckStatus.BOOTSTRAP_ALWAYS`
-    - `Forms.C.CheckStatus.BOOTSTRAP_OVERRIDABLE`
-    - `Forms.C.CheckStatus.INDICATOR_ALWAYS`
-    - `Forms.C.CheckStatus.INDICATOR_OVERRIDABLE`
-    - `Forms.C.CheckStatus.NONE_OVERRIDABLE`
-    - `Forms.C.CheckReCheckStatussult.NEVER`
+    - `Forms.C.CheckStatus.Show.NONE`
 
-    Defaults to `Forms.C.CheckStatus.INDICATOR_OVERRIDABLE`.
+        Do not show any status indicator
 
-    The application may choose an `..._ALWAYS` value to decide that the indicator is always displayed. This is a design decision to have a consistent and homogeneous user interface.
+    - `Forms.C.CheckStatus.Show.BOOTSTRAP`
 
-    When the application chooses an `..._OVERRIDABLE` value, then the caller may override it at the `Checker` level or at the field level.
+        Uses the [Bootstrap](https://getbootstrap.com/) classes to indicate the status. Only applies to fields.
+
+    - `Forms.C.CheckStatus.Show.INDICATOR`
+
+        Uses an icon indicator.
+
+        On fields, the package is able to automatically append the indicator on the right of the field.
+
+        At the panel level, the caller must use a `FormsCheckStatusIndicator` template to position the indicator according to its wishes.
+
+    Defaults to `Forms.C.CheckStatus.Show.INDICATOR`.
+
+    `pwix:forms` is able to automagically add a status indicator on the right of each field, unless this feature is disabled by the package configuration, or at the `Checker` level, or individually for each field.
+
+    If the caller wishes an indicator at the panel, it can use, in place or besides of fields indicators, the `FormsCheckStatusIndicator` Blaze template.
+
+- `checkStatusOverridable`
+
+    Whether the previous `checkStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
+
+    Defaults to `true`.
 
 - `displayFieldTypeIndicator`
 

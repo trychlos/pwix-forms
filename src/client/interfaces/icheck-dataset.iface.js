@@ -81,6 +81,7 @@ export const ICheckDataset = DeclareMixin(( superclass ) => class extends superc
                 spec: fieldSpec,
                 //initial: null, // leave undefined
                 value: new ReactiveVar( null ),
+                valid: new ReactiveVar( null ),
                 status: new ReactiveVar( null ),
                 $js: $elt
             });

@@ -77,4 +77,12 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         const defn = this._defn();
         return defn.js || null;
     }
+
+    /**
+     * @returns {String} the type of the field (mandatory/optional/none), or null
+     */
+    iFieldType(){
+        const defn = this._defn();
+        return defn.type || null;
+    }
 });
