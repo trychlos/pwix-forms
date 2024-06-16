@@ -1,7 +1,7 @@
 /*
- * pwix:forms/src/common/interfaces/icheck-dataset.iface.js
+ * pwix:forms/src/common/interfaces/icheck-dom.iface.js
  *
- * ICheckDataset let us manage the tree of Checker's, from parent ot children (and vice-versa).
+ * ICheckDom let us manage the tree of Checker's, from parent ot children (and vice-versa).
  */
 
 import _ from 'lodash';
@@ -13,12 +13,12 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import { IFieldSpec } from './ifield-spec.iface.js';
 
-export const ICheckDataset = DeclareMixin(( superclass ) => class extends superclass {
+export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
 
     /**
-     * @returns {ICheckDataset} the instance
+     * @returns {ICheckDom} the instance
      */
     constructor( name, args ){
         super( ...arguments );
@@ -30,7 +30,7 @@ export const ICheckDataset = DeclareMixin(( superclass ) => class extends superc
      * @param {IFieldSpec} fieldSpec the field specification
      * @returns {Object} our DOM dataset, may be null
      */
-    iDatasetFromEvent( event, fieldSpec ){
+    iDomFromEvent( event, fieldSpec ){
         check( fieldSpec, IFieldSpec );
         const instance = this._getInstance();
         const dataset = this._getDatasetName();
@@ -40,7 +40,7 @@ export const ICheckDataset = DeclareMixin(( superclass ) => class extends superc
             if( $target && $target.length === 1 ){
                 data = $target.data( dataset );
                 if( !data ){
-                    this.iDatasetSet( $target, fieldSpec );
+                    this.iDomSet( $target, fieldSpec );
                     data = $target.data( dataset );
                 }
             }
@@ -53,14 +53,14 @@ export const ICheckDataset = DeclareMixin(( superclass ) => class extends superc
      * @param {IFieldSpec} fieldSpec the field specification
      * @returns {Object} our DOM dataset, may be null
      */
-    iDatasetFromFieldSpec( $elt, fieldSpec ){
+    iDomFromFieldSpec( $elt, fieldSpec ){
         check( fieldSpec, IFieldSpec );
         const dataset = this._getDatasetName();
         let data = null;
         if( dataset && $elt && $elt.length === 1 ){
             data = $elt.data( dataset );
             if( !data ){
-                this.iDatasetSet( $elt, fieldSpec );
+                this.iDomSet( $elt, fieldSpec );
                 data = $target.data( dataset );
             }
         }
@@ -72,7 +72,7 @@ export const ICheckDataset = DeclareMixin(( superclass ) => class extends superc
      * @param {Object} $elt the jQuery object associated to the DOM element
      * @param {IFieldSpec} fieldSpec the field specification
      */
-    iDatasetSet( $elt, fieldSpec ){
+    iDomSet( $elt, fieldSpec ){
         check( fieldSpec, IFieldSpec );
         check( fieldSpec, IFieldSpec );
         const dataset = this._getDatasetName();

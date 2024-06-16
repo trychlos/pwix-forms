@@ -41,7 +41,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
             if( messager ){
                 messager.iMessagerClear();
             }
-            const eltData = this.iDatasetFromEvent( event, field );
+            const eltData = this.iDomFromEvent( event, field );
             if( eltData ){
                 this._local_check( eltData );
             }

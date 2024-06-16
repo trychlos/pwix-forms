@@ -57,14 +57,14 @@ import { TM } from 'meteor/pwix:typed-message';
 
 import { Base } from '../../common/classes/base.class.js';
 
-import { ICheckDataset } from '../interfaces/icheck-dataset.iface.js';
+import { ICheckDom } from '../interfaces/icheck-dom.iface.js';
 import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
 import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, ICheckHierarchy, ICheckStatus ){
+export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHierarchy, ICheckStatus ){
 
     // static data
 
@@ -134,10 +134,12 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
                 .then(( errs ) => {
                     //console.debug( eltData, err );
                     check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
+                    // compute and update the field individual status and validity
                     const fullStatus = self.iStatusCompute( eltData, errs );
-                    self.#valid.set( fullStatus.valid ); //? are we sure ??
                     eltData.valid.set( fullStatus.valid );
                     eltData.status.set( fullStatus.status );
+                    // update the panel validity
+                    self.#valid.set( self.#valid.get() && fullStatus.valid );
                     // manage different err types
                     //if( err && opts.msgerr !== false ){
                     //    self._msgPush( err );
@@ -164,7 +166,7 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
         const selector = spec.iFieldJsSelector();
         if( instance && selector ){
             const $js = instance.$( selector );
-            this.iDatasetSet( $js, spec );
+            this.iDomSet( $js, spec );
         }
         return true;
     }
@@ -434,7 +436,7 @@ export class Checker extends mix( Base ).with( ICheckDataset, ICheckEvents, IChe
                         $js = instance.$( js );
                     }
                 }
-                const eltData = this.iDatasetFromFieldSpec( $js, spec );
+                const eltData = this.iDomFromFieldSpec( $js, spec );
                 if( eltData ){
                     promises.push( self._local_check( eltData, opts )
                         .then(( v ) => {
