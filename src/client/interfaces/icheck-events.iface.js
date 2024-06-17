@@ -35,16 +35,14 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     _initInstallInputHandler(){
         _trace( 'ICheckEvents._initInstallInputHandler' );
         const instance = this._getInstance();
-        if( instance ){
-            const $node = instance.$( instance.firstNode );
-            if( $node.length ){
-                const panel = this._getPanelSpec();
-                if( panel ){
-                    const fields = panel.iPanelFieldsList();
-                    if( fields.length ){
-                        const self = this;
-                        $node.on( 'input', ( event ) => { self._inputHandler( event ); });
-                    }
+        const $node = instance.$( instance.firstNode );
+        if( $node.length ){
+            const panel = this._getPanelSpec();
+            if( panel ){
+                const fields = panel.iPanelFieldsList();
+                if( fields.length ){
+                    const self = this;
+                    $node.on( 'input', ( event ) => { self._inputHandler( event ); });
                 }
             }
         }
@@ -54,13 +52,11 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     _initInstallValidityHandler(){
         _trace( 'ICheckEvents._initInstallValidityHandler' );
         const instance = this._getInstance();
-        if( instance ){
-            const $node = instance.$( instance.firstNode );
-            if( $node.length ){
-                const self = this;
-                const validityEvent = self._getValidityEvent();
-                $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
-            }
+        const $node = instance.$( instance.firstNode );
+        if( $node.length ){
+            const self = this;
+            const validityEvent = self._getValidityEvent();
+            $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
         }
     }
 

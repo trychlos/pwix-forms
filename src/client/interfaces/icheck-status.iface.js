@@ -31,46 +31,37 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     _initSetupOkAutorun(){
         _trace( 'ICheckStatus._initSetupOkAutorun' );
         const self = this;
-        const instance = this._getInstance();
-        if( instance ){
-            instance.autorun(() => {
-                const valid = self.#valid.get();
-                const $ok = self._get$Ok()
-                if( $ok && $ok.length ){
-                    $ok.prop( 'disabled', !valid );
-                }
-                const okFn = self._getOkFn()
-                if( okFn ){
-                    okFn( valid );
-                }
-            });
-        }
+        this._getInstance().autorun(() => {
+            const valid = self.#valid.get();
+            const $ok = self._get$Ok()
+            if( $ok && $ok.length ){
+                $ok.prop( 'disabled', !valid );
+            }
+            const okFn = self._getOkFn()
+            if( okFn ){
+                okFn( valid );
+            }
+        });
     }
 
     // setup an autorun to bubble up to the parent the check status
     _initSetupStatusAutorun(){
         _trace( 'ICheckStatus._initSetupStatusAutorun' );
         const self = this;
-        const instance = this._getInstance();
-        if( instance ){
-            instance.autorun(() => {
-                const status = self.#status.get();
-                self.iHierarchyUp( '_updateStatus', status );
-            });
-        }
+        this._getInstance().autorun(() => {
+            const status = self.#status.get();
+            self.iHierarchyUp( '_updateStatus', status );
+        });
     }
 
     // setup an autorun to bubble up to the parent the validity result
     _initSetupValidityAutorun(){
         _trace( 'ICheckStatus._initSetupValidityAutorun' );
         const self = this;
-        const instance = this._getInstance();
-        if( instance ){
-            instance.autorun(() => {
-                const valid = self.#valid.get();
-                self.iHierarchyUp( '_updateValidity', valid );
-            });
-        }
+        this._getInstance().autorun(() => {
+            const valid = self.#valid.get();
+            self.iHierarchyUp( '_updateValidity', valid );
+        });
     }
 
     // reset the validity status to its initial true value

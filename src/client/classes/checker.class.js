@@ -1,22 +1,26 @@
 /*
  * pwix:forms/src/client/classes/checker.class.js
  *
- * Checker aims to:
+ * Checker aims to industrialize and homogeneize the management of any of our input forms:
  * - maybe manage an error message stack at its level, unless it delegates this task to a parent Checker
  * - manage the global validity status at this same level.
  *
- * Checker will receive its events either from a child Checker, or from its own input handler.
+ * Checker will receive its events from a child Checker and/or from its own input handler.
  *
- * Array-ed fields:
- *  Checker expects array-ed records to each have their own identifier.
+ * Array-ed panels:
+ *  Checker expects array-ed records to each have their own identifier. An 'id()' function must be provided at instanciation time.
  *  Checker is limited to a single array. If the application have to manage several arrays, then it must define several Checker's.
  *
  * Error messages:
  *  Even if we are talking about error messages, we actually manage the typed TM.TypedMessage emitted by the sub-components and check functions.
- *  Checker manages them via the IOrderableStack interface.
+ *  Checker manages them via an 'IMessager' interface which sits over the (more complex) IOrderableStack interface.
  *
  * Validity status:
  *  Correlatively to recurrent elementary and global checks, the validity status of the edited entiy (resp. entities) is recomputed.
+ *  For each individual field check, Checker expects to get:
+ *  - either a 'null' answer, which means that all is fine and nothing is to be sait about that,
+ *  - or a TypedMessage which may indicates an info to be displayed, or a warning or an error,
+ *  - or an array of TypedMessage's.
  *  Checker considers that TypedMessage of 'ERROR' type are blocking and errors. All other messages let the dialog/page to be saved.
  *
  * Instanciation:
@@ -263,6 +267,13 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         return messager;
     }
 
+    // returns the Blaze.TemplateInstance defined at instanciation time
+    _getInstance(){
+        const instance = this.#conf.instance || null;
+        assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is expected to be a Blaze.TemplateInstance instance' );
+        return instance;
+    }
+
     // returns the $ok jQuery object or null
     _get$Ok(){
         const $obj = this.#conf.$ok || null;
@@ -298,13 +309,6 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         return name;
     }
 
-    // returns the Blaze.TemplateInstance defined at instanciation time, may be null
-    _getInstance(){
-        const instance = this.#conf.instance || null;
-        assert( !instance || instance instanceof Blaze.TemplateInstance, 'instance is expected to be a Blaze.TemplateInstance instance' );
-        return instance;
-    }
-
     // returns the validity event, always set
     _getValidityEvent(){
         const event = this.#conf.validityEvent || null;
@@ -319,9 +323,9 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
      * @locus Client
      * @summary Instanciates a new Checker instance
      * @param {Object} args an optional arguments object with following keys:
-     *  - instance: an optional Blaze.TemplateInstance which materializes the Checker display
+     *  - instance: a mandatory Blaze.TemplateInstance which materializes the Checker display
      *      > let us defines autorun() functions
-     *      > provides a '$' jQuery operator which is tied to this instance
+     *      > provides a '$' jQuery operator which is tied to this template instance
      *      > provides the DOM element which will act as a global event receiver
      *      > provides the topmost DOM element to let us find all managed fields
      *  - parent: an optional parent Checker instance
@@ -356,7 +360,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         _trace( 'Checker.Checker' );
         assert( !args || _.isObject( args ), 'when set, options must be a plain javascript Object' );
         if( args ){
-            assert( !args.instance || args.instance instanceof Blaze.TemplateInstance, 'when set, instance must be a Blaze.TemplateInstance instance');
+            assert( args.instance && args.instance instanceof Blaze.TemplateInstance, 'instance is mandatory, must be a Blaze.TemplateInstance instance');
             assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
             assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
             assert( !args.panel || args.panel instanceof IPanelSpec, 'when set, panel must be a IPanelSpec instance' );
@@ -395,16 +399,14 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         this.fieldsIterate( cb );
 
         // define an autorun which reacts to dataParts changes to set the global validity status
-        if( this.#conf.instance ){
-            this.#conf.instance.autorun(() => {
-                let ok = true;
-                Object.keys( self.#dataParts.all()).every(( emitter ) => {
-                    ok &&= self.#dataParts.get( emitter );
-                    return ok;
-                });
-                //self.#valid.set( ok );
+        this.#conf.instance.autorun(() => {
+            let ok = true;
+            Object.keys( self.#dataParts.all()).every(( emitter ) => {
+                ok &&= self.#dataParts.get( emitter );
+                return ok;
             });
-        }
+            //self.#valid.set( ok );
+        });
 
         // for each defined field, define a local check function
         //this.fieldsIterate( this._defineLocalCheckFunction );
@@ -492,15 +494,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         check( spec, IFieldSpec );
         const js = spec.iFieldJsSelector();
         if( js ){
-            let $js = null;
-            if( opts.$parent ){
-                $js = opts.$parent.find( js );
-            } else {
-                const instance = this._getInstance();
-                if( instance ){
-                    $js = instance.$( js );
-                }
-            }
+            const $js = opts.$parent ? opts.$parent.find( js ) : this._getInstance().$( js );
             const eltData = this.iDomFromFieldSpec( $js, spec );
             if( eltData ){
                 // do we have a check function for this field ? warn in dev...

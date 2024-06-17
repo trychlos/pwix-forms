@@ -28,17 +28,14 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
         const cb = function( name, spec ){
             const selector = spec.iFieldJsSelector();
             if( selector ){
-                const $js = instance.$( selector );
+                const $js = this._getInstance().$( selector );
                 if( $js && $js.length ){
                     self.iDomSet( $js, spec );
                 }
             }
             return true;
         }
-        const instance = this._getInstance();
-        if( instance ){
-            this.fieldsIterate( cb );
-        }
+        this.fieldsIterate( cb );
     }
 
     // insert a dom parent for each field to later maybe later add type and status indicators
@@ -48,17 +45,14 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
         const cb = function( name, spec ){
             const selector = spec.iFieldJsSelector();
             if( selector ){
-                const $js = instance.$( selector );
+                const $js = this._getInstance().$( selector );
                 if( $js && $js.length ){
                     self.iDomInsertParent( $js, spec );
                 }
             }
             return true;
         }
-        const instance = this._getInstance();
-        if( instance ){
-            this.fieldsIterate( cb );
-        }
+        this.fieldsIterate( cb );
     }
 
     /**
@@ -78,11 +72,10 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     iDomFromEvent( event, fieldSpec ){
         _trace( 'ICheckDom.iDomFromEvent' );
         check( fieldSpec, IFieldSpec );
-        const instance = this._getInstance();
         const dataset = this._getDatasetName();
         let data = null;
-        if( instance && dataset ){
-            const $target = instance.$( event.target );
+        if( dataset ){
+            const $target = this._getInstance().$( event.target );
             if( $target && $target.length === 1 ){
                 data = $target.data( dataset );
                 if( !data ){
