@@ -15,22 +15,22 @@ export const CheckStatus = {
     },
     K: {
         INVALID: {
-            class: 'fci-invalid',
+            class: 'fcsi-invalid',
             icon: 'fa-xmark',
             title: 'field_check.invalid_title'
         },
         NONE: {
-            class: 'fci-none',
+            class: 'fcsi-none',
             icon: 'fa-ellipsis',
             title: 'field_check.none_title'
         },
         UNCOMPLETE: {
-            class: 'fci-uncomplete',
+            class: 'fcsi-uncomplete',
             icon: 'fa-person-digging',
             title: 'field_check.uncomplete_title'
         },
         VALID: {
-            class: 'fci-valid',
+            class: 'fcsi-valid',
             icon: 'fa-check',
             title: 'field_check.valid_title'
         }

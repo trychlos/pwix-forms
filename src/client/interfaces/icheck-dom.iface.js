@@ -42,8 +42,8 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     }
 
     // insert a dom parent for each field to later maybe later add type and status indicators
-    _initParent(){
-        _trace( 'ICheckDom._initParent' );
+    _initDomParent(){
+        _trace( 'ICheckDom._initDomParent' );
         const self = this;
         const cb = function( name, spec ){
             const selector = spec.iFieldJsSelector();
@@ -122,7 +122,7 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     iDomInit(){
         _trace( 'ICheckDom.iDomInit' );
         this._initDataset();
-        this._initParent();
+        this._initDomParent();
     }
 
     /**

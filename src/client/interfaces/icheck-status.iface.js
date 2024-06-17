@@ -22,17 +22,75 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     // the validity status for this checker
     #valid = new ReactiveVar( false );
 
+    // the check status for this checker
+    #status = new ReactiveVar( CheckStatus.C.NONE );
+
     // private methods
+
+    // setup an autorun to update the OK button
+    _initSetupOkAutorun(){
+        _trace( 'ICheckStatus._initSetupOkAutorun' );
+        const self = this;
+        const instance = this._getInstance();
+        if( instance ){
+            instance.autorun(() => {
+                const valid = self.#valid.get();
+                const $ok = self._get$Ok()
+                if( $ok && $ok.length ){
+                    $ok.prop( 'disabled', !valid );
+                }
+                const okFn = self._getOkFn()
+                if( okFn ){
+                    okFn( valid );
+                }
+            });
+        }
+    }
+
+    // setup an autorun to bubble up to the parent the check status
+    _initSetupStatusAutorun(){
+        _trace( 'ICheckStatus._initSetupStatusAutorun' );
+        const self = this;
+        const instance = this._getInstance();
+        if( instance ){
+            instance.autorun(() => {
+                const status = self.#status.get();
+                self.iHierarchyUp( '_updateStatus', status );
+            });
+        }
+    }
+
+    // setup an autorun to bubble up to the parent the validity result
+    _initSetupValidityAutorun(){
+        _trace( 'ICheckStatus._initSetupValidityAutorun' );
+        const self = this;
+        const instance = this._getInstance();
+        if( instance ){
+            instance.autorun(() => {
+                const valid = self.#valid.get();
+                self.iHierarchyUp( '_updateValidity', valid );
+            });
+        }
+    }
 
     // reset the validity status to its initial true value
     _reset(){
         _trace( 'ICheckStatus._reset' );
+        this.#status.set( CheckStatus.C.NONE );
         this.#valid.set( true );
     }
 
+    // update the check status, consolidating from a field to the panel
+    _updateStatus( status ){
+        _trace( 'ICheckStatus._updateStatus' );
+        const next = CheckStatus.worst([ this.#status.get(), status ]);
+        console.debug( 'consolidating to', next );
+        this.#status.set( next );
+    }
+
     // update the validity status by AND-ed it with a field check computation status
-    _update( valid ){
-        _trace( 'ICheckStatus._update' );
+    _updateValidity( valid ){
+        _trace( 'ICheckStatus._updateValidity' );
         this.#valid.set( this.#valid.get() && valid );
     }
 
@@ -99,35 +157,27 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
             }
         }
         const res = { valid: valid, status: status };
+        console.debug( res );
         // update element validity and status
         eltData.valid.set( res.valid );
         eltData.status.set( res.status );
-        // update the panel validity
-        this.iHierarchyUp( '_update' );
+        // update the panel status and validity
+        this._updateStatus( res.status );
+        this._updateValidity( res.valid );
         return res;
     }
 
     /**
      * @summary ICheckStatus initialization
      *  - define an autorun which will enable/disable the OK button depending of the entity validity status
+     *  - define an autorun to bubble up the check status
+     *  - define an autorun to bubble up the validity result
      */
     iStatusInit(){
         _trace( 'ICheckStatus.iStatusInit' );
-        const self = this;
-        const instance = this._getInstance();
-        if( instance ){
-            instance.autorun(() => {
-                const valid = self.#valid.get();
-                const $ok = self._get$Ok()
-                if( $ok && $ok.length ){
-                    $ok.prop( 'disabled', !valid );
-                }
-                const okFn = self._getOkFn()
-                if( okFn ){
-                    okFn( valid );
-                }
-            });
-        }
+        this._initSetupOkAutorun();
+        this._initSetupStatusAutorun();
+        this._initSetupValidityAutorun();
     }
 
     /**
@@ -135,5 +185,21 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      */
     iStatusInitField( name, spec ){
         _trace( 'ICheckStatus.iStatusInitField', name );
+    }
+
+    /**
+     * @returns {String} the current (consolidated) check status
+     */
+    iStatusStatus(){
+        _trace( 'ICheckStatus.iStatusStatus' );
+        return this.#status.get();
+    }
+
+    /**
+     * @returns {Boolean} the current (consolidated) validity
+     */
+    iStatusValidity(){
+        _trace( 'ICheckStatus.iStatusValidity' );
+        return this.#valid.get();
     }
 });

@@ -31,12 +31,46 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
         return field;
     }
 
+    // install an input handler if we have any node
+    _initInstallInputHandler(){
+        _trace( 'ICheckEvents._initInstallInputHandler' );
+        const instance = this._getInstance();
+        if( instance ){
+            const $node = instance.$( instance.firstNode );
+            if( $node.length ){
+                const panel = this._getPanelSpec();
+                if( panel ){
+                    const fields = panel.iPanelFieldsList();
+                    if( fields.length ){
+                        const self = this;
+                        $node.on( 'input', ( event ) => { self._inputHandler( event ); });
+                    }
+                }
+            }
+        }
+    }
+
+    // install the validity handler if we have any node
+    _initInstallValidityHandler(){
+        _trace( 'ICheckEvents._initInstallValidityHandler' );
+        const instance = this._getInstance();
+        if( instance ){
+            const $node = instance.$( instance.firstNode );
+            if( $node.length ){
+                const self = this;
+                const validityEvent = self._getValidityEvent();
+                $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
+            }
+        }
+    }
+
     // input handler
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event
     // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
     // - event is a jQuery.Event
     _inputHandler( event ){
-        _trace( 'ICheckEvents._inputHandler' );
+        _trace( 'ICheckEvents._inputHandler', event );
+        console.debug( '_inputHandler', event );
         const field = this._fieldFromEvent( event );
         if( field ){
             check( field, IFieldSpec );
@@ -46,7 +80,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
             }
             const eltData = this.iDomFromEvent( event, field );
             if( eltData ){
-                this._local_check( eltData );
+                this.checkFieldByDataset( eltData );
             }
         } else {
             console.debug( 'not handleable here' );
@@ -77,24 +111,8 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
      */
     iEventsInit(){
         _trace( 'ICheckEvents.iEventsInit' );
-        const self = this;
-        const instance = self._getInstance();
-        if( instance ){
-            const $node = instance.$( instance.firstNode );
-            if( $node.length ){
-                // set an input handler if we have at least a field
-                const panel = self._getPanelSpec();
-                if( panel ){
-                    const fields = panel.iPanelFieldsList();
-                    if( fields.length ){
-                        $node.on( 'input', ( event ) => { self._inputHandler( event ); });
-                    }
-                }
-                // set a validity handler
-                const validityEvent = self._getValidityEvent();
-                $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
-            }
-        }
+        this._initInstallInputHandler();
+        this._initInstallValidityHandler();
     }
 
     /**

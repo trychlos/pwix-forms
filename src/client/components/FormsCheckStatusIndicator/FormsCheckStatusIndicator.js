@@ -7,7 +7,7 @@
  *  We have to write all icon elements into the DOM, only making visible the one we are interested in.
  *
  * Parms:
- *  - type: a CheckStatus constant which may be 'NONE', 'INVALID', 'UNCOMPLETE' or 'VALID'
+ *  - checker: the Checker to follow
  *  - classes: if set, a list of classes to be added to the default
  *  - title: if set, a text to replace the default title
  */
@@ -21,8 +21,17 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
     const self = this;
 
     self.autorun(() => {
-        self.$( '.field-check-indicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
-        self.$( '.field-check-indicator .fcsi-display[data-type="'+Template.currentData().type+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        self.$( '.FormsCheckStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
+        const checker = Template.currentData().checker;
+        if( checker ){
+            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+checker.status()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        }
+    });
+
+    // track status changes
+    self.autorun(() => {
+        const status = Template.currentData().checker && Template.currentData().checker.status();
+        console.debug( 'status', status );
     });
 });
 

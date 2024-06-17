@@ -21,6 +21,17 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     // the children Checker's
     #children = [];
 
+    // private methods
+
+    // register against the parent (if any)
+    _initRegisterParent(){
+        _trace( 'ICheckHierarchy._initRegisterParent' );
+        const parent = this._getParent();
+        if( parent ){
+            parent.iHierarchyRegister( this );
+        }
+    }
+
     /**
      * @returns {ICheckHierarchy} the instance
      */
@@ -36,10 +47,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      */
     iHierarchyInit(){
         _trace( 'ICheckHierarchy.iHierarchyInit' );
-        const parent = this._getParent();
-        if( parent ){
-            parent.iHierarchyRegister( this );
-        }
+        this._initRegisterParent();
     }
 
     /**

@@ -453,10 +453,12 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
      * @returns {Promise} which eventually resolves to the validity status of the field as true|false
      */
     async checkFieldByDataset( eltData, opts={} ){
-        _trace( 'Checker.checkFieldByDataset' );
+        _trace( 'Checker.checkFieldByDataset', eltData );
+        console.debug( 'checkFieldByDataset', eltData );
         const value = this._valueFrom( eltData, opts );
         eltData.value.set( value );
         // the field-defined check function must return a Promise which resolves to null, or a TypedMessage, or an array of TypedMessage
+        const self = this;
         return eltData.spec.iFieldCheck( value, self._getData(), opts )
             .then(( errs ) => {
                 //console.debug( eltData, err );
@@ -486,7 +488,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
      * @returns {Promise} which eventually resolves to the validity status of the field as true|false
      */
     async checkFieldBySpec( spec, opts={} ){
-        _trace( 'Checker.checkFieldBySpec' );
+        _trace( 'Checker.checkFieldBySpec', spec );
         check( spec, IFieldSpec );
         const js = spec.iFieldJsSelector();
         if( js ){
@@ -573,6 +575,28 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
     }
 
     /**
+     * @returns {Object} with data from the form
+     *  Note: doesn't work well in an array-ed panel
+     */
+    getForm(){
+        const self = this;
+        let res = {};
+        /*
+        const cb = function( name, spec ){
+            const eltData = self.iDomDataset( spec );
+            res[name] = self._valueFrom( eltData );
+            return true;
+        };
+        this.fieldsIterate( cb );
+        Object.keys( self.#fields ).every(( f ) => {
+            o[f] = self.#instance.$( self.#fields[f].js ).val();
+            return true;
+        });
+        */
+        return res;
+    }
+
+    /**
      * @summary initialize the form with the given data
      * @param {Object} item
      * @param {Object} opts an option object with following keys:
@@ -614,4 +638,11 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         return this;
     }
     */
+
+    /**
+     * @returns {String} the current (consolidated) check status of this panel
+     */
+    status(){
+        return this.iStatusStatus();
+    }
 }
