@@ -10,6 +10,8 @@ import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { check } from 'meteor/check';
 
+import '../../common/js/index.js';
+
 import { IFieldSpec } from './ifield-spec.iface.js';
 
 export const ICheckEvents = DeclareMixin(( superclass ) => class extends superclass {
@@ -20,6 +22,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
 
     // returns the FieldSpec relative to the element which is the source of this event, or null
     _fieldFromEvent( event ){
+        _trace( 'ICheckEvents._fieldFromEvent' );
         const panel = this._getPanelSpec();
         let field = null;
         if( panel ){
@@ -33,7 +36,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
     // - event is a jQuery.Event
     _inputHandler( event ){
-        console.debug( 'inputHandler', event );
+        _trace( 'ICheckEvents._inputHandler' );
         const field = this._fieldFromEvent( event );
         if( field ){
             check( field, IFieldSpec );
@@ -52,6 +55,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
 
     // validity handler
     _validityHandler( event ){
+        _trace( 'ICheckEvents._validityHandler' );
         console.debug( 'validityHandler', event );
     }
 
@@ -59,18 +63,20 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
      * @returns {ICheckEvents} the instance
      */
     constructor( name, args ){
+        _trace( 'ICheckEvents.ICheckEvents' );
         super( ...arguments );
         return this;
     }
 
     /**
-     * @summary Initialization
+     * @summary ICheckEvents initialization
      *  Install events handlers
      *  - requires to have an (Blaze.TemplateInstance) instance
      *  - install an input handler if we have fields
      *  - always install a validity handler
      */
     iEventsInit(){
+        _trace( 'ICheckEvents.iEventsInit' );
         const self = this;
         const instance = self._getInstance();
         if( instance ){
@@ -89,5 +95,12 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
                 $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
             }
         }
+    }
+
+    /**
+     * @summary Field initialization
+     */
+    iEventsInitField( name, spec ){
+        _trace( 'ICheckEvents.iEventsInitField', name );
     }
 });

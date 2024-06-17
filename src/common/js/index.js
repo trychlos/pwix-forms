@@ -17,6 +17,7 @@ import './i18n.js';
 //
 import './configure.js';
 import './functions.js';
+import './trace.js';
 
 Forms.Field = Field;
 Forms.FieldsSet = FieldsSet;
