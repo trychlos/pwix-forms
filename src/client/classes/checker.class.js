@@ -65,13 +65,14 @@ import { Base } from '../../common/classes/base.class.js';
 
 import { ICheckDom } from '../interfaces/icheck-dom.iface.js';
 import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
+import { ICheckField } from '../interfaces/icheck-field.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
 import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHierarchy, ICheckStatus ){
+export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckField, ICheckHierarchy, ICheckStatus ){
 
     // static data
 
@@ -140,7 +141,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
                     //console.debug( eltData, err );
                     check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
                     // compute and update the field individual status and validity
-                    const fullStatus = self.iStatusCompute( eltData, errs );
+                    const fullStatus = self.iCkStatusCompute( eltData, errs );
                     // manage different err types
                     //if( err && opts.msgerr !== false ){
                     //    self._msgPush( err );
@@ -148,7 +149,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
                     //if( eltData.defn.post ){
                     //    eltData.defn.post( err );
                     //}
-                    //const status = self.iStatusCompute( eltData, errs );
+                    //const status = self.iCkStatusCompute( eltData, errs );
                     //console.debug( eltData.field, err, checked_type );
                     // set valid/invalid bootstrap classes
                     //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
@@ -334,7 +335,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
      *      > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
      *  - panel: an optional IPanelSpec iplementation which defines the managed fields
      *  - data: an optional data object to be passed to check functions as additional argument
-     *  - id: when the panel is array-ed, a function "( event ) : string" which returns the row identifier
+     *  - id: when the panel is array-ed, a function "( $eventTarget ) : string" which returns the row identifier
      *      not used here, but will be passed as an option to field-defined check function
      *  - displayCheckResultIndicator: whether to display a check result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable
@@ -383,17 +384,19 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
 
         // initialize panel-level runtime data
         // have to wait for having returned from super() and have built the configuration
-        this.iDomInit();
-        this.iEventsInit();
-        this.iHierarchyInit();
-        this.iStatusInit();
+        this.iCkDomInit();
+        this.iCkEventsInit();
+        this.iCkFieldInit();
+        this.iCkHierarchyInit();
+        this.iCkStatusInit();
 
         // initialize field-level data
         const cb = function( name, spec ){
-            self.iDomInitField( name, spec );
-            self.iEventsInitField( name, spec );
-            self.iHierarchyInitField( name, spec );
-            self.iStatusInitField( name, spec );
+            self.iCkDomInitField( name, spec );
+            self.iCkEventsInitField( name, spec );
+            self.iCkFieldInitField( name, spec );
+            self.iCkHierarchyInitField( name, spec );
+            self.iCkStatusInitField( name, spec );
             return true;
         }
         this.fieldsIterate( cb );
@@ -466,7 +469,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
                 //console.debug( eltData, err );
                 check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
                 // compute and update the field individual status and validity
-                const fullStatus = self.iStatusCompute( eltData, errs );
+                const fullStatus = self.iCkStatusCompute( eltData, errs );
                 // manage different err types
                 //if( err && opts.msgerr !== false ){
                 //    self._msgPush( err );
@@ -474,7 +477,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
                 //if( eltData.defn.post ){
                 //    eltData.defn.post( err );
                 //}
-                //const status = self.iStatusCompute( eltData, errs );
+                //const status = self.iCkStatusCompute( eltData, errs );
                 //console.debug( eltData.field, err, checked_type );
                 // set valid/invalid bootstrap classes
                 //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
@@ -495,12 +498,10 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         const js = spec.iFieldJsSelector();
         if( js ){
             const $js = opts.$parent ? opts.$parent.find( js ) : this._getInstance().$( js );
-            const eltData = this.iDomFromFieldSpec( $js, spec );
-            if( eltData ){
-                // do we have a check function for this field ? warn in dev...
-                spec.iFieldHaveCheck();
-                return await checkFieldByDataset( eltData, opts );
-            }
+            const eltData = this.iCkFieldDataset( spec, $js );
+            // do we have a check function for this field ? warn in dev...
+            spec.iFieldHaveCheck();
+            return await checkFieldByDataset( eltData, opts );
         }
         return true;
     }
@@ -517,7 +518,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
             return true;
         });
         // also clears the error messages if any
-        this.iHierarchyUp( '_msgClear' )
+        this.iCkHierarchyUp( '_msgClear' )
         */
     }
 
@@ -536,11 +537,12 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
     }
 
     /**
-     * @summary Iterate on each field definition, calling the provided 'cb' callback for each one
+     * @summary Iterate on each field specification, calling the provided 'cb' callback for each one
      *  the recursive iteration stops as soon as the 'cb' doesn't return true
      *  in other words, iterate while 'cb' returns true (same than 'every' instruction)
      * @param {Function} cb callback
-     *  cb( fieldName<String>, fieldSpec<FieldSpec>, args<Any>) : Boolean
+     *  cb( fieldName<String>, fieldSpec<IFieldSpec>, args<Any>) : Boolean
+     *  NB: inside of the 'cb' callback, 'this' is this Checker instance
      * @param {Any} args to be passed to the callback
      */
     fieldsIterate( cb, args=null ){
@@ -577,7 +579,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
         let res = {};
         /*
         const cb = function( name, spec ){
-            const eltData = self.iDomDataset( spec );
+            const eltData = self.iCkDomDataset( spec );
             res[name] = self._valueFrom( eltData );
             return true;
         };
@@ -637,6 +639,6 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckHi
      * @returns {String} the current (consolidated) check status of this panel
      */
     status(){
-        return this.iStatusStatus();
+        return this.iCkStatusStatus();
     }
 }

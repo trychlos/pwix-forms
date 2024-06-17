@@ -64,6 +64,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
     /**
      * @returns {Boolean} whether this field spec is array-ed
+     *  NB: the containing Checker must be instanciated with an 'id()' function when array-ed
      */
     iFieldIsArrayed(){
         const name = this.name();

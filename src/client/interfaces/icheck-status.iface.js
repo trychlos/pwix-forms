@@ -50,7 +50,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
         const self = this;
         this._getInstance().autorun(() => {
             const status = self.#status.get();
-            self.iHierarchyUp( '_updateStatus', status );
+            self.iCkHierarchyUp( '_updateStatus', status );
         });
     }
 
@@ -60,7 +60,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
         const self = this;
         this._getInstance().autorun(() => {
             const valid = self.#valid.get();
-            self.iHierarchyUp( '_updateValidity', valid );
+            self.iCkHierarchyUp( '_updateValidity', valid );
         });
     }
 
@@ -97,8 +97,8 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     /**
      * @summary Clear all status
      */
-    iStatusClear(){
-        _trace( 'ICheckStatus.iStatusClear' );
+    iCkStatusClear(){
+        _trace( 'ICheckStatus.iCkStatusClear' );
     }
 
     /**
@@ -109,8 +109,8 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      *  - valid: true|false
      *  - status: invalid/uncomplete/valid/none
      */
-    iStatusCompute( eltData, errs ){
-        _trace( 'ICheckStatus.iStatusCompute' );
+    iCkStatusCompute( eltData, errs ){
+        _trace( 'ICheckStatus.iCkStatusCompute' );
         let status = CheckStatus.K.NONE;
         let valid = true;
         if( errs ){
@@ -164,8 +164,8 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      *  - define an autorun to bubble up the check status
      *  - define an autorun to bubble up the validity result
      */
-    iStatusInit(){
-        _trace( 'ICheckStatus.iStatusInit' );
+    iCkStatusInit(){
+        _trace( 'ICheckStatus.iCkStatusInit' );
         this._initSetupOkAutorun();
         this._initSetupStatusAutorun();
         this._initSetupValidityAutorun();
@@ -174,23 +174,23 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     /**
      * @summary Field initialization
      */
-    iStatusInitField( name, spec ){
-        _trace( 'ICheckStatus.iStatusInitField', name );
+    iCkStatusInitField( name, spec ){
+        _trace( 'ICheckStatus.iCkStatusInitField', name );
     }
 
     /**
      * @returns {String} the current (consolidated) check status
      */
-    iStatusStatus(){
-        _trace( 'ICheckStatus.iStatusStatus' );
+    iCkStatusStatus(){
+        _trace( 'ICheckStatus.iCkStatusStatus' );
         return this.#status.get();
     }
 
     /**
      * @returns {Boolean} the current (consolidated) validity
      */
-    iStatusValidity(){
-        _trace( 'ICheckStatus.iStatusValidity' );
+    iCkStatusValidity(){
+        _trace( 'ICheckStatus.iCkStatusValidity' );
         return this.#valid.get();
     }
 });

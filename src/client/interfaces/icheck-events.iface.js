@@ -21,8 +21,8 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     // private methods
 
     // returns the FieldSpec relative to the element which is the source of this event, or null
-    _fieldFromEvent( event ){
-        _trace( 'ICheckEvents._fieldFromEvent' );
+    _fieldSpecFromEvent( event ){
+        _trace( 'ICheckEvents._fieldSpecFromEvent' );
         const panel = this._getPanelSpec();
         let field = null;
         if( panel ){
@@ -67,19 +67,19 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     _inputHandler( event ){
         _trace( 'ICheckEvents._inputHandler', event );
         console.debug( '_inputHandler', event );
-        const field = this._fieldFromEvent( event );
+        const field = this._fieldSpecFromEvent( event );
         if( field ){
             check( field, IFieldSpec );
             const messager = this._getIMessager();
             if( messager ){
                 messager.iMessagerClear();
             }
-            const eltData = this.iDomFromEvent( event, field );
+            const eltData = this.iCkFieldDataset( field, this._getInstance().$( event.target ));
             if( eltData ){
                 this.checkFieldByDataset( eltData );
             }
         } else {
-            console.debug( 'not handleable here' );
+            console.debug( 'not handled here' );
         }
     }
 
@@ -105,8 +105,8 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
      *  - install an input handler if we have fields
      *  - always install a validity handler
      */
-    iEventsInit(){
-        _trace( 'ICheckEvents.iEventsInit' );
+    iCkEventsInit(){
+        _trace( 'ICheckEvents.iCkEventsInit' );
         this._initInstallInputHandler();
         this._initInstallValidityHandler();
     }
@@ -114,7 +114,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     /**
      * @summary Field initialization
      */
-    iEventsInitField( name, spec ){
-        _trace( 'ICheckEvents.iEventsInitField', name );
+    iCkEventsInitField( name, spec ){
+        _trace( 'ICheckEvents.iCkEventsInitField', name );
     }
 });
