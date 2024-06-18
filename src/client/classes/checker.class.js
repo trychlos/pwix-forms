@@ -97,6 +97,9 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
 
     // runtime data
 
+    // the topmost node of the template as a jQuery object
+    #$topmost = null;
+
     // the consolidated data parts for each underlying component / pane / panel / FormChecker
     #dataParts = new ReactiveDict();
 
@@ -240,11 +243,25 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
         return name;
     }
 
+    // returns the topmost node of the template as a jQuery object - always set
+    _getTopmost(){
+        const $elt = this.#$topmost;
+        assert( $elt && $elt instanceof jQuery, '$topmost node is expected to be non-null jQuery object' );
+        return $elt;
+    }
+
     // returns the validity event, always set
     _getValidityEvent(){
         const event = this.#conf.validityEvent || null;
         assert( !event || _.isString( event ), 'validityEvent is expected to be a non empty string' );
         return event;
+    }
+
+    // set (once) the topmost node of the template as a jQuery object
+    _setTopmost( $elt ){
+        assert( !this.#$topmost, 'topmost object should be set only once' );
+        assert( $elt && $elt instanceof jQuery, '$elt argument is expected to be non-null jQuery object' );
+        this.#$topmost = $elt;
     }
 
     // public data
@@ -344,6 +361,9 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
 
         // run an initial check with default values (but do not update the provided data if any)
         this.check({ update: false });
+
+        // at the end of the Checker construction, says to begin DOM observation
+        this.iCkDomInitDone();
 
         return this;
     }

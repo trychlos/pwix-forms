@@ -34,7 +34,9 @@ function configure( api ){
     _use( 'ecmascript' );
     _use( 'less@4.0.0', 'client' );
     _use( 'pwix:typed-message@1.0.0-rc' );
+    _use( 'pwix:ui-bootstrap5@2.0.0' );
     _use( 'pwix:ui-fontawesome6@1.0.0' );
+    _use( 'pwix:ui-utils@1.1.0' );
     _use( 'reactive-dict' );
     _use( 'reactive-var' );
     _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-beta.0', 'server' );

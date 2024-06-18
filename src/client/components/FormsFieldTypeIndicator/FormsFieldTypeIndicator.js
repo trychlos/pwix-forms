@@ -4,7 +4,7 @@
  * A small icon indicator to exhibit the type of field.
  *
  * Parms:
- *  - type: a value from FieldType definition which may be 'INFO', 'OPTIONAL', 'SAVE' or 'WORK'
+ *  - type: a value from FieldType definition which may be 'INFO', 'OPTIONAL', 'MANDATORY' or 'WORK'
  *  - classes: if set, a list of classes to be added to the default
  *  - title: if set, a title to replace the default one
  */

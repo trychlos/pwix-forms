@@ -10,7 +10,7 @@ export const FieldType = {
     C: {
         INFO:       'INFO',
         OPTIONAL:   'OPTIONAL',
-        SAVE:       'SAVE',
+        MANDATORY:  'MANDATORY',
         WORK:       'WORK'
     }
 };
@@ -29,8 +29,8 @@ _.merge( FieldType, {
             title: 'field_type.optional_title'
         },
         // mandatory in order the document be saved
-        SAVE: {
-            class: 'fti-save',
+        MANDATORY: {
+            class: 'fti-mandatory',
             icon: 'fa-square-pen',
             title: 'field_type.save_title'
         },

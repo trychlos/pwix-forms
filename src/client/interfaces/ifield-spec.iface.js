@@ -7,9 +7,8 @@
  *  - js: a CSS selector; it is expected to let us address the field and its content
  *  - valFrom(): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - valTo(): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
- *
- *  - fieldType: whether the field should be prefixed to show valid|invalid state, defaulting to true
- *  - checkResult: whether the field should be appended with an indicator to show valid|invalid state
+ *  - fieldType: the mandatory/optional field type
+ *  - checkStatus: whether the field should be appended with an indicator to show valid|invalid state, defaulting to false
  */
 
 import _ from 'lodash';

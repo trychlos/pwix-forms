@@ -3,37 +3,34 @@
  */
 
 .FormsFieldTypeIndicator {
-    svg.svg-inline--fa {
-        width: 0.65em;
-        height: 0.65em;
-        border: 1px solid gray;
-        border-radius: 0.55em;
-        padding: 0.25em;
+    span {
+        padding-top: 0.25em;
+        padding-right: 0.25em;
     }
     .fti-info {
         color: gray;
-        svg {
+        svg.svg-inline--fa {
             border-color: gray;
         }
     }
-    .fti-save {
+    .fti-mandatory {
         color: var( --bs-danger );
-        svg {
+        svg.svg-inline--fa {
             border-color: var( --bs-danger );
         }
     }
     .fti-optional,
     .fti-work {
         color: var( --bs-primary );
-        svg {
+        svg.svg-inline--fa {
             border-color: var( --bs-primary );
         }
     }
     .fti-optional.disabled,
-    .fti-save.disabled,
+    .fti-mandatory.disabled,
     .fti-work.disabled {
         color: gray;
-        svg {
+        svg.svg-inline--fa {
             border-color: gray;
         }
     }

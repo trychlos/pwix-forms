@@ -11,10 +11,14 @@ import { DeclareMixin } from '@vestergaard-company/js-mixin';
 import { check } from 'meteor/check';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { TM } from 'meteor/pwix:typed-message';
+import { UIU } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
+import { FieldType } from '../../common/definitions/field-type.def.js'
+
+import '../components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js';
 
 import { IFieldSpec } from './ifield-spec.iface.js';
 
@@ -35,6 +39,9 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
     // - valid: the true|false validity of the form as a ReactiveVar
     // - status: the consolidated status value (invalid/uncomplete/valid/none) of the form as a ReactiveVar
     #formsData = [];
+
+    // dynamically rendered Blaze views
+    #views = [];
 
     // private methods
 
@@ -209,7 +216,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
             } else {
                 const type = spec.iFieldType();
                 switch( type ){
-                    case 'INFO':
+                    case FieldType.C.INFO:
                         fieldStatus = CheckStatus.C.NONE;
                         break;
                     default:
@@ -300,26 +307,55 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
     }
 
     /**
-     * @summary Insert a parent in the DOM to prepare future potential indicator insertions
+     * @summary Add a fieldtype indicator before the field if it is defined
      * @param {IFieldSpec} spec
      * @param {jQuery} $elt
      * @param {String} id the row identifier, may be null
      */
+    iCkFieldInsertFieldType( spec, $elt, id ){
+        _trace( 'ICheckDom._initFieldType' );
+        const type = spec.iFieldType();
+        console.debug( spec, type );
+        if( type ){
+            const data = {
+                type: type
+            };
+            console.debug( '$elt', $elt );
+            const parentNode = $elt.closest( '.'+this._getParentClass())[0];
+            console.debug( 'parentNode', parentNode );
+            this.#views.push( Blaze.renderWithData( Template.FormsFieldTypeIndicator, data, parentNode, $elt[0] ));
+        }
+    }
+
+    /**
+     * @summary Insert a parent in the DOM to prepare future potential indicator insertions
+     * @param {IFieldSpec} spec
+     * @param {jQuery} $elt
+     * @param {String} id the row identifier, may be null
+     * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
+     */
     iCkFieldInsertParent( spec, $elt, id ){
         _trace( 'ICheckField.iCkFieldInsertParent', spec );
         check( spec, IFieldSpec );
+        let res = null;
         const parentClass = this._getParentClass();
         if( parentClass ){
             const $parent = $elt.parent();
             assert( $parent && $parent.length, 'unexpected parent not found' );
             if( !$parent.hasClass( parentClass )){
                 $elt.wrap( '<div class="'+parentClass+'"></div>' );
+                const waitedSelector = '.'+parentClass+' '+spec.iFieldSelector();
+                res = UIU.DOM.waitFor( waitedSelector ).then(() => {
+                    console.debug( 'got waitedSelector', waitedSelector );
+                });
             }
         }
+        return res;
     }
 
     /**
      * @summary Setup a dataset and a parent DOM to each element managed by this field specification
+     *  In an array-ed panel, each new Checker will call this method with the same FieldSpec set
      * @param {IFieldSpec} spec
      */
     iCkFieldSetup( spec ){
@@ -331,25 +367,31 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
             const self = this;
             $elts.each(( index, element ) => {
                 const $elt = self._getInstance().$( element );
-                console.debug( $elt );
-                const id = self.iCkFieldId( spec, $elt );
-                self.iCkFieldSetupField( spec, $elt, id );
+                self.iCkFieldSetupField( spec, $elt );
             });
         }
     }
 
     /**
      * @summary Setup a dataset and a parent DOM for the current element if not already done
-     *  Happens that we are going to run several iCkFieldFormDataset(), i.e. one per FieldSpec in the panel
-     *  But only the first will define the dataset
+     *  Note 1: Happens that we are going to run several iCkFieldFormDataset(), i.e. one per FieldSpec in the panel
+     *          But only the first will define the dataset
+     *  Note 2: In an array-ed panel, will come here each time a new Checker (a new row) is defined
      * @param {IFieldSpec} spec
      * @param {jQuery} $elt
-     * @param {String} id the row identifier, may be null
      */
-    iCkFieldSetupField( spec, $elt, id ){
-        _trace( 'ICheckField.iCkFieldSetupField', spec, id );
-        this.iCkFieldFormDataset( id );
-        this.iCkFieldInsertParent( spec, $elt, id );
+    iCkFieldSetupField( spec, $elt ){
+        _trace( 'ICheckField.iCkFieldSetupField', spec );
+        const id = this.iCkFieldId( spec, $elt );
+        // either get or init a dataset for this id
+        //  a just created new dataset can be identified because $elt is null at the time
+        const dataset = this.iCkFieldFormDataset( id );
+        const promise = this.iCkFieldInsertParent( spec, $elt, id );
+        if( promise ){
+            promise.then(() => {
+                this.iCkFieldInsertFieldType( spec, $elt, id );
+            });
+        }
     }
 
     /**

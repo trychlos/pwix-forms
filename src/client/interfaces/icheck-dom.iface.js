@@ -18,20 +18,26 @@ import { IFieldSpec } from './ifield-spec.iface.js';
 export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
+    #initDone = false;
 
     // a DOM observer
     #observer = null;
 
     // private methods
 
+    // a DOM observer
+    // it reacts to every add/remove node in the global DOM tree
+    //  and we do not have any way to say if the add (resp. removed) node is inside of our our template DOM tree :(
+    // is it really useful
     _domObserver( mutationList, observer ){
-        for ( const mutation of mutationList ) {
-            if( mutation.type === "childList" ){
-                console.log("A child node has been added or removed.", mutation );
-            } else {
-                console.warn( 'unexpected mutation type', mutation.type );
+        /*
+        if( this.#initDone ){
+            for( const mutation of mutationList ){
+                if( mutation.type === "childList" && mutation.addedNodes.length ){
+                }
             }
         }
+            */
     }
 
     // install a DOM Observer to be able to react to DOM changes
@@ -43,6 +49,14 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
         const config = { childList: true, subtree: true };
         this.#observer = new MutationObserver( this._domObserver );
         this.#observer.observe( node, config );
+    }
+
+    // find and keep the topmost element
+    _initTopmost(){
+        _trace( 'ICheckDom._initTopmost' );
+        const instance = this._getInstance();
+        const $topmost = instance.$( instance.firstNode );
+        this._setTopmost( $topmost );
     }
 
     /**
@@ -62,7 +76,16 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
      */
     iCkDomInit(){
         _trace( 'ICheckDom.iCkDomInit' );
+        this._initTopmost();
         this._initObserver();
+    }
+
+    /**
+     * @summary Advertize of the end of initialization
+     */
+    iCkDomInitDone(){
+        _trace( 'ICheckDom.iCkDomInitDone' );
+        this.#initDone = true;
     }
 
     /**
