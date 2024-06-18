@@ -1,8 +1,8 @@
 /*
- * /imports/client/components/coreFieldTypeIndicator/coreFieldTypeIndicator.js
+ * /imports/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js
  *
  * A small icon indicator to exhibit the type of field.
- * 
+ *
  * Parms:
  *  - type: a value from FieldType definition which may be 'INFO', 'OPTIONAL', 'SAVE' or 'WORK'
  *  - classes: if set, a list of classes to be added to the default
@@ -11,11 +11,11 @@
 
 import { FieldType } from '../../../common/definitions/field-type.def.js';
 
-import './coreFieldTypeIndicator.html';
-import './coreFieldTypeIndicator.less';
+import './FormsFieldTypeIndicator.html';
+import './FormsFieldTypeIndicator.less';
 
-Template.coreFieldTypeIndicator.helpers({
-    // a class which encapsulates the icon 
+Template.FormsFieldTypeIndicator.helpers({
+    // a class which encapsulates the icon
     //  determines the color through the stylesheet
     iconClass(){
         return FieldType.classes( this.type );

@@ -2,10 +2,19 @@
  * pwix:forms/src/common/definitions/field-type.def.js
  */
 
+import _ from 'lodash';
+
 import { pwixI18n } from 'meteor/pwix:i18n';
 
 export const FieldType = {
-
+    C: {
+        INFO:       'INFO',
+        OPTIONAL:   'OPTIONAL',
+        SAVE:       'SAVE',
+        WORK:       'WORK'
+    }
+};
+_.merge( FieldType, {
     K: {
         // info only - not modifiable
         INFO: {
@@ -65,4 +74,4 @@ export const FieldType = {
         const o = FieldType._byType( type );
         return o && o.title ? pwixI18n.label( I18N, o.title ) : '';
     }
-};
+});
