@@ -48,7 +48,7 @@ export const IPanelSpec = DeclareMixin(( superclass ) => class extends superclas
     iPanelFieldFromEvent( event ){
         let found = null;
         const cb = function( name, spec ){
-            const selector = spec.iFieldJsSelector();
+            const selector = spec.iFieldSelector();
             if( selector && event.target.matches( selector )){
                 found = spec;
             }

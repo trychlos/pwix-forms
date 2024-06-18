@@ -70,14 +70,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
         const field = this._fieldSpecFromEvent( event );
         if( field ){
             check( field, IFieldSpec );
-            const messager = this._getIMessager();
-            if( messager ){
-                messager.iMessagerClear();
-            }
-            const eltData = this.iCkFieldDataset( field, this._getInstance().$( event.target ));
-            if( eltData ){
-                this.checkFieldByDataset( eltData );
-            }
+            this.iCkFieldCheck( field, this._getInstance().$( event.target ));
         } else {
             console.debug( 'not handled here' );
         }
@@ -112,7 +105,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @summary Field initialization
+     * @summary Per field initialization
      */
     iCkEventsInitField( name, spec ){
         _trace( 'ICheckEvents.iCkEventsInitField', name );

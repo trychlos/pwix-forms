@@ -103,7 +103,6 @@ _.merge( CheckStatus, {
      * @returns {CheckStatus} the worst statuses
      */
     worst( statuses ){
-        console.debug( 'statuses', statuses );
         let max = -1;
         statuses.forEach(( st ) => {
             const index = CheckStatus.index( st );

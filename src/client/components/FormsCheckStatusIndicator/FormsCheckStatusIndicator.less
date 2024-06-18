@@ -3,12 +3,15 @@
  */
 
 .FormsCheckStatusIndicator {
+    span {
+        padding-top: 0.25em;
+    }
     svg.svg-inline--fa {
         width: 0.75em;
         height: 0.75em;
         border: 1px solid gray;
-        border-radius: 0.4375em;    // 0.75+0.125 / 2
-        padding: 0.125em;
+        border-radius: 0.75em;
+        padding: 0.25em;
     }
     .visible {
         display: block;
@@ -23,9 +26,9 @@
         }
     }
     .fcsi-none {
-        color: x-transparent;
+        color: transparent;
         svg {
-            border-color: x-transparent;
+            border-color: transparent;
         }
     }
     .fcsi-uncomplete {

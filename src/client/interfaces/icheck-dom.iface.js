@@ -66,7 +66,7 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @summary Field initialization
+     * @summary Per field initialization
      */
     iCkDomInitField( name, spec ){
         _trace( 'ICheckDom.iCkDomInitField', name );

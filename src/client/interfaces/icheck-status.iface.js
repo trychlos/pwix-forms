@@ -2,6 +2,15 @@
  * pwix:forms/src/client/interfaces/icheck-status.iface.js
  *
  * ICheckStatus let us manage the results checks.
+ *
+ * We have to maintain here:
+ *
+ * - A status per row in an array-ed panel
+ * - a status at the panel level
+ *
+ * Where each status is both:
+ * - a boolean status, named 'validity'
+ * - and an indicator of the level of the status, name 'status'
  */
 
 import _ from 'lodash';
@@ -172,25 +181,35 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @summary Field initialization
+     * @summary Per field initialization
      */
     iCkStatusInitField( name, spec ){
         _trace( 'ICheckStatus.iCkStatusInitField', name );
     }
 
     /**
-     * @returns {String} the current (consolidated) check status
+     * Getter/Setter
+     * @param {CheckResult} status
+     * @returns {CheckResult} the current (consolidated) check status
      */
-    iCkStatusStatus(){
+    iCkStatusStatus( status ){
         _trace( 'ICheckStatus.iCkStatusStatus' );
+        if( status !== undefined ){
+            this.#status.set( status );
+        }
         return this.#status.get();
     }
 
     /**
+     * Getter/Setter
+     * @param {Boolean} valid
      * @returns {Boolean} the current (consolidated) validity
      */
-    iCkStatusValidity(){
+    iCkStatusValidity( valid ){
         _trace( 'ICheckStatus.iCkStatusValidity' );
+        if( valid === true || valid === false ){
+            this.#valid.set( valid );
+        }
         return this.#valid.get();
     }
 });

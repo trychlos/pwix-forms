@@ -3,17 +3,20 @@
  *
  * IFieldSpec is the interface to let an application's panel defines a field management.
  *
- * This is provided as a plain javascript object, with following keys:
+ * Field specification is provided as a plain javascript object, with following keys:
  *  - js: a CSS selector; it is expected to let us address the field and its content
- *  - fieldType: whether the field should be prefixed to show valid|invalid state, defaulting to true
- *  - checkResult: whether the field should be appended with an indicator to show valid|invalid state
  *  - valFrom(): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - valTo(): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
+ *
+ *  - fieldType: whether the field should be prefixed to show valid|invalid state, defaulting to true
+ *  - checkResult: whether the field should be appended with an indicator to show valid|invalid state
  */
 
 import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
+
+import '../../common/js/trace.js';
 
 export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -23,15 +26,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {IFieldSpec} the instance
      */
     constructor( name, args ){
+        _trace( 'IFieldSpec.IFieldSpec' );
         super( ...arguments );
         return this;
-    }
-
-    /**
-     * @returns {String} the local check function name in the Checker
-     */
-    iFieldComputeLocalCheckFunctionName(){
-        return this.name();
     }
 
     /**
@@ -42,6 +39,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {Promise} a TypedMessage or an array of TypedMessage's or null
      */
     async iFieldCheck( value, data, opts ){
+        _trace( 'IFieldSpec.iFieldCheck' );
         const defn = this._defn();
         if( defn.check && _.isFunction( defn.check )){
             return await defn.check( value, data, opts );
@@ -54,6 +52,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {Boolean} whether we have a check function
      */
     iFieldHaveCheck(){
+        _trace( 'IFieldSpec.iFieldHaveCheck' );
         const defn = this._defn();
         const have = defn.check && _.isFunction( defn.check );
         if( !have ){
@@ -67,6 +66,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      *  NB: the containing Checker must be instanciated with an 'id()' function when array-ed
      */
     iFieldIsArrayed(){
+        _trace( 'IFieldSpec.iFieldIsArrayed' );
         const name = this.name();
         return name.match( /\.\$\./ ) !== null;
     }
@@ -74,7 +74,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     /**
      * @returns {String} the js css selector, or null
      */
-    iFieldJsSelector(){
+    iFieldSelector(){
+        _trace( 'IFieldSpec.iFieldSelector' );
         const defn = this._defn();
         return defn.js || null;
     }
@@ -83,6 +84,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {String} the type of the field (mandatory/optional/none), or null
      */
     iFieldType(){
+        _trace( 'IFieldSpec.iFieldType' );
         const defn = this._defn();
         return defn.type || null;
     }

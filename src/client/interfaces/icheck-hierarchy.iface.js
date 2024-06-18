@@ -51,7 +51,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     }
 
     /**
-     * @summary Field initialization
+     * @summary Per field initialization
      */
     iCkHierarchyInitField( name, spec ){
         _trace( 'ICheckHierarchy.iCkHierarchyInitField', name );

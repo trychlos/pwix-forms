@@ -91,86 +91,16 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
         fields: null,
         data: null,
         validityEvent: 'checker-validity.forms',
-        datasetName: 'form-checker',
         parentClass: 'form-indicators-parent'
    };
     #conf = {};
 
     // runtime data
 
-    // an object which holds the local check functions, keyed with the field name
-    #locals = {};
-
     // the consolidated data parts for each underlying component / pane / panel / FormChecker
     #dataParts = new ReactiveDict();
 
     // private methods
-
-    // at construction time, define a local check function for each defined field
-    //  this local check function will always call the corresponding defined checks function (if exists)
-    //  returns a Promise which resolve to 'valid' status for the field
-    //  (while the checks check_<field>() is expected to return a Promise which resolves to a TypedMessage or null)
-
-    // + attach to the DOM element addressed by the 'js' key an object:
-    //   - value: a ReactiveVar which contains the individual value got from the form
-    //   - checked: a ReactiveVar which contains the individual checked type (in the sense of FieldCheck class)
-    //   - field: the field name
-    //   - defn: the field definition
-    //   - fn: the check function name
-    //   - parent: if set, the parent field name
-
-    _defineLocalCheckFunction( field, spec, arg ){
-        const self = this;
-        // do we have a check function for this field ? warn in dev...
-        spec.iFieldHaveCheck();
-        // local check function is called with element dom data
-        const localFn = spec.iFieldComputeLocalCheckFunctionName();
-        self.#locals[localFn] = async function( eltData, opts={} ){
-            if( eltData.$js.length ){
-                eltData.$js.removeClass( 'is-valid is-invalid' );
-            }
-            const value = self._valueFrom( eltData, opts );
-            eltData.value.set( value );
-            // this local function returns a Promise which resolves to a validity boolean
-            return Promise.resolve( true )
-                .then(() => {
-                    // the checks function returns a Promise which resolves to a TypedMessage or null
-                    return spec.iFieldCheck( value, self._getData(), opts );
-                })
-                .then(( errs ) => {
-                    //console.debug( eltData, err );
-                    check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
-                    // compute and update the field individual status and validity
-                    const fullStatus = self.iCkStatusCompute( eltData, errs );
-                    // manage different err types
-                    //if( err && opts.msgerr !== false ){
-                    //    self._msgPush( err );
-                    //}
-                    //if( eltData.defn.post ){
-                    //    eltData.defn.post( err );
-                    //}
-                    //const status = self.iCkStatusCompute( eltData, errs );
-                    //console.debug( eltData.field, err, checked_type );
-                    // set valid/invalid bootstrap classes
-                    //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
-                    //    $js.addClass( valid ? 'is-valid' : 'is-invalid' );
-                    //}
-                    return fullStatus.valid;
-                })
-                .catch(( e ) => {
-                    console.error( e );
-                });
-        };
-        // end_of_function
-        return true;
-    }
-
-    // call the local check function which itself calls the field-defined check
-    _local_check( eltData, opts ){
-        check( eltData, Object );
-        const localFn = eltData.spec.iFieldComputeLocalCheckFunctionName();
-        return this.#locals[localFn]( eltData, opts );
-    }
 
     /*
      * @summary Clears the messages place, and the error messages stack
@@ -254,11 +184,11 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
         return this.#conf.data || null;
     }
 
-    // returns the name of the dataset installed on DOM elements, always set
-    _getDatasetName(){
-        const name = this.#conf.datasetName || null;
-        assert( !name || _.isString( name ), 'datasetName is expected to be a non empty string' );
-        return name;
+    // returns the id() function, may be null
+    _getId(){
+        const fn = this.#conf.id || null;
+        assert( !fn || _.isFunction( fn ), 'id is expected to be a function' );
+        return fn;
     }
 
     // returns the IMessager interface, may be null
@@ -343,7 +273,6 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
      *  - okFn( valid<Boolean> ): an optional function to be called when OK button must be enabled/disabled
      *
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
-     *  - datasetName: if set, the name of the data set on each DOM element, defaulting to 'form-checker'
      *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
 
     /////*  - $top: an optional jQuery object which should be a common ancestor of all managed fields, will act both as a common source for all fields searches and as an event receiver
@@ -369,7 +298,6 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
             assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object' );
             assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function' );
             assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string' );
-            assert( !args.datasetName || _.isString( args.datasetName ), 'when set, datasetName must be a non-empty string' );
             assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string' );
         }
 
@@ -381,6 +309,9 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
 
         // build the configuration
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
+
+        // if we want some debug display that before logs of interfaces initializations
+        console.debug( this );
 
         // initialize panel-level runtime data
         // have to wait for having returned from super() and have built the configuration
@@ -411,18 +342,14 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
             //self.#valid.set( ok );
         });
 
-        // for each defined field, define a local check function
-        //this.fieldsIterate( this._defineLocalCheckFunction );
-
         // run an initial check with default values (but do not update the provided data if any)
         this.check({ update: false });
 
-        console.debug( this );
         return this;
     }
 
     /**
-     * @summary Check a panel and update its status
+     * @summary Check a panel, and all rows of an array-ed panel, and update its status
      * @param {Object} opts an option object with following keys:
      *  - $parent: if set, a jQuery element which acts as the parent of the (array-ed) form
      *  - update: whether the value found in the form should update the edited object, defaulting to true
@@ -434,76 +361,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
      */
     async check( opts={} ){
         _trace( 'Checker.check' );
-        let valid = true;
-        let promises = [];
-        const self = this;
-        this.fieldsIterate(( name, spec ) => {
-            promises.push( self.checkFieldBySpec( spec ).then(( v ) => {
-                valid &&= v;
-                return valid;
-            }));
-            return true;
-        });
-        return Promise.allSettled( promises ).then(() => {
-            if( opts.display === false ){
-                self.clear();
-            }
-            return valid;
-        });
-    }
-
-    /**
-     * @param {Object} eltData the DOM dataset of the field
-     * @param {Object} opts
-     * @returns {Promise} which eventually resolves to the validity status of the field as true|false
-     */
-    async checkFieldByDataset( eltData, opts={} ){
-        _trace( 'Checker.checkFieldByDataset', eltData );
-        console.debug( 'checkFieldByDataset', eltData );
-        const value = this._valueFrom( eltData, opts );
-        eltData.value.set( value );
-        // the field-defined check function must return a Promise which resolves to null, or a TypedMessage, or an array of TypedMessage
-        const self = this;
-        return eltData.spec.iFieldCheck( value, self._getData(), opts )
-            .then(( errs ) => {
-                //console.debug( eltData, err );
-                check( errs, Match.OneOf( null, TM.TypedMessage, Array ));
-                // compute and update the field individual status and validity
-                const fullStatus = self.iCkStatusCompute( eltData, errs );
-                // manage different err types
-                //if( err && opts.msgerr !== false ){
-                //    self._msgPush( err );
-                //}
-                //if( eltData.defn.post ){
-                //    eltData.defn.post( err );
-                //}
-                //const status = self.iCkStatusCompute( eltData, errs );
-                //console.debug( eltData.field, err, checked_type );
-                // set valid/invalid bootstrap classes
-                //if( defn.display !== false && self.#conf.useBootstrapValidationClasses === true && $js.length ){
-                //    $js.addClass( valid ? 'is-valid' : 'is-invalid' );
-                //}
-                return fullStatus.valid;
-            });
-        }
-
-    /**
-     * @param {IFieldSpec} spec
-     * @param {Object} opts
-     * @returns {Promise} which eventually resolves to the validity status of the field as true|false
-     */
-    async checkFieldBySpec( spec, opts={} ){
-        _trace( 'Checker.checkFieldBySpec', spec );
-        check( spec, IFieldSpec );
-        const js = spec.iFieldJsSelector();
-        if( js ){
-            const $js = opts.$parent ? opts.$parent.find( js ) : this._getInstance().$( js );
-            const eltData = this.iCkFieldDataset( spec, $js );
-            // do we have a check function for this field ? warn in dev...
-            spec.iFieldHaveCheck();
-            return await checkFieldByDataset( eltData, opts );
-        }
-        return true;
+        return this.iCkFieldCheckAll( opts );
     }
 
     /**
@@ -604,7 +462,7 @@ export class Checker extends mix( Base ).with( ICheckDom, ICheckEvents, ICheckFi
         const self = this;
         console.warn( 'setForm' );
         const cb = function( name, field ){
-            const js = field.iFieldJsSelector();
+            const js = field.iFieldSelector();
             if( js ){
                 let $js = null;
                 if( opts.$parent ){
