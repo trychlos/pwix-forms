@@ -28,14 +28,14 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
-import { ICheckable } from '../interfaces/icheckable.iface.js';
+import { IChecker } from '../interfaces/ichecker.iface.js';
 import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
 import { ISchema } from '../interfaces/ischema.iface.js';
 import { ITabular } from '../interfaces/itabular.iface.js';
 
 import { Base } from './base.class.js';
 
-export class Field extends mix( Base ).with( IInstanciationArgs, ICheckable, ISchema, ITabular ){
+export class Field extends mix( Base ).with( IInstanciationArgs, IChecker, ISchema, ITabular ){
 
     // static data
 

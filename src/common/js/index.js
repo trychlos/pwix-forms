@@ -8,7 +8,10 @@ import { FieldsSet } from '../classes/fields-set.class.js';
 import { CheckStatus } from '../definitions/check-status.def';
 import { FieldType } from '../definitions/field-type.def';
 
+import { ICheckable } from '../interfaces/icheckable.iface';
+import { IChecker } from '../interfaces/ichecker.iface';
 import { ISchema } from '../interfaces/ischema.iface';
+import { IStatusable } from '../interfaces/istatusable.iface';
 import { ITabular } from '../interfaces/itabular.iface';
 
 import './global.js';
@@ -25,5 +28,8 @@ Forms.FieldsSet = FieldsSet;
 Forms.CheckStatus = CheckStatus;
 Forms.FieldType = FieldType;
 
+Forms.ICheckable = ICheckable;
+Forms.IChecker = IChecker;
 Forms.ISchema = ISchema;
+Forms.IStatusable = IStatusable;
 Forms.ITabular = ITabular;

@@ -41,7 +41,8 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @summary Ask to display a message in the message zone
      * @param {Any} message
      */
-    iMessagerSet( message ){
-
+    iMessagerPush( message ){
+        console.debug( message );
+        this.iStackPush( message );
     }
 });

@@ -52,7 +52,7 @@ export const IPanelSpec = DeclareMixin(( superclass ) => class extends superclas
         const cb = function( name, field, set ){
             const fromSet = set.byName( name );
             if( fromSet ){
-                field._defn( fromSet.iCheckableDefinition());
+                field._defn( fromSet.ICheckerDefinition());
             }
             return true;
         }

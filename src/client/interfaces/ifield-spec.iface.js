@@ -16,7 +16,7 @@ const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { check } from 'meteor/check';
-import { ReactiveVar } from 'meteor/reactive-var';
+import { Random } from 'meteor/random';
 import { TM } from 'meteor/pwix:typed-message';
 import { UIU } from 'meteor/pwix:ui-utils';
 
@@ -38,11 +38,11 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     // the attached Checker
     #checker = null;
 
+    // an internal identifier of this IFieldSpec
+    #id = null;
+
     // the DOM node
     #jqNode = null;
-
-    // the last check result of the field
-    #tm = new ReactiveVar( null );
 
     // dynamically rendered Blaze views
     #views = [];
@@ -56,11 +56,16 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     //  res: is null, or an array of TypedMessage's
     async _checkAfter( opts, res ){
         _trace( 'IFieldSpec._checkAfter' );
-        this.rtResult( res );
+        this.ICheckableResult( res );
         // consolidate each received TypedMessage into a single validity and status for the field
         this._checkTMConsolidate();
         // consolidate at the Checker level
-        return await this.rtChecker().statusConsolidateFields();
+        const checker = this.rtChecker();
+        return checker.statusConsolidateFields().then(( res ) => {
+            // when we have consolidated all fields of each checker, it is time to re-push all TypedMessage's, terminating by this one
+            checker.hierarchyMessagers( this.rtId());
+            return res;
+        });
     }
 
     // some initializations and clzarings before any check of the field
@@ -74,6 +79,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
+
+        // clear the messages stack
+        this.rtChecker().messagerClear();
     }
 
     // consolidate several validity/status from besides fields
@@ -85,7 +93,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec._checkConsolidate' );
         let valid = true;
         let status = CheckStatus.C.NONE;
-        const result = this.rtResult();
+        const result = this.ICheckableResult();
         if( result ){
             let statuses = [ CheckStatus.C.VALID ];
             result.forEach(( tm ) => {
@@ -204,6 +212,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     constructor( name, args ){
         _trace( 'IFieldSpec.IFieldSpec' );
         super( ...arguments );
+        this.#id = Random.id();
         return this;
     }
 
@@ -319,6 +328,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
+     * @returns {String} theinternal identifier of this IFieldSpec
+     */
+    rtId(){
+        _trace( 'IFieldSpec.rtId' );
+        return this.#id;
+    }
+
+    /**
      * @returns {jQuery} the jQuery object which represent this node in the Checker
      *  This is a just-in-time computation
      *  Note that $node be NOT in the DOM, for example if the caller has defined a FieldSpec, but not implemented it in the DOM
@@ -335,16 +352,5 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             }
         }
         return this.#jqNode;
-    }
-
-    // getter/setter
-    // the last check result of the field
-    rtResult( result ){
-        _trace( 'IFieldSpec.rtResult' );
-        if( result !== undefined ){
-            assert( result === null || result instanceof Array, 'expects result be null or an Array of TypedMessage\'s' );
-            this.#tm.set( result );
-        }
-        return this.#tm.get();
     }
 });

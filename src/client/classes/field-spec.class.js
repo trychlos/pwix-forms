@@ -10,12 +10,13 @@ import mix from '@vestergaard-company/js-mixin';
 
 import { Base } from '../../common/classes/base.class.js';
 
+import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 
-export class FieldSpec extends mix( Base ).with( IInstanciationArgs, IFieldSpec, IStatusable ){
+export class FieldSpec extends mix( Base ).with( ICheckable, IInstanciationArgs, IFieldSpec, IStatusable ){
 
     // static data
 

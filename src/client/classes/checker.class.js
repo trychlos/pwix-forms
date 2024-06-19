@@ -65,6 +65,7 @@ import '../../common/js/trace.js';
 
 import { Base } from '../../common/classes/base.class.js';
 
+import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
 //import { ICheckDom } from '../interfaces/icheck-dom.iface.js';
@@ -76,7 +77,7 @@ import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
+export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
 
     // static data
 
@@ -110,57 +111,29 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, IC
 
     // private methods
 
-    /*
-     * @summary Clears the messages place, and the error messages stack
-     */
-    _msgClear(){
+    // clear the IMessager if any
+    _messagerClear(){
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerClear();
         }
-        /*
-        this.IMessagesSetClear();
-        this.#dataParts.clear();
-        if( this.#conf.$err && this.#conf.$err.length ){
-            $err.val( '' );
-        }
-        if( this.#conf.errSetFn ){
-            this.#conf.errSetFn( '' );
-        }
-        if( this.#conf.errClearFn ){
-            this.#conf.errClearFn();
-        }
-        */
     }
 
-    // set the value from the item to the form field according to the type of field
-            /*
-    _valueTo( eltData, item ){
-        _trace( 'Checker._valueTo' );
-        let value = null;
-        if( eltData.spec.valTo ){
-            value = eltData.spec.valTo( item );
-        } else {
-            value = item[eltData.spec.name()];
-        }
-        const tagName = eltData.$js.prop( 'tagName' );
-        const eltType = eltData.$js.attr( 'type' );
-        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-            eltData.$js.prop( 'checked', value );
-            //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
-        } else {
-            const $select = eltData.$js.closest( '.core-yesno-select' );
-            if( $select.length ){
-                const def = CoreApp.YesNo.byValue( value );
-                if( def ){
-                    eltData.$js.val( CoreApp.YesNo.id( def ));
-                }
-            } else {
-                eltData.$js.val( value );
-            //}
+    // dump the IMessager
+    _messagerDump(){
+        const messager = this.confIMessager();
+        if( messager ){
+            messager.iStackDump();
         }
     }
-             */
+
+    // push a TypedMessage
+    _messagerPush( tm ){
+        const messager = this.confIMessager();
+        if( messager ){
+            messager.iMessagerPush( tm );
+        }
+    }
 
     // protected methods
 
@@ -379,15 +352,8 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, IC
      */
     clear(){
         _trace( 'Checker.clear' );
-        /*
-        const self = this;
-        Object.keys( self.#fields ).every(( f ) => {
-            self.#instance.$( self.#fields[f].js ).removeClass( 'is-valid is-invalid' );
-            return true;
-        });
-        // also clears the error messages if any
-        this.hierarchyUp( '_msgClear' )
-        */
+        console.warn( 'clear() is obsoleted, please use messagerClear()' );
+        this.messagerClear();
     }
 
     /**
@@ -395,13 +361,9 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, IC
      * @param {ITypedMessage} tm
      */
     errorSet( tm ){
-        this.IMessagesSetPush( tm );
-        if( this.#conf.$err && this.#conf.$err.length ){
-            $err.val( tm.ITypedMessageMessage());
-        }
-        if( this.#conf.errSetFn ){
-            this.#conf.errSetFn( tm.ITypedMessageMessage());
-        }
+        // in our model, only fields have TypedMessage's
+        console.warn( 'errorSet() is obsoleted, please use messagerPush()' );
+        this.messagerPush( tm );
     }
 
     /**
@@ -462,6 +424,30 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, IC
     }
 
     /**
+     * @summary Clears the messages stack
+     */
+    messagerClear(){
+        _trace( 'Checker.messagerClear' );
+        this.hierarchyUp( '_messagerClear' );
+    }
+
+    /**
+     * @summary Dump the Messager content
+     */
+    messagerDump( tm ){
+        _trace( 'Checker.messagerDump' );
+        this.hierarchyUp( '_messagerDump' );
+    }
+
+    /**
+     * @param {TypedMessage} tm
+     */
+    messagerPush( tm ){
+        _trace( 'Checker.messagerPush' );
+        this.hierarchyUp( '_messagerPush', tm );
+    }
+
+    /**
      * @summary initialize the form with the given data
      * @param {Object} item
      * @param {Object} opts an option object with following keys:
@@ -505,9 +491,16 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, IC
     */
 
     /**
-     * @returns {String} the current (consolidated) check status of this panel
+     * @returns {CheckStatus} the current (consolidated) check status of this panel
      */
     status(){
-        return this.iCkStatusStatus();
+        return this.iStatusableStatus();
+    }
+
+    /**
+     * @returns {Boolean} the current (consolidated) true|false validity of this panel
+     */
+    validity(){
+        return this.iStatusableValidity();
     }
 }
