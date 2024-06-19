@@ -113,6 +113,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
 
     // clear the IMessager if any
     _messagerClear(){
+        _trace( 'Checker._messagerClear' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerClear();
@@ -121,6 +122,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
 
     // dump the IMessager
     _messagerDump(){
+        _trace( 'Checker._messagerDump' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iStackDump();
@@ -129,6 +131,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
 
     // push a TypedMessage
     _messagerPush( tm ){
+        _trace( 'Checker._messagerPush' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerPush( tm );
@@ -308,7 +311,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         });
 
         // run an initial check with default values (but do not update the provided data if any)
-        this.check({ update: false });
+        this.check({ initial: true, update: false });
 
         return this;
     }
@@ -316,12 +319,9 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
     /**
      * @summary Check a panel, and all rows of an array-ed panel, and update its status
      * @param {Object} opts an option object with following keys:
-     *  - $parent: if set, a jQuery element which acts as the parent of the (array-ed) form
      *  - update: whether the value found in the form should update the edited object, defaulting to true
-     *  - field: if set, indicates a field to not check (as just already validated from an input handler)
-     *
-     *  - display: if set, then says whether checks have any effect on the display, defaulting to true
-     *  - msgerr: if set, says if error message are to be displayed, defaulting to true
+     *  - initial: whether we want consolidate all fields result in their Checker, defaulting to false
+     *  - id: the identifier of the checker or null, added by IFieldSpec.iFieldCheck() function
      * @returns {Promise} which eventually resolves to the global validity status of the form as true|false
      */
     async check( opts={} ){

@@ -34,6 +34,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @summary Ask to clear the message(s) displayed in the message zone
      */
     iMessagerClear(){
+        console.debug( 'iMessagerClear' );
         this.iStackClear();
     }
 

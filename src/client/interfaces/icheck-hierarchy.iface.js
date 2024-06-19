@@ -36,7 +36,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         // take the fields check results of the checker
         const cb = function( name, spec ){
             console.debug( name );
-            const result = spec.ICheckableResult();
+            const result = spec.iCheckableResult();
             if( result ){
                 if( specId === spec.rtId()){
                     idTms = result;
@@ -108,25 +108,32 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     }
 
     /**
-     * @summary Apply a function to this instance, and trigers the parent
+     * @summary Apply a function to all children of the parent, and up
      * @param {String} fn function name
      */
     hierarchyUp( fn ){
-        _trace( 'ICheckHierarchy.hierarchyUp', fn );
+        _trace( 'ICheckHierarchy.hierarchyUp', );
         // ask the parent to apply the function to all its children
         const parent = this.confParent();
+        let args = [ ...arguments ];
+        args.shift();
         if( parent ){
             const children = parent.rtChildren();
-            if( children ){
-                let args = [ ...arguments ];
-                args.shift();
+            if( children && children.length ){
                 children.forEach(( child ) => {
-                    i( )
-                    child[fn]( ...args );
+                    if( child[fn] ){
+                        child[fn]( ...args );
+                    } else {
+                        console.warn( 'unable to call fn on the child', fn );
+                    }
                 });
             }
             // last move up to the next parent
             parent.hierarchyUp( ...arguments );
+        } else if( this[fn] ){
+            this[fn]( ...args );
+        } else {
+            console.warn( 'unable to call fn on the topmost parent', fn );
         }
     }
 

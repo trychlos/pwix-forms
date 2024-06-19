@@ -53,33 +53,29 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     // private methods
 
     // consolidate the result of the defined check function
-    //  res: is null, or an array of TypedMessage's
-    async _checkAfter( opts, res ){
+    //  res: is null, or a TypedMessage, or an array of TypedMessage's
+    //  cf. Checker.check for a description of known options
+    _checkAfter( opts, res ){
         _trace( 'IFieldSpec._checkAfter' );
-        this.ICheckableResult( res );
+        this.iCheckableResult( res );
         // consolidate each received TypedMessage into a single validity and status for the field
         this._checkTMConsolidate();
         // consolidate at the Checker level
         const checker = this.rtChecker();
-        return checker.statusConsolidateFields().then(( res ) => {
-            // when we have consolidated all fields of each checker, it is time to re-push all TypedMessage's, terminating by this one
-            checker.hierarchyMessagers( this.rtId());
-            return res;
-        });
+        checker.statusConsolidate( opts );
+        // when we have consolidated all fields of each checker, it is time to re-push all TypedMessage's, terminating by this one
+        checker.hierarchyMessagers( this.rtId());
     }
 
     // some initializations and clzarings before any check of the field
     _checkBefore( opts ){
         _trace( 'IFieldSpec._checkBefore' );
-
         // do not reset anything reactive to not flicker the display
-
         // remove bootstrap classes (possible because no reactivity is based on that)
         const $node = this.rtNode();
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
-
         // clear the messages stack
         this.rtChecker().messagerClear();
     }
@@ -93,7 +89,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec._checkConsolidate' );
         let valid = true;
         let status = CheckStatus.C.NONE;
-        const result = this.ICheckableResult();
+        const result = this.iCheckableResult();
+        console.debug( 'result', result );
         if( result ){
             let statuses = [ CheckStatus.C.VALID ];
             result.forEach(( tm ) => {
@@ -125,6 +122,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
                     break
             }
         }
+        console.debug( status, valid );
         this.iStatusableStatus( status );
         this.iStatusableValidity( valid );
     }
@@ -244,12 +242,13 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
+     * @locus Anywhere
      * @summary Check the field
      * @param {Any} opts an optional behaviour options
+     *  cf. Checker.check for a description of the known options
      * @returns {Promise} which resolve to the true|false validity status for this field
      */
     async iFieldCheck( opts={} ){
-        _trace( 'IFieldSpec.iFieldCheck' );
         console.debug( 'IFieldSpec.iFieldCheck', this.name());
         let res = true;
         // some initializations and clearings before any check of this field
@@ -260,11 +259,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             const checker = this.rtChecker();
             opts.id = checker.confId();
             const self = this;
-            res = await defn.check( this._valueFrom(), checker.confData(), opts ).then( async ( res ) => {
-                if( res && res instanceof TM.TypedMessage ){
-                    res = [ res ];
-                }
-                return await self._checkAfter( opts, res );
+            res = defn.check( this._valueFrom(), checker.confData(), opts ).then( async ( res ) => {
+                self._checkAfter( opts, res );
+                return self.iStatusableValidity();
             });
         } else if( Meteor.isDevelopment && !this.#warned ){
             console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );

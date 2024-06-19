@@ -20,23 +20,13 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
 
     // private methods
 
-    /**
-     * @returns {ICheckStatus} the instance
-     */
-    constructor( name, args ){
-        _trace( 'ICheckStatus.ICheckStatus' );
-        super( ...arguments );
-        return this;
-    }
-
-    /**
-     * @summary Consolidate the validity/status of each checker to their parent
+    /*
+     * @summary Consolidate the validity/status of each checker to their parent (down-to-up)
      *  Update the relevant Checker data
      * @returns {Promise} which resolve to the true|false validity
      */
-    async statusConsolidateCheckers(){
-        _trace( 'ICheckStatus.statusConsolidateCheckers' );
-        console.debug( 'ICheckStatus.statusConsolidateCheckers' );
+    _consolidateStatusCheckers(){
+        _trace( 'ICheckStatus._consolidateStatusCheckers' );
         const parent = this.confParent();
         let valid = this.iStatusableValidity();
         if( parent ){
@@ -51,19 +41,18 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
                 parent.iStatusableValidity( valid );
                 parent.iStatusableStatus( CheckStatus.worst( statuses ));
             }
-            parent.statusConsolidateCheckers();
+            parent._consolidateStatusCheckers();
         }
         return valid;
     }
 
-    /**
+    /*
      * @summary Consolidate the validity/status of each field for this checker
      *  Update the relevant Checker data
      * @returns {Promise} which resolve to the true|false validity
      */
-    async statusConsolidateFields(){
-        _trace( 'ICheckStatus.statusConsolidateFields' );
-        console.debug( 'ICheckStatus.statusConsolidateFields' );
+    _consolidateStatusFields(){
+        _trace( 'ICheckStatus._consolidateStatusFields' );
         let valid = true;
         let statuses = [ CheckStatus.C.NONE ];
         const cb = function( name, spec ){
@@ -77,6 +66,31 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
         this.iStatusableStatus( CheckStatus.worst( statuses ));
         // and consolidate up in the Checker's hierarchy
         return this.statusConsolidateCheckers();
+    }
+
+    /**
+     * @returns {ICheckStatus} the instance
+     */
+    constructor( name, args ){
+        _trace( 'ICheckStatus.ICheckStatus' );
+        super( ...arguments );
+        return this;
+    }
+
+    /**
+     * @summary Consolidate the validity/status of each field for this checker
+     *  Update the relevant Checker data
+     * @param {Any} opts an optional behaviour options
+     *  cf. Checker.check for a description of the known options
+     * @returns {Promise} which resolve to the true|false validity
+     */
+    statusConsolidate( opts ){
+        _trace( 'ICheckStatus.statusConsolidate' );
+        console.debug( 'ICheckStatus.statusConsolidate' );
+        if( opts.initial ){
+            this._consolidateStatusFields();
+        }
+        this._consolidateStatusCheckers();
     }
 
     /**

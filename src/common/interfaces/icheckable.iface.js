@@ -41,6 +41,7 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
                     assert( result === null || result instanceof Array, 'expects result be null or an Array of TypedMessage\'s' );
                 }
             }
+            console.debug( 'result', result );
             this.#tm.set( result );
         }
         return this.#tm.get();
