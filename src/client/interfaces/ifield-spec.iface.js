@@ -16,11 +16,16 @@ const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { check } from 'meteor/check';
+import { ReactiveVar } from 'meteor/reactive-var';
+import { TM } from 'meteor/pwix:typed-message';
 import { UIU } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
 import '../components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js';
+
+import { CheckStatus } from '../../common/definitions/check-status.def.js';
+import { FieldType } from '../../common/definitions/field-type.def.js'
 
 import { Checker } from '../classes/checker.class.js';
 
@@ -33,10 +38,88 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     // the attached Checker
     #checker = null;
 
+    // the DOM node
+    #jqNode = null;
+
+    // the last check result of the field
+    #tm = new ReactiveVar( null );
+
     // dynamically rendered Blaze views
     #views = [];
 
+    // whether we have already warned of the lack of a check function
+    #warned = false;
+
     // private methods
+
+    // consolidate the result of the defined check function
+    //  res: is null, or an array of TypedMessage's
+    async _checkAfter( opts, res ){
+        _trace( 'IFieldSpec._checkAfter' );
+        this.rtResult( res );
+        // consolidate each received TypedMessage into a single validity and status for the field
+        this._checkTMConsolidate();
+        // consolidate at the Checker level
+        return await this.rtChecker().statusConsolidateFields();
+    }
+
+    // some initializations and clzarings before any check of the field
+    _checkBefore( opts ){
+        _trace( 'IFieldSpec._checkBefore' );
+
+        // do not reset anything reactive to not flicker the display
+
+        // remove bootstrap classes (possible because no reactivity is based on that)
+        const $node = this.rtNode();
+        if( $node ){
+            $node.removeClass( 'is-valid is-invalid' );
+        }
+    }
+
+    // consolidate several validity/status from besides fields
+
+    /*
+     * @summary Consolidate the validity and the status of the field from the Array<TypedMessage> result
+     */
+    _checkTMConsolidate(){
+        _trace( 'IFieldSpec._checkConsolidate' );
+        let valid = true;
+        let status = CheckStatus.C.NONE;
+        const result = this.rtResult();
+        if( result ){
+            let statuses = [ CheckStatus.C.VALID ];
+            result.forEach(( tm ) => {
+                let tmValid = true;
+                if( tm instanceof TM.TypedMessage ){
+                    const level = tm.iTypedMessageType();
+                    tmValid = ( TM.TypeOrder.compare( level, TM.MessageType.C.ERROR ) < 0 );
+                    valid &&= tmValid;
+                } else {
+                    console.warn( 'expected ITypedMessage, got', tm );
+                }
+                // compute the status
+                if( !tmValid ){
+                    statuses.push( CheckStatus.C.INVALID );
+                } else if( level === TM.MessageType.C.WARNING ){
+                    statuses.push( CheckStatus.C.UNCOMPLETE );
+                }
+            });
+            status = CheckStatus.worst( statuses );
+        // if no err has been reported, may want show a status depending of the type of the field
+        } else {
+            const type = this.iFieldType();
+            switch( type ){
+                case FieldType.C.INFO:
+                    status = CheckStatus.C.NONE;
+                    break;
+                default:
+                    status = CheckStatus.C.VALID;
+                    break
+            }
+        }
+        this.iStatusableStatus( status );
+        this.iStatusableValidity( valid );
+    }
 
     /*
      * @summary Add a fieldtype indicator before the field if it is defined
@@ -44,11 +127,11 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     _initPrefixType(){
         _trace( 'IFieldSpec._initPrefixType' );
         const type = this.iFieldType();
-        if( type ){
+        const $node = this.rtNode();
+        if( type && $node ){
             const data = {
                 type: type
             };
-            const $node = this._jqNode();
             const parentNode = $node.closest( '.'+this.rtChecker().confParentClass())[0];
             this.#views.push( Blaze.renderWithData( Template.FormsFieldTypeIndicator, data, parentNode, $node[0] ));
         }
@@ -72,9 +155,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec._initWrapParent' );
         const checker = this.rtChecker();
         const parentClass = checker.confParentClass();
-        const $node = this._jqNode();
+        const $node = this.rtNode();
         let res = null;
-        if( parentClass && $node && $node.length ){
+        if( parentClass && $node ){
             const $parent = $node.parent();
             assert( $parent && $parent.length, 'unexpected parent not found' );
             if( !$parent.hasClass( parentClass )){
@@ -89,14 +172,30 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /*
-     * @returns {jQuery} the jQuery object which represent this node in this Checker
+     * @summary Get the value from the form
+     * @returns {String|Boolean} the value for this field
      */
-    _jqNode(){
-        _trace( 'IFieldSpec.jqNode' );
-        const checker = this.rtChecker();
-        const instance = checker.argInstance();
-        const selector = this.iFieldSelector();
-        return instance.$( selector );
+    _valueFrom(){
+        _trace( 'IFieldSpec._valueFrom' );
+        const $node = this.rtNode();
+        const tagName = $node.prop( 'tagName' );
+        const eltType = $node.attr( 'type' );
+        let value = null;
+        if( $node ){
+            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                value = $node.prop( 'checked' );
+            } else {
+                value = $node.val() || '';
+                // a small hack to handle 'true' and 'false' values from coreYesnoSelect
+                const $select = $node.closest( '.core-yesno-select' );
+                if( $select.length ){
+                    if( value === 'true' || value === 'false' ){
+                        value = ( value === 'true' );
+                    }
+                }
+            }
+        }
+        return value;
     }
 
     /**
@@ -109,46 +208,13 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @returns {Promise} which eventually resolves to true|false validity status for this field
-     */
-    async checkerCheck(){
-        _trace( 'ICheckField.iCkFieldCheck' );
-        console.debug( 'IFieldSpec.checkerCheck', this.name());
-        let res = false;
-
-        // clear the visual indicators (bs classes and check status if any)
-        //this.iCkFieldStatusClear( dataset, spec, $elt );
-
-        // reset the status for this field (as we are async, sooner is better)
-        // get the value from the form
-        //const value = this.iCkFieldValueFrom( $elt );
-        //dataset.keyed[spec.name()].value.set( value );
-
-        // do not risk to trigger an autorun as that would be a false positive
-        //dataset.keyed[spec.name()].result.set( null );
-
-        // call the field-defined check function which returns a Promise which resolve to null or a TypedMessage or an array of TypedMessage
-        // make sure we have only null or an array of TypedMessage's
-        const self = this;
-        /*
-        return spec.iFieldCheck( value, this.confData(), { id: dataset.id }).then(( res ) => {
-            if( res && res instanceof TM.TypedMessage ){
-                res = [ res ];
-            }
-            dataset.keyed[spec.name()].result.set( res );
-            return self.iCkFieldStatusUpdate( dataset, spec, $elt );
-        });
-        */
-    }
-
-    /**
      * @summary Initialize the runtime data at Checker instanciation
      * @param {Checker} checker
      */
     checkerInit( checker ){
         _trace( 'IFieldSpec.checkerInit' );
         check( checker, Checker );
-        this.#checker = checker;
+        this.rtChecker( checker );
         const promise = this._initWrapParent();
         if( promise ){
             const self = this;
@@ -161,40 +227,41 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
     /**
      * @summary Input handler
+     *  - check the field
      */
     checkerInputHandler(){
         _trace( 'IFieldSpec.checkerInputHandler' );
-        this.checkerCheck();
+        this.iFieldCheck();
     }
 
     /**
-     * @summary calls the field-defined check function (if any)
-     * @param {Any} value the value to be checked
-     * @param {Any} data the optional data passed at Checker instanciation
-     * @param {Any} opts some behaviour options
-     * @returns {Promise} a TypedMessage or an array of TypedMessage's or null
+     * @summary Check the field
+     * @param {Any} opts an optional behaviour options
+     * @returns {Promise} which resolve to the true|false validity status for this field
      */
-    async iFieldCheck( value, data, opts ){
+    async iFieldCheck( opts={} ){
         _trace( 'IFieldSpec.iFieldCheck' );
+        console.debug( 'IFieldSpec.iFieldCheck', this.name());
+        let res = true;
+        // some initializations and clearings before any check of this field
+        this._checkBefore( opts );
+        // if a check function has been defined, calls it (warning once if not exists)
         const defn = this._defn();
         if( defn.check && _.isFunction( defn.check )){
-            return await defn.check( value, data, opts );
+            const checker = this.rtChecker();
+            opts.id = checker.confId();
+            const self = this;
+            res = await defn.check( this._valueFrom(), checker.confData(), opts ).then( async ( res ) => {
+                if( res && res instanceof TM.TypedMessage ){
+                    res = [ res ];
+                }
+                return await self._checkAfter( opts, res );
+            });
+        } else if( Meteor.isDevelopment && !this.#warned ){
+            console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );
+            this.#warned = true;
         }
-        return null;
-    }
-
-    /**
-     * @summary Warns once in DEV environment
-     * @returns {Boolean} whether we have a check function
-     */
-    iFieldHaveCheck(){
-        _trace( 'IFieldSpec.iFieldHaveCheck' );
-        const defn = this._defn();
-        const have = defn.check && _.isFunction( defn.check );
-        if( !have ){
-            Meteor.isDevelopment && console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );
-        }
-        return have;
+        return res;
     }
 
     /**
@@ -238,10 +305,46 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         return defn.type || null;
     }
 
+    // getter/setter
     // the attached checker
-    rtChecker(){
-        const checker = this.#checker;
-        assert( !checker || checker instanceof Checker, 'when set, checker must be an instance of Checker' );
-        return checker;
+    rtChecker( checker ){
+        _trace( 'IFieldSpec.rtChecker' );
+        if( checker !== undefined ){
+            assert( checker && checker instanceof Checker, 'checker must be an instance of Checker' );
+            this.#checker = checker;
+        }
+        const o = this.#checker;
+        assert( o && o instanceof Checker, 'checker must be an instance of Checker' );
+        return o;
+    }
+
+    /**
+     * @returns {jQuery} the jQuery object which represent this node in the Checker
+     *  This is a just-in-time computation
+     *  Note that $node be NOT in the DOM, for example if the caller has defined a FieldSpec, but not implemented it in the DOM
+     */
+    rtNode(){
+        _trace( 'IFieldSpec.rtNode' );
+        if( !this.#jqNode ){
+            const checker = this.rtChecker();
+            const instance = checker.argInstance();
+            const selector = this.iFieldSelector();
+            const $node = instance.$( selector );
+            if( $node && $node instanceof jQuery && $node.length ){
+                this.#jqNode = $node;
+            }
+        }
+        return this.#jqNode;
+    }
+
+    // getter/setter
+    // the last check result of the field
+    rtResult( result ){
+        _trace( 'IFieldSpec.rtResult' );
+        if( result !== undefined ){
+            assert( result === null || result instanceof Array, 'expects result be null or an Array of TypedMessage\'s' );
+            this.#tm.set( result );
+        }
+        return this.#tm.get();
     }
 });

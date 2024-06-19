@@ -7,7 +7,7 @@
  *  We have to write all icon elements into the DOM, only making visible the one we are interested in.
  *
  * Parms:
- *  - checker: the Checker to follow
+ *  - statusRv: a ReactiveVar which contais the CheckStatus to be displayed
  *  - classes: if set, a list of classes to be added to the default
  *  - title: if set, a text to replace the default title
  */
@@ -22,15 +22,15 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
 
     self.autorun(() => {
         self.$( '.FormsCheckStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
-        const checker = Template.currentData().checker;
-        if( checker ){
-            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+checker.status()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        const rv = Template.currentData().statusRv;
+        if( rv ){
+            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
         }
     });
 
     // track status changes
     self.autorun(() => {
-        const status = Template.currentData().checker && Template.currentData().checker.status();
+        const status = Template.currentData().statusRv && Template.currentData().statusRv.get();
         console.debug( 'status', status );
     });
 });

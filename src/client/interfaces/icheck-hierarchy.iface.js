@@ -55,10 +55,32 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
 
     /**
      * @summary Apply a function to this instance, and trigers the parent
-     * @param {Function} fn
+     * @param {String} fn function name
      */
-    iCkHierarchyUp( fn ){
-        _trace( 'ICheckHierarchy.iCkHierarchyUp', fn );
+    hierarchyUp( fn ){
+        _trace( 'ICheckHierarchy.hierarchyUp', fn );
+        // ask the parent to apply the function to all its children
+        const parent = this.confParent();
+        if( parent ){
+            const children = parent.rtChildren();
+            if( children ){
+                let args = [ ...arguments ];
+                args.shift();
+                children.forEach(( child ) => {
+                    child[fn]( ...args );
+                });
+            }
+            // last move up to the next parent
+            parent.hierarchyUp( ...arguments );
+        }
+    }
+
+    /**
+     * @returns <Array> of Checker's children, maybe empty
+     */
+    rtChildren(){
+        _trace( 'ICheckHierarchy.rtChildren' );
+        return this.#children;
         let args = [ ...arguments ];
         args.shift();
         this[fn]( ...args );

@@ -65,16 +65,18 @@ import '../../common/js/trace.js';
 
 import { Base } from '../../common/classes/base.class.js';
 
+import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
+
 //import { ICheckDom } from '../interfaces/icheck-dom.iface.js';
 import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
-import { ICheckField } from '../interfaces/icheck-field.iface.js';
+//import { ICheckField } from '../interfaces/icheck-field.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
 import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheckHierarchy, ICheckStatus ){
+export class Checker extends mix( Base ).with( ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
 
     // static data
 
@@ -131,30 +133,8 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
         */
     }
 
-    // get the value from the form
-    //  when are dealing with children, the options may hold a '$parent' which includes all the fields of the array
-    _valueFrom( eltData, opts ){
-        _trace( 'Checker._valueFrom' );
-        const tagName = eltData.$js.prop( 'tagName' );
-        const eltType = eltData.$js.attr( 'type' );
-        let value;
-        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-            value = eltData.$js.prop( 'checked' );
-            //value = eltData.$js.find( ':checked' ).val();
-        } else {
-            value = eltData.$js.val() || '';
-            // a small hack to handle 'true' and 'false' values from coreYesnoSelect
-            const $select = eltData.$js.closest( '.core-yesno-select' );
-            if( $select.length ){
-                if( value === 'true' || value === 'false' ){
-                    value = ( value === 'true' );
-                }
-            }
-        }
-        return value;
-    }
-
     // set the value from the item to the form field according to the type of field
+            /*
     _valueTo( eltData, item ){
         _trace( 'Checker._valueTo' );
         let value = null;
@@ -169,7 +149,6 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
             eltData.$js.prop( 'checked', value );
             //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
         } else {
-            /*
             const $select = eltData.$js.closest( '.core-yesno-select' );
             if( $select.length ){
                 const def = CoreApp.YesNo.byValue( value );
@@ -177,11 +156,11 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
                     eltData.$js.val( CoreApp.YesNo.id( def ));
                 }
             } else {
-             */
                 eltData.$js.val( value );
             //}
         }
     }
+             */
 
     // protected methods
 
@@ -354,9 +333,6 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
         this.argInstance().view.onViewDestroyed( function(){
             console.debug( 'onViewDestroyed', confId );
         });
-        //this.argInstance().onDestroyed( function(){
-        //    console.debug( 'onDestroyed' );
-        //});
 
         // run an initial check with default values (but do not update the provided data if any)
         this.check({ update: false });
@@ -377,7 +353,25 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
      */
     async check( opts={} ){
         _trace( 'Checker.check' );
-        return this.iCkFieldCheckAll( opts );
+        console.debug( 'Checker.check' );
+        let valid = true;
+        let promises = [];
+        const cb = function( name, spec ){
+            promises.push( spec.iFieldCheck( opts ).then(( v ) => {
+                valid &&= v;
+                return valid;
+            }));
+            return true;
+        };
+        this.fieldsIterate( cb );
+        return Promise.allSettled( promises )
+            .then(() => {
+                //if( opts.display === false ){
+                //    self.clear();
+                //}
+                //self.#conf.entityChecker && console.debug( self.#conf.entityChecker );
+                return valid;
+            });
     }
 
     /**
@@ -392,7 +386,7 @@ export class Checker extends mix( Base ).with( ICheckEvents, ICheckField, ICheck
             return true;
         });
         // also clears the error messages if any
-        this.iCkHierarchyUp( '_msgClear' )
+        this.hierarchyUp( '_msgClear' )
         */
     }
 

@@ -11,10 +11,11 @@ import mix from '@vestergaard-company/js-mixin';
 import { Base } from '../../common/classes/base.class.js';
 
 import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.iface.js';
+import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 
-export class FieldSpec extends mix( Base ).with( IInstanciationArgs, IFieldSpec ){
+export class FieldSpec extends mix( Base ).with( IInstanciationArgs, IFieldSpec, IStatusable ){
 
     // static data
 
