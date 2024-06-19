@@ -23,41 +23,16 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     // returns the FieldSpec relative to the element which is the source of this event, or null
     _fieldSpecFromEvent( event ){
         _trace( 'ICheckEvents._fieldSpecFromEvent' );
-        const panel = this._getPanelSpec();
-        let field = null;
-        if( panel ){
-            field = panel.iPanelFieldFromEvent( event );
-        }
-        return field;
-    }
-
-    // install an input handler if we have any node
-    _initInstallInputHandler(){
-        _trace( 'ICheckEvents._initInstallInputHandler' );
-        const instance = this._getInstance();
-        const $node = instance.$( instance.firstNode );
-        if( $node.length ){
-            const panel = this._getPanelSpec();
-            if( panel ){
-                const fields = panel.iPanelFieldsList();
-                if( fields.length ){
-                    const self = this;
-                    $node.on( 'input', ( event ) => { self._inputHandler( event ); });
-                }
+        let found = null;
+        const cb = function( name, spec ){
+            const selector = spec.iFieldSelector();
+            if( selector && event.target.matches( selector )){
+                found = spec;
             }
+            return found === null;
         }
-    }
-
-    // install the validity handler if we have any node
-    _initInstallValidityHandler(){
-        _trace( 'ICheckEvents._initInstallValidityHandler' );
-        const instance = this._getInstance();
-        const $node = instance.$( instance.firstNode );
-        if( $node.length ){
-            const self = this;
-            const validityEvent = self._getValidityEvent();
-            $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
-        }
+        this.fieldsIterate( cb );
+        return found;
     }
 
     // input handler
@@ -67,10 +42,10 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     _inputHandler( event ){
         _trace( 'ICheckEvents._inputHandler', event );
         console.debug( '_inputHandler', event );
-        const field = this._fieldSpecFromEvent( event );
-        if( field ){
-            check( field, IFieldSpec );
-            this.iCkFieldCheck( field, this._getInstance().$( event.target ));
+        const spec = this._fieldSpecFromEvent( event );
+        if( spec ){
+            //this.iCkFieldCheck( field, this.argInstance().$( event.target ));
+            spec.checkerInputHandler();
         } else {
             console.debug( 'not handled here' );
         }
@@ -92,22 +67,23 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @summary ICheckEvents initialization
-     *  Install events handlers
-     *  - requires to have an (Blaze.TemplateInstance) instance
-     *  - install an input handler if we have fields
-     *  - always install a validity handler
+     * @summary Install an input handler on the topmost node (if any)
      */
-    iCkEventsInit(){
-        _trace( 'ICheckEvents.iCkEventsInit' );
-        this._initInstallInputHandler();
-        this._initInstallValidityHandler();
+    eventInstallInputHandler(){
+        _trace( 'ICheckEvents.eventInstallInputHandler' );
+        const $node = this.rtTopmost();
+        const self = this;
+        $node.on( 'input', ( event ) => { self._inputHandler( event ); });
     }
 
     /**
-     * @summary Per field initialization
+     * àsummary Install the validity handler on the topmost node (if any)
      */
-    iCkEventsInitField( name, spec ){
-        _trace( 'ICheckEvents.iCkEventsInitField', name );
+    eventInstallValidityHandler(){
+        _trace( 'ICheckEvents.eventInstallValidityHandler' );
+        const $node = this.rtTopmost();
+        const self = this;
+        const validityEvent = self.confValidityEvent();
+        $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
     }
 });

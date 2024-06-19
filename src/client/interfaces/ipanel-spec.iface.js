@@ -42,23 +42,6 @@ export const IPanelSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @param {Event} event a jQuery event
-     * @returns {FieldSpec} the found field spec relative to the source element, or null
-     */
-    iPanelFieldFromEvent( event ){
-        let found = null;
-        const cb = function( name, spec ){
-            const selector = spec.iFieldSelector();
-            if( selector && event.target.matches( selector )){
-                found = spec;
-            }
-            return found === null;
-        };
-        this.iEnumerateKeys( cb );
-        return found;
-    }
-
-    /**
      * @locus Client
      * @summary Add to each field specification the informations provided in the FieldsSet
      * @param {FieldsSet} set the FieldsSet defined for this collection

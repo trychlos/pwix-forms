@@ -23,15 +23,6 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
 
     // private methods
 
-    // register against the parent (if any)
-    _initRegisterParent(){
-        _trace( 'ICheckHierarchy._initRegisterParent' );
-        const parent = this._getParent();
-        if( parent ){
-            parent.iCkHierarchyRegister( this );
-        }
-    }
-
     /**
      * @returns {ICheckHierarchy} the instance
      */
@@ -42,29 +33,24 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     }
 
     /**
-     * @summary ICheckHierarchy initialization
-     *  Register in the hierarchy
-     */
-    iCkHierarchyInit(){
-        _trace( 'ICheckHierarchy.iCkHierarchyInit' );
-        this._initRegisterParent();
-    }
-
-    /**
-     * @summary Per field initialization
-     */
-    iCkHierarchyInitField( name, spec ){
-        _trace( 'ICheckHierarchy.iCkHierarchyInitField', name );
-    }
-
-    /**
      * @summary Register a new child Checker
      * @param {Checker} child
      */
-    iCkHierarchyRegister( child ){
-        _trace( 'ICheckHierarchy.iCkHierarchyRegister', child );
+    hierarchyRegisterChild( child ){
+        _trace( 'ICheckHierarchy.hierarchyRegisterChild', child );
         check( child, Checker );
         this.#children.push( child );
+    }
+
+    /**
+     * @summary Register against the parent (if any)
+     */
+    hierarchyRegisterParent(){
+        _trace( 'ICheckHierarchy.hierarchyRegisterParent' );
+        const parent = this.confParent();
+        if( parent ){
+            parent.hierarchyRegisterChild( this );
+        }
     }
 
     /**
@@ -76,7 +62,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         let args = [ ...arguments ];
         args.shift();
         this[fn]( ...args );
-        const parent = this._getParent();
+        const parent = this.confParent();
         if( parent ){
             parent.iCkHierarchyUp( ...arguments );
         }

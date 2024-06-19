@@ -45,7 +45,7 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
     _initObserver(){
         _trace( 'ICheckDom._initObserver' );
-        const node = this._getInstance().firstNode;
+        const node = this.argInstance().firstNode;
         const config = { childList: true, subtree: true };
         this.#observer = new MutationObserver( this._domObserver );
         this.#observer.observe( node, config );
@@ -54,7 +54,7 @@ export const ICheckDom = DeclareMixin(( superclass ) => class extends superclass
     // find and keep the topmost element
     _initTopmost(){
         _trace( 'ICheckDom._initTopmost' );
-        const instance = this._getInstance();
+        const instance = this.argInstance();
         const $topmost = instance.$( instance.firstNode );
         this._setTopmost( $topmost );
     }

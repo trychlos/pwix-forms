@@ -11,14 +11,11 @@ import { DeclareMixin } from '@vestergaard-company/js-mixin';
 import { check } from 'meteor/check';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { TM } from 'meteor/pwix:typed-message';
-import { UIU } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
 import { FieldType } from '../../common/definitions/field-type.def.js'
-
-import '../components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js';
 
 import { IFieldSpec } from './ifield-spec.iface.js';
 
@@ -40,9 +37,6 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
     // - status: the consolidated status value (invalid/uncomplete/valid/none) of the form as a ReactiveVar
     #formsData = [];
 
-    // dynamically rendered Blaze views
-    #views = [];
-
     // private methods
 
     /**
@@ -60,6 +54,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
      * @param {Object} dataset optional
      * @returns {Promise} which eventually resolves to true|false validity status for this field
      */
+    /*
     async iCkFieldCheck( spec, $elt, dataset ){
         _trace( 'ICheckField.iCkFieldCheck', spec );
         console.debug( 'iCkFieldCheck', spec.name());
@@ -81,14 +76,14 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
         // call the field-defined check function which returns a Promise which resolve to null or a TypedMessage or an array of TypedMessage
         // make sure we have only null or an array of TypedMessage's
         const self = this;
-        return spec.iFieldCheck( value, this._getData(), { id: dataset.id }).then(( res ) => {
+        return spec.iFieldCheck( value, this.confData(), { id: dataset.id }).then(( res ) => {
             if( res && res instanceof TM.TypedMessage ){
                 res = [ res ];
             }
             dataset.keyed[spec.name()].result.set( res );
             return self.iCkFieldStatusUpdate( dataset, spec, $elt );
         });
-    }
+    }*/
 
     /**
      * @summary Check all fields of all rows of the Checker
@@ -137,7 +132,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
                 if( $elts ){
                     check( $elts, jQuery );
                     $elts.each(( index, element ) => {
-                        const $elt = self._getInstance().$( element );
+                        const $elt = self.argInstance().$( element );
                         const id = self.iCkFieldId( spec, $elt );
                         if( id === dataset.id ){
                             $found = $elt;
@@ -171,7 +166,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
         let $res = null;
         const selector = spec.iFieldSelector();
         if( selector ){
-            $res = this._getInstance().$( selector );
+            $res = this.argInstance().$( selector );
         }
         //console.debug( spec, selector, $res );
         return $res;
@@ -280,7 +275,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
      */
     iCkFieldId( spec, $elt ){
         _trace( 'ICheckField.iCkFieldId' );
-        const idFn = this._getId();
+        const idFn = this.confId();
         const isArrayed = spec.iFieldIsArrayed()
         assert(( !idFn && !isArrayed ) || ( idFn && isArrayed ), 'id() function must be set when the PanelSpec is array-ed, and only array-ed fields can be managed in this case' );
         let id = null;
@@ -288,69 +283,6 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
             id = idFn( $elt );
         }
         return id;
-    }
-
-    /**
-     * @summary ICheckField initialization
-     */
-    iCkFieldInit(){
-        _trace( 'ICheckField.iCkFieldInit' );
-    }
-
-    /**
-     * @summary Per field initialization
-     */
-    iCkFieldInitField( name, spec ){
-        _trace( 'ICheckField.iCkFieldInitField', name );
-        check( spec, IFieldSpec );
-        this.iCkFieldSetup( spec );
-    }
-
-    /**
-     * @summary Add a fieldtype indicator before the field if it is defined
-     * @param {IFieldSpec} spec
-     * @param {jQuery} $elt
-     * @param {String} id the row identifier, may be null
-     */
-    iCkFieldInsertFieldType( spec, $elt, id ){
-        _trace( 'ICheckDom._initFieldType' );
-        const type = spec.iFieldType();
-        console.debug( spec, type );
-        if( type ){
-            const data = {
-                type: type
-            };
-            console.debug( '$elt', $elt );
-            const parentNode = $elt.closest( '.'+this._getParentClass())[0];
-            console.debug( 'parentNode', parentNode );
-            this.#views.push( Blaze.renderWithData( Template.FormsFieldTypeIndicator, data, parentNode, $elt[0] ));
-        }
-    }
-
-    /**
-     * @summary Insert a parent in the DOM to prepare future potential indicator insertions
-     * @param {IFieldSpec} spec
-     * @param {jQuery} $elt
-     * @param {String} id the row identifier, may be null
-     * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
-     */
-    iCkFieldInsertParent( spec, $elt, id ){
-        _trace( 'ICheckField.iCkFieldInsertParent', spec );
-        check( spec, IFieldSpec );
-        let res = null;
-        const parentClass = this._getParentClass();
-        if( parentClass ){
-            const $parent = $elt.parent();
-            assert( $parent && $parent.length, 'unexpected parent not found' );
-            if( !$parent.hasClass( parentClass )){
-                $elt.wrap( '<div class="'+parentClass+'"></div>' );
-                const waitedSelector = '.'+parentClass+' '+spec.iFieldSelector();
-                res = UIU.DOM.waitFor( waitedSelector ).then(() => {
-                    console.debug( 'got waitedSelector', waitedSelector );
-                });
-            }
-        }
-        return res;
     }
 
     /**
@@ -366,7 +298,7 @@ export const ICheckField = DeclareMixin(( superclass ) => class extends supercla
             check( $elts, jQuery );
             const self = this;
             $elts.each(( index, element ) => {
-                const $elt = self._getInstance().$( element );
+                const $elt = self.argInstance().$( element );
                 self.iCkFieldSetupField( spec, $elt );
             });
         }

@@ -36,43 +36,6 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
 
     // private methods
 
-    // setup an autorun to update the OK button
-    _initSetupOkAutorun(){
-        _trace( 'ICheckStatus._initSetupOkAutorun' );
-        const self = this;
-        this._getInstance().autorun(() => {
-            const valid = self.#valid.get();
-            const $ok = self._get$Ok()
-            if( $ok && $ok.length ){
-                $ok.prop( 'disabled', !valid );
-            }
-            const okFn = self._getOkFn()
-            if( okFn ){
-                okFn( valid );
-            }
-        });
-    }
-
-    // setup an autorun to bubble up to the parent the check status
-    _initSetupStatusAutorun(){
-        _trace( 'ICheckStatus._initSetupStatusAutorun' );
-        const self = this;
-        this._getInstance().autorun(() => {
-            const status = self.#status.get();
-            self.iCkHierarchyUp( '_updateStatus', status );
-        });
-    }
-
-    // setup an autorun to bubble up to the parent the validity result
-    _initSetupValidityAutorun(){
-        _trace( 'ICheckStatus._initSetupValidityAutorun' );
-        const self = this;
-        this._getInstance().autorun(() => {
-            const valid = self.#valid.get();
-            self.iCkHierarchyUp( '_updateValidity', valid );
-        });
-    }
-
     // reset the validity status to its initial true value
     _reset(){
         _trace( 'ICheckStatus._reset' );
@@ -168,26 +131,6 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @summary ICheckStatus initialization
-     *  - define an autorun which will enable/disable the OK button depending of the entity validity status
-     *  - define an autorun to bubble up the check status
-     *  - define an autorun to bubble up the validity result
-     */
-    iCkStatusInit(){
-        _trace( 'ICheckStatus.iCkStatusInit' );
-        this._initSetupOkAutorun();
-        this._initSetupStatusAutorun();
-        this._initSetupValidityAutorun();
-    }
-
-    /**
-     * @summary Per field initialization
-     */
-    iCkStatusInitField( name, spec ){
-        _trace( 'ICheckStatus.iCkStatusInitField', name );
-    }
-
-    /**
      * Getter/Setter
      * @param {CheckResult} status
      * @returns {CheckResult} the current (consolidated) check status
@@ -211,5 +154,48 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
             this.#valid.set( valid );
         }
         return this.#valid.get();
+    }
+
+    /**
+     * @summary Setup an autorun to update the OK button
+     */
+    statusInstallOkAutorun(){
+        _trace( 'ICheckStatus.statusInstallOkAutorun' );
+        const self = this;
+        this.argInstance().autorun(() => {
+            const valid = self.#valid.get();
+            const $ok = self.conf$Ok()
+            if( $ok && $ok.length ){
+                $ok.prop( 'disabled', !valid );
+            }
+            const okFn = self.confOkFn()
+            if( okFn ){
+                okFn( valid );
+            }
+        });
+    }
+
+    /**
+     * @summary Setup an autorun to bubble up to the parent the check status
+     */
+    statusInstallStatusAutorun(){
+        _trace( 'ICheckStatus.statusInstallStatusAutorun' );
+        const self = this;
+        this.argInstance().autorun(() => {
+            const status = self.#status.get();
+            self.iCkHierarchyUp( '_updateStatus', status );
+        });
+    }
+
+    /**
+     * @summary Setup an autorun to bubble up to the parent the validity result
+     */
+    statusInstallValidityAutorun(){
+        _trace( 'ICheckStatus.statusInstallValidityAutorun' );
+        const self = this;
+        this.argInstance().autorun(() => {
+            const valid = self.#valid.get();
+            self.iCkHierarchyUp( '_updateValidity', valid );
+        });
     }
 });
