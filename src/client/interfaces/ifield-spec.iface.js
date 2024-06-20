@@ -21,6 +21,7 @@ import { UIU } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
+import '../components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js';
 import '../components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js';
@@ -40,6 +41,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     // the DOM node
     #jqNode = null;
 
+    // whether and how display the status of the field
+    #showStatus = null;
+
     // dynamically rendered Blaze views
     #views = [];
 
@@ -56,6 +60,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         res = this.iCheckableResult( res );
         // consolidate each received TypedMessage into a single validity and status for the field
         this._checkTMConsolidate();
+        // set the status indicator
+        const display = this.rtShowStatus();
+        if( display === Forms.C.CheckStatus.BOOTSTRAP ){
+            const $node = this.rtNode();
+            if( $node ){
+                $node.addClass( this.iStatusableValidity() ? 'is-valid' : 'is-invalid' );
+            }
+        }
         // consolidate at the Checker level
         const checker = this.rtChecker();
         checker.statusConsolidate( opts );
@@ -127,6 +139,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      */
     _initPrefixType( checker ){
         _trace( 'IFieldSpec._initPrefixType' );
+        check( checker, Checker );
         const display = checker.confDisplayFieldTypeIndicator();
         const type = this.iFieldType();
         const $node = this.rtNode();
@@ -134,28 +147,69 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             const data = {
                 type: type
             };
-            const parentNode = $node.closest( '.'+this.rtChecker().confParentClass())[0];
+            const parentNode = $node.closest( '.'+checker.confParentClass())[0];
             this.#views.push( Blaze.renderWithData( Template.FormsFieldTypeIndicator, data, parentNode, $node[0] ));
         }
     }
 
     /*
-     * @summary Add a CheckStatus indicator after the field if it is defined
+     * @summary Insert an empty DIV in the DOM to prepare future potential status indicator insertion
+     * @param {Checker} checker
+     * @returns {Promise} which will resolve when the DIV is actually present in the DOM, or null
      */
-    _initSuffixStatus(){
+    _initRightSibling( checker ){
+        _trace( 'IFieldSpec._initRightSibling' );
+        check( checker, Checker );
+        const siblingClass = checker.confRightSiblingClass();
+        const $node = this.rtNode();
+        let res = null;
+        if( siblingClass && $node ){
+            const $parent = $node.parent();
+            assert( $parent && $parent.length, 'unexpected parent not found' );
+            const waitedSelector = '.'+siblingClass;
+            const $siblings = $parent.find( waitedSelector );
+            if( !$siblings.length ){
+                $node.after( '<div class="'+siblingClass+'"></div>' );
+                res = UIU.DOM.waitFor( waitedSelector ).then(() => {
+                    //console.debug( 'got waitedSelector', waitedSelector );
+                });
+            }
+        }
+        return res;
+    }
+
+    /*
+     * @summary Add a CheckStatus indicator after the field if it is defined
+     * @param {Checker} checker
+     */
+    _initSuffixStatus( checker ){
         _trace( 'IFieldSpec._initSuffixStatus' );
-        const status = this.iFieldStatus();
-        if( status ){
+        check( checker, Checker );
+        const display = this.rtShowStatus();
+        if( display === Forms.C.CheckStatus.INDICATOR ){
+            const $node = this.rtNode();
+            if( $node ){
+                const $parentNode = $node.closest( '.'+checker.confParentClass());
+                assert( $parentNode && $parentNode.length, 'unexpected parent not found' );
+                const siblingClass = checker.confRightSiblingClass();
+                const $sibling = $parentNode.find( '.'+siblingClass );
+                assert( $sibling && $sibling.length, 'unexpected sibling not found' );
+                const data = {
+                    statusRv: this.iStatusableStatusRv()
+                };
+                this.#views.push( Blaze.renderWithData( Template.FormsCheckStatusIndicator, data, $parentNode[0], $sibling[0] ));
+            }
         }
     }
 
     /*
      * @summary Insert a parent in the DOM to prepare future potential indicator insertions
+     * @param {Checker} checker
      * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
      */
-    _initWrapParent(){
+    _initWrapParent( checker ){
         _trace( 'IFieldSpec._initWrapParent' );
-        const checker = this.rtChecker();
+        check( checker, Checker );
         const parentClass = checker.confParentClass();
         const $node = this.rtNode();
         let res = null;
@@ -217,14 +271,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec.checkerInit' );
         check( checker, Checker );
         this.rtChecker( checker );
-        const promise = this._initWrapParent();
-        if( promise ){
-            const self = this;
-            promise.then(() => {
-                self._initPrefixType( checker );
-                self._initSuffixStatus()
-            });
-        }
+        let promises = [];
+        promises.push( this._initWrapParent( checker ));
+        promises.push( this._initRightSibling( checker ));
+        const self = this;
+        Promise.allSettled( promises ).then(() => {
+            self._initPrefixType( checker );
+            self._initSuffixStatus( checker )
+        });
     }
 
     /**
@@ -244,7 +298,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {Promise} which resolve to the true|false validity status for this field
      */
     async iFieldCheck( opts={} ){
-        console.debug( 'IFieldSpec.iFieldCheck', this.name());
+        _trace( 'IFieldSpec.iFieldCheck', this.name());
         let res = true;
         // some initializations and clearings before any check of this field
         this._checkBefore( opts );
@@ -285,16 +339,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @returns {Boolean} whether a CheckStatus indicator should be appended to the field input, defaulting to false
+     * @returns {String} whether and how the status should be displayed for this field
+     *  No default is provided: without any specification, the checker configuration will apply for all fields
      */
     iFieldStatus(){
         _trace( 'IFieldSpec.iFieldStatus' );
         const defn = this._defn();
-        let b = defn.status;
-        if( b !== true && b !== false ){
-            b = false;
-        }
-        return b;
+        let status = defn.status;
+        return status;
     }
 
     /**
@@ -336,5 +388,25 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             }
         }
         return this.#jqNode;
+    }
+
+    /**
+     * @returns {CheckStatus} the way the status should be displayed for this field
+     *  considering the package configuration, and the Checker instanciation options
+     */
+    rtShowStatus(){
+        _trace( 'IFieldSpec.rtShowStatus' );
+        if( !this.#showStatus ){
+            const display = this.rtChecker().confDisplayStatus();
+            const overridable = Forms._conf.checkStatusOverridable;
+            if( overridable ){
+                const status = this.iFieldStatus();
+                if( status ){
+                    display = status;
+                }
+            }
+            this.#showStatus = display;
+        }
+        return this.#showStatus;
     }
 });

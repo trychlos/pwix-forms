@@ -219,27 +219,25 @@ Known configuration options are:
 
     Whether input fields should have a check status (valid/uncomplete/invalid) indicator, where available values are:
 
-    - `Forms.C.CheckStatus.Show.NONE`
+    - `Forms.C.CheckStatus.NONE`
 
         Do not show any status indicator
 
-    - `Forms.C.CheckStatus.Show.BOOTSTRAP`
+    - `Forms.C.CheckStatus.BOOTSTRAP`
 
         Uses the [Bootstrap](https://getbootstrap.com/) classes to indicate the status. Only applies to fields.
 
-    - `Forms.C.CheckStatus.Show.INDICATOR`
+    - `Forms.C.CheckStatus.INDICATOR`
 
         Uses an icon indicator.
 
         On fields, the package is able to automatically append the indicator on the right of the field.
 
-        At the panel level, the caller must use a `FormsCheckStatusIndicator` template to position the indicator according to its wishes.
-
-    Defaults to `Forms.C.CheckStatus.Show.INDICATOR`.
+    Defaults to `Forms.C.CheckStatus.INDICATOR`.
 
     `pwix:forms` is able to automagically add a status indicator on the right of each field, unless this feature is disabled by the package configuration, or at the `Checker` level, or individually for each field.
 
-    If the caller wishes an indicator at the panel, it can use, in place or besides of fields indicators, the `FormsCheckStatusIndicator` Blaze template.
+    If the caller wishes an indicator at the panel level, it can use, in place or besides of fields indicators, the `FormsCheckStatusIndicator` Blaze component.
 
 - `checkStatusOverridable`
 

@@ -83,11 +83,11 @@ export class Messager extends mix( Base ).with( IMessager ){
      * @param {Array} ids a list of ICheckable identifiers to be removed
      */
     _remove( ids ){
-        console.debug( 'Messager._remove', ids, this.#set.get());
+        _trace( 'Messager._remove', ids, this.#set.get());
         let newset = [];
         this.#set.get().forEach(( it ) => {
             if( ids.includes( it.emitter())){
-                console.debug( 'removing', it );
+                //console.debug( 'removing', it );
             } else {
                 newset.push( it );
             }

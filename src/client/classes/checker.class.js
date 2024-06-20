@@ -92,8 +92,10 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         data: null,
         id: null,
         displayFieldTypeIndicator: null,
+        checkStatusShow: null,
         validityEvent: 'checker-validity.forms',
-        parentClass: 'form-indicators-parent'
+        parentClass: 'form-indicators-parent',
+        rightSiblingClass: 'form-indicators-right-sibling'
    };
     #conf = {};
 
@@ -181,7 +183,23 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
             display = Forms._conf.displayFieldTypeIndicator;
         }
         if( display !== true && display !== false ){
-            display = true; // hard-coded default value in the configure() would have been wrong
+            display = true; // hard-coded default value in case configure() has been wrongly fed
+        }
+        return display;
+    }
+
+    // whether and how display a status indicator (none or bootstrap or indicator)
+    //  considers the configured default value and whether it is overridable
+    //  considers the Checker configuration
+    //  this may be overriden on a per-field basis
+    confDisplayStatus(){
+        let display = Forms._conf.checkStatusShow;
+        const overridable = Forms._conf.checkStatusOverridable;
+        if( overridable ){
+            const opt = this.#conf.checkStatusShow;
+            if( opt !== null ){
+                display = opt;
+            }
         }
         return display;
     }
@@ -235,6 +253,13 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         return name;
     }
 
+    // returns the class to be set on the right sibling node dynamically inserted just after each field
+    confRightSiblingClass(){
+        const name = this.#conf.rightSiblingClass || null;
+        assert( !name || _.isString( name ), 'rightSiblingClass is expected to be a non empty string' );
+        return name;
+    }
+
     // returns the validity event, always set
     confValidityEvent(){
         const event = this.#conf.validityEvent || null;
@@ -279,12 +304,12 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      *  - displayFieldTypeIndicator: whether to display a field type indicator on the left of each field,
      *    this value overrides the configured default value
      *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-     *
-     *  - displayCheckResultIndicator: whether to display a check result indicator on the right of the field
+     *  - checkStatusShow: whether and how to display the result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable
      *
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
      *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+     *  - rightSiblingClass: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
      * @returns {Checker} this Checker instance
      */
     constructor( instance, args={} ){
@@ -313,7 +338,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
         // if we want some debug display that before logs of interfaces initializations
-        console.debug( this, this.confId());
+        //console.debug( this, this.confId());
 
         // initialize panel-level runtime data
         // have to wait for having returned from super() and have built the configuration
@@ -354,7 +379,6 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      */
     async check( opts={} ){
         _trace( 'Checker.check' );
-        console.debug( 'Checker.check' );
         let valid = true;
         let promises = [];
         const cb = function( name, spec ){
