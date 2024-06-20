@@ -253,7 +253,7 @@ Known configuration options are:
 
     Defaults to `true`.
 
-    A field can still be defined to override this default value.
+    This default value can be overriden at the field specification level.
 
 - `verbosity`
 

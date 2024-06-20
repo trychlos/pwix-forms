@@ -23,23 +23,23 @@ import './FormsMessager.less';
 
 Template.FormsMessager.onRendered( function(){
 
-    // track orderable
-    /*
-    this.autorun(() => {
-        const messager = Template.currentData().messager;
-        console.debug( 'messager', messager );
-    });
-    */
+    // track stack setup
+    if( false ){
+        this.autorun(() => {
+            const messager = Template.currentData().messager;
+            console.debug( 'messager', messager );
+        });
+    }
 
     // track the stack content
-    /*
-    this.autorun(() => {
-        const messager = Template.currentData().messager;
-        if( messager ){
-            console.debug( messager.iMessagerDump());
-        }
-    });
-    */
+    if( false ){
+        this.autorun(() => {
+            const messager = Template.currentData().messager;
+            if( messager ){
+                console.debug( messager.iMessagerDump());
+            }
+        });
+    }
 });
 
 Template.FormsMessager.helpers({
@@ -59,6 +59,6 @@ Template.FormsMessager.helpers({
     // the class to be associated to the error message: may be an error, a warning, an info, etc.
     msgLevel(){
         const o = this.messager?.iMessagerLast();
-        return o ? o.iTypedMessageType() : '';
+        return o ? o.iTypedMessageLevel() : '';
     }
 });

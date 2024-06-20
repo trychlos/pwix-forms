@@ -95,8 +95,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             result.forEach(( tm ) => {
                 let tmValid = true;
                 if( tm instanceof TM.TypedMessage ){
-                    const level = tm.iTypedMessageType();
-                    tmValid = ( TM.TypeOrder.compare( level, TM.MessageType.C.ERROR ) < 0 );
+                    const level = tm.iTypedMessageLevel();
+                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) < 0 );
                     valid &&= tmValid;
                 } else {
                     console.warn( 'expected ITypedMessage, got', tm );
@@ -104,7 +104,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
                 // compute the status
                 if( !tmValid ){
                     statuses.push( CheckStatus.C.INVALID );
-                } else if( level === TM.MessageType.C.WARNING ){
+                } else if( level === TM.MessageLevel.C.WARNING ){
                     statuses.push( CheckStatus.C.UNCOMPLETE );
                 }
             });

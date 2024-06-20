@@ -14,8 +14,8 @@
  *  Checker expects each such row have its own identifier, and an 'id' string or function must be provided at instanciation time.
  *
  * Error messages:
- *  Even if we are talking about error messages, we actually manage the typed TM.TypedMessage emitted by the sub-components and check functions.
- *  Checker manages them via an 'IMessager' interface which sits over the (more complex) IOrderableStack interface.
+ *  Even if we are talking about error messages, we actually manage TM.TypedMessage's emitted by the sub-components and check functions.
+ *  Checker manages them via an 'IMessager' interface which let us have a stack of messages.
  *
  * Validity status:
  *  Correlatively to recurrent elementary and global checks, the validity status of the edited entiy (resp. entities) is recomputed.
