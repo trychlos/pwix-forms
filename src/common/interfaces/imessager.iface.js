@@ -39,6 +39,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     iMessagerClear(){
         _trace( 'IMessager.iMessagerClear' );
         this._save();
+        this._reset();
     }
 
     /**
@@ -66,5 +67,14 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IMessager.iMessagerPush', tms, id );
         this._restoreBut( id );
         this._push( tms, id );
+    }
+
+    /**
+     * @summary Remove from the stack the messages published by the provided ICheckable's
+     * @param {Array<String>} ids a list of identifiers
+     */
+    iMessagerRemove( ids ){
+        _trace( 'IMessager.iMessagerRemove', ids );
+        this._remove( ids )
     }
 });

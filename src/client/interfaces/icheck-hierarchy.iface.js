@@ -91,6 +91,17 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         */
 
     /**
+     * @summary Register against the parent (if any)
+     */
+    hierarchyRegister(){
+        _trace( 'ICheckHierarchy.hierarchyRegisterParent' );
+        const parent = this.confParent();
+        if( parent ){
+            parent.hierarchyRegisterChild( this );
+        }
+    }
+
+    /**
      * @summary Register a new child Checker
      * @param {Checker} child
      */
@@ -101,13 +112,34 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     }
 
     /**
-     * @summary Register against the parent (if any)
+     * @summary Remove the Checker from the hierarchy tree
+     * @param {Checker} parent
      */
-    hierarchyRegisterParent(){
-        _trace( 'ICheckHierarchy.hierarchyRegisterParent' );
-        const parent = this.confParent();
-        if( parent ){
-            parent.hierarchyRegisterChild( this );
+    hierarchyRemove( parent ){
+        _trace( 'ICheckHierarchy.hierarchyRemove' );
+        check( parent, Checker );
+        parent.hierarchyRemoveChild( this );
+    }
+
+    /**
+     * @summary Unregister against the parent (if any)
+     */
+    hierarchyRemoveChild( child ){
+        _trace( 'ICheckHierarchy.hierarchyRemoveChild' );
+        check( child, Checker );
+        const removedId = child.confId();
+        const children = this.rtChildren();
+        let found = -1;
+        for( let i=0 ; i<children.length ; ++i ){
+            if( children[i].confId() === removedId ){
+                found = i;
+                break;
+            }
+        }
+        if( found >= 0 ){
+            children.splice( found, 1 );
+        } else {
+            console.warn( 'hierarchyRemoveChild: id not found', removedId );
         }
     }
 

@@ -23,10 +23,11 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     /*
      * @summary Consolidate the validity/status of each checker to their parent (down-to-up)
      *  Update the relevant Checker data
+     * @param {Checker} parent the parent start point of the consolidation, defaulting to the parent of *this* checker
      */
-    _consolidateStatusCheckers(){
+    _consolidateStatusCheckers( parent ){
         _trace( 'ICheckStatus._consolidateStatusCheckers' );
-        const parent = this.confParent();
+        parent = parent || this.confParent();
         let valid = this.iStatusableValidity();
         if( parent ){
             const children = parent.rtChildren();

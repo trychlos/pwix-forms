@@ -2,7 +2,9 @@
  * pwix:forms/src/common/interfaces/icheckable.iface.js
  *
  * ICheckable if something which can be checked, either a field or a form.
- * The result of this check is either null, or an array of TypedMessage's
+ * The result of this check is either null, or a TypedMessage, or an array of TypedMessage's.
+ *
+ * Both FieldSpec (an instance of the field in a form) and Checker (a form) implement ICheckable.
  */
 
 import _ from 'lodash';
@@ -20,7 +22,7 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
     // an internal identifier so that the IMessager is able to identify this ICheckable
     #id = null;
 
-    // the last check result of the field
+    // the last check result of the field (or the checker)
     #tm = new ReactiveVar( null );
 
     // arguments at instanciation time
@@ -33,6 +35,12 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
         super( ...arguments );
         this.#id = Random.id();
         return this;
+    }
+
+    // getter
+    iCheckableId(){
+        _trace( 'ICheckable.iCheckableId' );
+        return this.#id;
     }
 
     // getter/setter

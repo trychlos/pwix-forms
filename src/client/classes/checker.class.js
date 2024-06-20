@@ -57,9 +57,6 @@ const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
 import { check } from 'meteor/check';
-import { ReactiveDict } from 'meteor/reactive-dict';
-import { ReactiveVar } from 'meteor/reactive-var';
-import { TM } from 'meteor/pwix:typed-message';
 
 import '../../common/js/trace.js';
 
@@ -104,9 +101,6 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
     // the topmost node of the template as a jQuery object
     #$topmost = null;
 
-    // the consolidated data parts for each underlying component / pane / panel / FormChecker
-    #dataParts = new ReactiveDict();
-
     // private methods
 
     // clear the IMessager if any
@@ -133,6 +127,34 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerPush( tms, id );
+        }
+    }
+
+    // remove all messages emitted by this Checker and its fields
+    //  and recurse on the children
+    _messagerRemove(){
+        _trace( 'Checker._messagerRemove' );
+        // cleanup the messages stack from this checker
+        let checkables = [];
+        const cb = function( name, spec ){
+            checkables.push( spec.iCheckableId());
+            return true;
+        };
+        this.fieldsIterate( cb );
+        checkables.push( this.iCheckableId());
+        this.hierarchyUp( '_messagerRemoveById', checkables );
+        // iterate on all children
+        this.rtChildren().forEach(( child ) => {
+            child._messagerRemove();
+        });
+    }
+
+    // remove the messages send from this checker
+    _messagerRemoveById( checkables ){
+        _trace( 'Checker._messagerRemoveById' );
+        const messager = this.confIMessager();
+        if( messager ){
+            messager.iMessagerRemove( checkables );
         }
     }
 
@@ -280,7 +302,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         // have to wait for having returned from super() and have built the configuration
         this.eventInstallInputHandler();
         this.eventInstallValidityHandler();
-        this.hierarchyRegisterParent();
+        this.hierarchyRegister();
         this.statusInstallOkAutorun();
         this.statusInstallStatusAutorun();
         this.statusInstallValidityAutorun();
@@ -292,21 +314,13 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         }
         this.fieldsIterate( cb );
 
-        // define an autorun which reacts to dataParts changes to set the global validity status
-        this.argInstance().autorun(() => {
-            let ok = true;
-            Object.keys( self.#dataParts.all()).every(( emitter ) => {
-                ok &&= self.#dataParts.get( emitter );
-                return ok;
-            });
-            //self.#valid.set( ok );
-        });
-
         // onDestroyed
-        const confId = this.confId();
-        this.argInstance().view.onViewDestroyed( function(){
-            console.debug( 'onViewDestroyed', confId );
-        });
+        if( false ){
+            const confId = this.confId();
+            this.argInstance().view.onViewDestroyed( function(){
+                console.debug( 'onViewDestroyed', confId );
+            });
+        }
 
         // run an initial check with default values (but do not update the provided data if any)
         this.check({ update: false });
@@ -383,19 +397,6 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         if( panel ){
             panel.iEnumerateKeys( _iterate, args );
         }
-    }
-
-    /**
-     * @summary Let an underlying component / pane / panel / FormChecker advertize of its individual validity status
-     * @param {Object} o with following keys:
-     *  - emitter: a unique emitter identifier
-     *  - ok: the validity status of the individual component
-     */
-    formValidity( o ){
-        assert( o && _.isObject( o ), 'EntityChecker.formValidity() wants a plain javascript Object' );
-        assert( o.emitter && _.isString( o.emitter ) && o.emitter.length, 'EntityChecker.formValidity() wants an non-empty emitter' );
-        assert( _.isBoolean( o.ok ), 'EntityChecker.formValidity() wants a boolean validity status' );
-        this.#dataParts.set( o.emitter, o.ok );
     }
 
     /**
@@ -489,9 +490,30 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
     */
 
     /**
+     * @summary Remove this Checker from the hierarchy tree
+     *  In an array-ed form, removing a row implies to also cleanup the associated Checker
+     *  - remove the messages published from this Checker and its dependants
+     *  - remove all this subtree from the hierarchy tree
+     */
+    removeMe(){
+        _trace( 'Checker.removeMe' );
+        // cleanup the messages stack from this checker
+        this._messagerRemove();
+        // detach from the hierarchy tree
+        const parent = this.confParent();
+        if( parent ){
+            //console.debug( 'siblings before', this.confParent().rtChildren().length );
+            this.hierarchyRemove( parent );
+            //console.debug( 'siblings after', this.confParent().rtChildren().length );
+            this.statusConsolidate( parent );
+        }
+    }
+
+    /**
      * @returns {CheckStatus} the current (consolidated) check status of this panel
      */
     status(){
+        _trace( 'Checker.status' );
         return this.iStatusableStatus();
     }
 
@@ -499,6 +521,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      * @returns {Boolean} the current (consolidated) true|false validity of this panel
      */
     validity(){
+        _trace( 'Checker.validity' );
         return this.iStatusableValidity();
     }
 }

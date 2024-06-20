@@ -63,11 +63,11 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         // consolidate at the Checker level
         const checker = this.rtChecker();
         checker.statusConsolidate( opts );
-        // when we have consolidated all fields of each checker, it is time to re-push all TypedMessage's, terminating by this one
-        checker.messagerPush( res, this.rtId());
+        // and push all returned TypedMessage's
+        checker.messagerPush( res, this.iCheckableId());
     }
 
-    // some initializations and clzarings before any check of the field
+    // some initializations and clearings before any check of the field
     _checkBefore( opts ){
         _trace( 'IFieldSpec._checkBefore' );
         // do not reset anything reactive to not flicker the display
@@ -76,8 +76,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
-        // clear the messages stack
-        this.rtChecker().messagerClear();
+        // clear the last messages we have emitted
+        this.rtChecker()._messagerRemoveById([ this.iCheckableId() ]);
     }
 
     // consolidate several validity/status from besides fields

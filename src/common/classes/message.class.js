@@ -47,7 +47,7 @@ export class Message extends mix( Base ).with(){
      * Constructor
      * @locus Everywhere
      * @param {TypedMessage} tm
-     * @param {String} id the ICheckable identifier
+     * @param {String} id the emitter ICheckable identifier
      * @returns {Message} this instance
      */
     constructor( tm, id ){
@@ -65,8 +65,8 @@ export class Message extends mix( Base ).with(){
      * @locus Everywhere
      * @returns {String} the ICheckable identifier
      */
-    checkable(){
-        _trace( 'Message.checkable' );
+    emitter(){
+        _trace( 'Message.emitter' );
         return this.#id;
     }
 

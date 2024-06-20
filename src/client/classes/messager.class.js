@@ -45,7 +45,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         let i = 0;
         this.#set.get().forEach(( it ) => {
             console.debug( 'dump['+i+'] tm', it.tm());
-            console.debug( 'dump['+i+'] checkable', it.checkable());
+            console.debug( 'dump['+i+'] emitter', it.emitter());
             i += 1;
         });
     }
@@ -79,6 +79,31 @@ export class Messager extends mix( Base ).with( IMessager ){
     }
 
     /*
+     * @summary Remove listed identifiers from the stack
+     * @param {Array} ids a list of ICheckable identifiers to be removed
+     */
+    _remove( ids ){
+        console.debug( 'Messager._remove', ids, this.#set.get());
+        let newset = [];
+        this.#set.get().forEach(( it ) => {
+            if( ids.includes( it.emitter())){
+                console.debug( 'removing', it );
+            } else {
+                newset.push( it );
+            }
+        });
+        this.#set.set( newset );
+    }
+
+    /*
+     * @summary Clears the set of messages
+     */
+    _reset(){
+        _trace( 'Messager._reset' );
+        this.#set.set( [] );
+    }
+
+    /*
      * @param {String} id a ICheckable identifier to not restore
      * @summary Save the set of messages, and clears it
      */
@@ -88,7 +113,7 @@ export class Messager extends mix( Base ).with( IMessager ){
             let set = [];
             this.#saved.forEach(( it ) => {
                 check( it, Message );
-                if( it.checkable() === id ){
+                if( it.emitter() === id ){
                     console.debug( 'ignoring', it );
                 } else {
                     set.push( it );
@@ -100,12 +125,11 @@ export class Messager extends mix( Base ).with( IMessager ){
     }
 
     /*
-     * @summary Save the set of messages, and clears it
+     * @summary Save the set of messages
      */
     _save(){
         _trace( 'Messager._save' );
         this.#saved = this.#set.get();
-        this.#set.set( [] );
     }
 
     // public data
