@@ -40,8 +40,10 @@ function configure( api ){
     _use( 'reactive-dict' );
     _use( 'reactive-var' );
     _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-beta.0', 'server' );
+    _use( 'tracker' );
     api.addFiles( 'src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js', 'client' );
     api.addFiles( 'src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js', 'client' );
+    api.addFiles( 'src/client/components/FormsMessager/FormsMessager.js', 'client' );
 }
 
 // NPM dependencies are checked in /src/server/js/check_npms.js

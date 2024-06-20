@@ -31,6 +31,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
 
     // consolidate the result of all children
     // returns the results for specId, which have not been pushed
+    /*
     _resultsConsolidate( specId ){
         let idTms = null;
         // take the fields check results of the checker
@@ -58,6 +59,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         });
         return idTms;
     }
+    */
 
     /**
      * @returns {ICheckHierarchy} the instance
@@ -74,6 +76,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      *  and it will ask to each and every child to ask for fields check results
      * @param {String} specId
      */
+    /*
     hierarchyMessagers( specId ){
         console.debug( 'ICheckHierarchy.hierarchyMessagers', specId );
         const parent = this._topmostParent();
@@ -85,6 +88,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
             });
         }
     }
+        */
 
     /**
      * @summary Register a new child Checker

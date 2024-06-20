@@ -29,10 +29,12 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
     });
 
     // track status changes
-    self.autorun(() => {
-        const status = Template.currentData().statusRv && Template.currentData().statusRv.get();
-        console.debug( 'status', status );
-    });
+    if( false ){
+        self.autorun(() => {
+            const status = Template.currentData().statusRv && Template.currentData().statusRv.get();
+            console.debug( 'status', status );
+        });
+    }
 });
 
 Template.FormsCheckStatusIndicator.helpers({

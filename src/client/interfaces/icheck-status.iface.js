@@ -23,7 +23,6 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     /*
      * @summary Consolidate the validity/status of each checker to their parent (down-to-up)
      *  Update the relevant Checker data
-     * @returns {Promise} which resolve to the true|false validity
      */
     _consolidateStatusCheckers(){
         _trace( 'ICheckStatus._consolidateStatusCheckers' );
@@ -43,20 +42,18 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
             }
             parent._consolidateStatusCheckers();
         }
-        return valid;
     }
 
     /*
      * @summary Consolidate the validity/status of each field for this checker
      *  Update the relevant Checker data
-     * @returns {Promise} which resolve to the true|false validity
+     * @returns {Boolean} the true|false validity of the checker
      */
     _consolidateStatusFields(){
         _trace( 'ICheckStatus._consolidateStatusFields' );
         let valid = true;
         let statuses = [ CheckStatus.C.NONE ];
         const cb = function( name, spec ){
-            console.debug( name );
             valid &&= spec.iStatusableValidity();
             statuses.push( spec.iStatusableStatus());
             return true;
@@ -64,8 +61,6 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
         this.fieldsIterate( cb );
         this.iStatusableValidity( valid );
         this.iStatusableStatus( CheckStatus.worst( statuses ));
-        // and consolidate up in the Checker's hierarchy
-        return this.statusConsolidateCheckers();
     }
 
     /**
@@ -82,15 +77,13 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      *  Update the relevant Checker data
      * @param {Any} opts an optional behaviour options
      *  cf. Checker.check for a description of the known options
-     * @returns {Promise} which resolve to the true|false validity
+     * @returns {Boolean} the true|false validity of this checker
      */
     statusConsolidate( opts ){
         _trace( 'ICheckStatus.statusConsolidate' );
-        console.debug( 'ICheckStatus.statusConsolidate' );
-        if( opts.initial ){
-            this._consolidateStatusFields();
-        }
+        this._consolidateStatusFields();
         this._consolidateStatusCheckers();
+        return this.iStatusableValidity();
     }
 
     /**

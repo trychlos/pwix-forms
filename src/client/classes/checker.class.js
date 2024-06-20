@@ -66,15 +66,13 @@ import '../../common/js/trace.js';
 import { Base } from '../../common/classes/base.class.js';
 
 import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
+import { IMessager } from '../../common/interfaces/imessager.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
-//import { ICheckDom } from '../interfaces/icheck-dom.iface.js';
 import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
-//import { ICheckField } from '../interfaces/icheck-field.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
 import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
-import { IMessager } from '../interfaces/imessager.iface.js';
 import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
 
 export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
@@ -125,16 +123,16 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         _trace( 'Checker._messagerDump' );
         const messager = this.confIMessager();
         if( messager ){
-            messager.iStackDump();
+            messager.iMessagerDump();
         }
     }
 
     // push a TypedMessage
-    _messagerPush( tm ){
+    _messagerPush( tms, id ){
         _trace( 'Checker._messagerPush' );
         const messager = this.confIMessager();
         if( messager ){
-            messager.iMessagerPush( tm );
+            messager.iMessagerPush( tms, id );
         }
     }
 
@@ -311,7 +309,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         });
 
         // run an initial check with default values (but do not update the provided data if any)
-        this.check({ initial: true, update: false });
+        this.check({ update: false });
 
         return this;
     }
@@ -320,7 +318,6 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      * @summary Check a panel, and all rows of an array-ed panel, and update its status
      * @param {Object} opts an option object with following keys:
      *  - update: whether the value found in the form should update the edited object, defaulting to true
-     *  - initial: whether we want consolidate all fields result in their Checker, defaulting to false
      *  - id: the identifier of the checker or null, added by IFieldSpec.iFieldCheck() function
      * @returns {Promise} which eventually resolves to the global validity status of the form as true|false
      */
@@ -432,19 +429,20 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
     }
 
     /**
-     * @summary Dump the Messager content
+     * @summary Dump the Messager content in the display order
      */
-    messagerDump( tm ){
+    messagerDump(){
         _trace( 'Checker.messagerDump' );
         this.hierarchyUp( '_messagerDump' );
     }
 
     /**
-     * @param {TypedMessage} tm
+     * @param {TypedMessage|Array<TypedMessage>} tms
+     * @param {Strig} id the emitter ICheckable identifier
      */
-    messagerPush( tm ){
+    messagerPush( tms, id=null ){
         _trace( 'Checker.messagerPush' );
-        this.hierarchyUp( '_messagerPush', tm );
+        this.hierarchyUp( '_messagerPush', tms, id );
     }
 
     /**

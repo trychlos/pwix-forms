@@ -10,6 +10,7 @@ import { FieldType } from '../definitions/field-type.def';
 
 import { ICheckable } from '../interfaces/icheckable.iface';
 import { IChecker } from '../interfaces/ichecker.iface';
+import { IMessager } from '../interfaces/imessager.iface';
 import { ISchema } from '../interfaces/ischema.iface';
 import { IStatusable } from '../interfaces/istatusable.iface';
 import { ITabular } from '../interfaces/itabular.iface';
@@ -30,6 +31,7 @@ Forms.FieldType = FieldType;
 
 Forms.ICheckable = ICheckable;
 Forms.IChecker = IChecker;
+Forms.IMessager = IMessager;
 Forms.ISchema = ISchema;
 Forms.IStatusable = IStatusable;
 Forms.ITabular = ITabular;

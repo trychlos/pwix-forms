@@ -57,14 +57,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     //  cf. Checker.check for a description of known options
     _checkAfter( opts, res ){
         _trace( 'IFieldSpec._checkAfter' );
-        this.iCheckableResult( res );
+        res = this.iCheckableResult( res );
         // consolidate each received TypedMessage into a single validity and status for the field
         this._checkTMConsolidate();
         // consolidate at the Checker level
         const checker = this.rtChecker();
         checker.statusConsolidate( opts );
         // when we have consolidated all fields of each checker, it is time to re-push all TypedMessage's, terminating by this one
-        checker.hierarchyMessagers( this.rtId());
+        checker.messagerPush( res, this.rtId());
     }
 
     // some initializations and clzarings before any check of the field
@@ -90,7 +90,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         let valid = true;
         let status = CheckStatus.C.NONE;
         const result = this.iCheckableResult();
-        console.debug( 'result', result );
         if( result ){
             let statuses = [ CheckStatus.C.VALID ];
             result.forEach(( tm ) => {
@@ -122,7 +121,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
                     break
             }
         }
-        console.debug( status, valid );
         this.iStatusableStatus( status );
         this.iStatusableValidity( valid );
     }
@@ -170,7 +168,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
                 $node.wrap( '<div class="'+parentClass+'"></div>' );
                 const waitedSelector = '.'+parentClass+' '+this.iFieldSelector();
                 res = UIU.DOM.waitFor( waitedSelector ).then(() => {
-                    console.debug( 'got waitedSelector', waitedSelector );
+                    //console.debug( 'got waitedSelector', waitedSelector );
                 });
             }
         }
@@ -325,7 +323,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @returns {String} theinternal identifier of this IFieldSpec
+     * @returns {String} the internal identifier of this IFieldSpec
      */
     rtId(){
         _trace( 'IFieldSpec.rtId' );

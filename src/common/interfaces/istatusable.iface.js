@@ -47,7 +47,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
         if( status !== undefined ){
             const index = CheckStatus.index( status );
             if( index >= 0 ){
-                console.debug( 'status', status );
+                //console.debug( 'status', status );
                 this.#status.set( status );
             } else {
                 console.warn( 'unknwon status', status );
@@ -75,7 +75,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
         _trace( 'IStatusable.iStatusableValidity' );
         if( valid !== undefined ){
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
-            console.debug( 'validity', valid );
+            //console.debug( 'validity', valid );
             this.#validity.set( valid );
         }
         return this.#validity.get();
