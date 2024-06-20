@@ -16,7 +16,6 @@ const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { check } from 'meteor/check';
-import { Random } from 'meteor/random';
 import { TM } from 'meteor/pwix:typed-message';
 import { UIU } from 'meteor/pwix:ui-utils';
 
@@ -37,9 +36,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
     // the attached Checker
     #checker = null;
-
-    // an internal identifier of this IFieldSpec
-    #id = null;
 
     // the DOM node
     #jqNode = null;
@@ -208,7 +204,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     constructor( name, args ){
         _trace( 'IFieldSpec.IFieldSpec' );
         super( ...arguments );
-        this.#id = Random.id();
         return this;
     }
 
@@ -320,14 +315,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         const o = this.#checker;
         assert( o && o instanceof Checker, 'checker must be an instance of Checker' );
         return o;
-    }
-
-    /**
-     * @returns {String} the internal identifier of this IFieldSpec
-     */
-    rtId(){
-        _trace( 'IFieldSpec.rtId' );
-        return this.#id;
     }
 
     /**

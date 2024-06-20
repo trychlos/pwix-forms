@@ -29,38 +29,6 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         return parent ? parent._topmostParent() : this;
     }
 
-    // consolidate the result of all children
-    // returns the results for specId, which have not been pushed
-    /*
-    _resultsConsolidate( specId ){
-        let idTms = null;
-        // take the fields check results of the checker
-        const cb = function( name, spec ){
-            console.debug( name );
-            const result = spec.iCheckableResult();
-            if( result ){
-                if( specId === spec.rtId()){
-                    idTms = result;
-                } else if( result.length ){
-                    result.forEach(( tm ) => {
-                        hierarchyUp( '_messagerPush', tm );
-                    });
-                }
-            }
-            return true;
-        };
-        this.fieldsIterate( cb );
-        // and does the same on the children
-        this.rtChildren().forEach(( child ) => {
-            const result = child._resultsConsolidate( specId );
-            if( result ){
-                idTms = result;
-            }
-        });
-        return idTms;
-    }
-    */
-
     /**
      * @returns {ICheckHierarchy} the instance
      */
@@ -69,26 +37,6 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
         super( ...arguments );
         return this;
     }
-
-    /**
-     * @summary push all existing TypedMessage's, terminating with the specified 'specId'
-     *  We go to the topmost parent
-     *  and it will ask to each and every child to ask for fields check results
-     * @param {String} specId
-     */
-    /*
-    hierarchyMessagers( specId ){
-        console.debug( 'ICheckHierarchy.hierarchyMessagers', specId );
-        const parent = this._topmostParent();
-        const result = parent._resultsConsolidate( specId );
-        console.debug( result );
-        if( result && result.length ){
-            result.forEach(( tm ) => {
-                this.hierarchyUp( '_messagerPush', tm );
-            });
-        }
-    }
-        */
 
     /**
      * @summary Register against the parent (if any)
