@@ -253,7 +253,14 @@ Known configuration options are:
 
     Defaults to `true`.
 
-    This default value can be overriden at the field specification level.
+    This default value can be overriden at the Checker level.
+
+    This option only applies if the field is specified with a `type` value among:
+
+    - `Forms.FieldType.C.INFO`
+    - `Forms.FieldType.C.MANDATORY`
+    - `Forms.FieldType.C.OPTIONAL`
+    - `Forms.FieldType.C.WORK`
 
 - `verbosity`
 

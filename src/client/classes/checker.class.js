@@ -91,6 +91,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         panel: null,
         data: null,
         id: null,
+        displayFieldTypeIndicator: null,
         validityEvent: 'checker-validity.forms',
         parentClass: 'form-indicators-parent'
    };
@@ -170,6 +171,19 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
     // returns the data to be passed to field-defined check functions, may be null
     confData(){
         return this.#conf.data || null;
+    }
+
+    // whether a field type indicator must be displayed for the fields of this checker
+    //  defaulting to the configured value
+    confDisplayFieldTypeIndicator(){
+        let display = this.#conf.displayFieldTypeIndicator;
+        if( display !== true && display !== false ){
+            display = Forms._conf.displayFieldTypeIndicator;
+        }
+        if( display !== true && display !== false ){
+            display = true; // hard-coded default value in the configure() would have been wrong
+        }
+        return display;
     }
 
     // returns the id row identifier, may be null
@@ -254,14 +268,17 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      * @param {Object} args an optional arguments object with following keys:
      *  - parent: an optional parent Checker instance
      *  - messager: an optional IMessager implementation
-     *      > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
-     *      > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
+     *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
+     *    > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
      *  - panel: an optional IPanelSpec implementation which defines the managed fields
      *  - data: an optional data opaque object to be passed to check functions as additional argument
      *  - id: when the panel is array-ed, the row identifier
-     *      will be passed as an option to field-defined check function
+     *    will be passed as an option to field-defined check function
      *  - $ok: an optional jQuery object which defines the OK button (to enable/disable it)
      *  - okFn( valid<Boolean> ): an optional function to be called when OK button must be enabled/disabled
+     *  - displayFieldTypeIndicator: whether to display a field type indicator on the left of each field,
+     *    this value overrides the configured default value
+     *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
      *
      *  - displayCheckResultIndicator: whether to display a check result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable

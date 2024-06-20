@@ -68,6 +68,14 @@ _.merge( FieldType, {
     },
 
     /**
+     * @returns {Boolean} whether the type is known
+     */
+    known( type ){
+        const o = FieldType._byType( type );
+        return ( o !== null );
+    },
+
+    /**
      * @returns {String} the title associated with this type
      */
     title( type ){

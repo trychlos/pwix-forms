@@ -123,12 +123,14 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
     /*
      * @summary Add a fieldtype indicator before the field if it is defined
+     * @param {Checker} checker
      */
-    _initPrefixType(){
+    _initPrefixType( checker ){
         _trace( 'IFieldSpec._initPrefixType' );
+        const display = checker.confDisplayFieldTypeIndicator();
         const type = this.iFieldType();
         const $node = this.rtNode();
-        if( type && $node ){
+        if( display && type && FieldType.known( type ) && $node ){
             const data = {
                 type: type
             };
@@ -219,7 +221,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         if( promise ){
             const self = this;
             promise.then(() => {
-                self._initPrefixType();
+                self._initPrefixType( checker );
                 self._initSuffixStatus()
             });
         }

@@ -9,6 +9,7 @@ Forms._conf = {};
 Forms._defaults = {
     checkStatusOverridable: true,
     checkStatusShow: Forms.C.CheckStatus.INDICATOR,
+    displayFieldTypeIndicator: true,
     verbosity: Forms.C.Verbose.CONFIGURE
 };
 
