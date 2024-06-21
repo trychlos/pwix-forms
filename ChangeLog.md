@@ -4,9 +4,9 @@
 
 ### 1.0.0-rc
 
-Release date: 
+    Release date:
 
-- Initial release
+    - Initial release
 
 ---
 P. Wieser
