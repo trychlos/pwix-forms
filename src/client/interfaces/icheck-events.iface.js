@@ -8,11 +8,7 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
-import { check } from 'meteor/check';
-
 import '../../common/js/index.js';
-
-import { IFieldSpec } from './ifield-spec.iface.js';
 
 export const ICheckEvents = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -41,13 +37,13 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     // - event is a jQuery.Event
     _inputHandler( event ){
         _trace( 'ICheckEvents._inputHandler', event );
-        console.debug( '_inputHandler', event );
+        //console.debug( '_inputHandler', event );
         const spec = this._fieldSpecFromEvent( event );
         if( spec ){
             //this.iCkFieldCheck( field, this.argInstance().$( event.target ));
             spec.checkerInputHandler();
         } else {
-            console.debug( 'not handled here' );
+            //console.debug( 'not handled here' );
         }
     }
 
