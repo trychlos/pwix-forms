@@ -32,10 +32,12 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
         if( parent ){
             const children = parent.rtChildren();
             if( children ){
-                valid = true;
+                //valid = true;
                 let statuses = [ CheckStatus.C.NONE ];
                 children.forEach(( child ) => {
+                    //console.debug( 'before valid', valid, 'child', child.iStatusableValidity());
                     valid &&= child.iStatusableValidity();
+                    //console.debug( 'after valid', valid );
                     statuses.push( child.iStatusableStatus());
                 });
                 parent.iStatusableValidity( valid );
@@ -48,20 +50,24 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     /*
      * @summary Consolidate the validity/status of each field for this checker
      *  Update the relevant Checker data
+     * @param {Any} opts an optional behaviour options
+     *  cf. Checker.check for a description of the known options
      * @returns {Boolean} the true|false validity of the checker
      */
-    _consolidateStatusFields(){
+    _consolidateStatusFields( opts ){
         _trace( 'ICheckStatus._consolidateStatusFields' );
-        let valid = true;
-        let statuses = [ CheckStatus.C.NONE ];
-        const cb = function( name, spec ){
-            valid &&= spec.iStatusableValidity();
-            statuses.push( spec.iStatusableStatus());
-            return true;
-        };
-        this.fieldsIterate( cb );
-        this.iStatusableValidity( valid );
-        this.iStatusableStatus( CheckStatus.worst( statuses ));
+        if( opts.ignoreFields !== true ){
+            let valid = true;
+            let statuses = [ CheckStatus.C.NONE ];
+            const cb = function( name, spec ){
+                valid &&= spec.iStatusableValidity();
+                statuses.push( spec.iStatusableStatus());
+                return true;
+            };
+            this.fieldsIterate( cb );
+            this.iStatusableValidity( valid );
+            this.iStatusableStatus( CheckStatus.worst( statuses ));
+        }
     }
 
     /**
@@ -82,7 +88,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      */
     statusConsolidate( opts ){
         _trace( 'ICheckStatus.statusConsolidate' );
-        this._consolidateStatusFields();
+        this._consolidateStatusFields( opts );
         this._consolidateStatusCheckers();
         return this.iStatusableValidity();
     }

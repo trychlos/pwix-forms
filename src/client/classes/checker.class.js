@@ -62,6 +62,8 @@ import '../../common/js/trace.js';
 
 import { Base } from '../../common/classes/base.class.js';
 
+import { CheckStatus } from '../../common/definitions/check-status.def.js';
+
 import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IMessager } from '../../common/interfaces/imessager.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
@@ -375,6 +377,8 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      * @param {Object} opts an option object with following keys:
      *  - update: whether the value found in the form should update the edited object, defaulting to true
      *  - id: the identifier of the checker or null, added by IFieldSpec.iFieldCheck() function
+     *  - ignoreFields: whether fields must be considered when consolidating the status, defaulting to false
+     *    use case: when the checker actually manages an external component and the defined fields have to be ignored
      * @returns {Promise} which eventually resolves to the global validity status of the form as true|false
      */
     async check( opts={} ){
@@ -548,6 +552,19 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
             //console.debug( 'siblings after', this.confParent().rtChildren().length );
             this.statusConsolidate( parent );
         }
+    }
+
+    /**
+     * @summary Set the validity from an external emitter
+     *  As a side effect, the status is reset to NONE for this Checker
+     *  Example of a use case: the form embeds an external component not managed by any Checker
+     * @param {Boolean} valid
+     */
+    setValid( valid ){
+        _trace( 'Checker.setValid' );
+        this.iStatusableStatus( CheckStatus.C.NONE );
+        this.iStatusableValidity( valid );
+        this.statusConsolidate({ ignoreFields: true });
     }
 
     /**
