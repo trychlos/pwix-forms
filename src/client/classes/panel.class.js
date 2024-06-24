@@ -8,12 +8,14 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
+import { Field } from 'meteor/pwix:field';
+
 import { Base } from '../../common/classes/base.class.js';
 
 import { IEnumerable } from '../../common/interfaces/ienumerable.iface.js';
 import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.iface.js';
 
-import { FieldSpec } from '../classes/field-spec.class.js';
+import { FormField } from '../classes/form-field.class.js';
 
 export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
@@ -23,12 +25,31 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
     // private data
 
-    // the FieldSpec's set
+    // the FormField's set
     #set = null;
 
     // runtime data
 
     // private methods
+
+    /*
+     * @locus Client
+     * @summary Add to each field specification the informations provided in the FieldsSet
+     * @param {FormField.Set} set the FormField.Set defined for this collection
+     * @returns {Panel} this instance
+     */
+    _fromSet( set ){
+        const self = this;
+        const cb = function( name, spec ){
+            const field = set.byName( name );
+            if( field ){
+                spec._defn( field.toForm());
+            }
+            return true;
+        }
+        this.iEnumerateKeys( cb );
+        return this;
+    }
 
     // protected methods
 
@@ -39,18 +60,27 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * @locus Client
      * @summary Instanciates a new Panel instance
      * @param {Object} arg an optional panel specification as provided by the application
+     * @param {Field.Set} set a previously defined FormField.Set object
      * @returns {Panel} this instance
      */
-    constructor( arg ){
-        assert( !arg || _.isObject( arg ), 'expect a plain javascript object' );
+    constructor( arg, set ){
+        assert( arg && _.isObject( arg ), 'expect a plain javascript object' );
+        assert( set && set instanceof Field.Set, 'expect a Field.Set instance' );
 
         super( ...arguments );
         const self = this;
 
-        // instanciate a FieldSpec object for each field description
+        // instanciate a FormField object for each field description
         this.#set = {};
         const cb = function( key, value ){
-            self.#set[key] = new FieldSpec( key, value );
+            const field = set.byName( key );
+            if( field ){
+                const defn = field._defn();
+                _.merge( defn, value );
+                self.#set[key] = new FormField( defn );
+            } else {
+                console.warn( 'unknown name', key, 'ignored' );
+            }
             return true;
         };
         this.iEnumerateKeys( cb );
@@ -58,25 +88,13 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
         // setup the new enumeration reference as a keyed object
         this.iEnumerableBase( this.#set );
 
-        return this;
-    }
-
-    /**
-     * @locus Client
-     * @summary Add to each field specification the informations provided in the FieldsSet
-     * @param {Field.Set} set the Field.Set defined for this collection
-     * @returns {Panel} this instance
-     */
-    fromSet( set ){
-        const self = this;
-        const cb = function( name, spec ){
-            const field = set.byName( name );
-            if( field ){
-                spec._defn( field.toForm());
-            }
-            return true;
+        // update from provided FormField.Set
+        /*
+        if( set ){
+            this._fromSet( set );
         }
-        this.iEnumerateKeys( cb );
+            */
+
         return this;
     }
 }

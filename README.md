@@ -78,7 +78,7 @@ An interface whichs adds to the implementor the capability of being checked (.e.
 
 Each implementation instance is provided a random unique identifier at instanciation time. This identifier let us manages the published `TypedMessage`'s by emitter.
 
-Both `Checker` and `FieldSpec` classes implement this interface.
+Both `Checker` and `FormField` classes implement this interface.
 
 ##### `Forms.IMessager`
 
@@ -126,7 +126,7 @@ Example:
             if( parentChecker && !checker ){
                 self.APP.checker.set( new Forms.Checker( self, {
                     parent: parentChecker,
-                    panel: self.AM.panel.fromSet( myCollection.fieldsSet ),
+                    panel: self.APP.panel,
                     data: {
                         item: Template.currentData().item
                     }
@@ -136,22 +136,29 @@ Example:
     });
 ```
 
+Only available on the client.
+
 ##### `Forms.Panel`
 
-Let the calling application defines the fields managed in the panel.
+Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `FormField.Set` object.
 
 Usage:
 
 ```js
-    const panel = new Forms.Panel({
+    import { FormField } from 'meteor/pwix:field';
+    import { Forms } from 'meteor/pwix:forms';
+
+const panel = new Forms.Panel({
         username: {
             js: '.js-username'
         },
         loginAllowed: {
             js: '.js-login-allowed'
         }
-    });
+    }, myCollection.fieldsSet );
 ```
+
+Only available on the client.
 
 ### Blaze components
 

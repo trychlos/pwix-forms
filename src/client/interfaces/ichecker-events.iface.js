@@ -16,12 +16,12 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
 
     // private methods
 
-    // returns the FieldSpec relative to the element which is the source of this event, or null
+    // returns the FormField relative to the element which is the source of this event, or null
     _fieldSpecFromEvent( event ){
         _trace( 'ICheckerEvents._fieldSpecFromEvent' );
         let found = null;
         const cb = function( name, spec ){
-            const selector = spec.iFieldSelector();
+            const selector = spec.iSpecSelector();
             if( selector && event.target.matches( selector )){
                 found = spec;
             }
@@ -41,7 +41,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
         const spec = this._fieldSpecFromEvent( event );
         if( spec ){
             //this.iCkFieldCheck( field, this.argInstance().$( event.target ));
-            spec.checkerInputHandler();
+            spec.iFieldRunInputHandler();
         } else {
             //console.debug( 'not handled here' );
         }

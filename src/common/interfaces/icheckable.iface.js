@@ -4,7 +4,7 @@
  * ICheckable if something which can be checked, either a field or a form.
  * The result of this check is either null, or a TypedMessage, or an array of TypedMessage's.
  *
- * Both FieldSpec (an instance of the field in a form) and Checker (a form) implement ICheckable.
+ * Both FormField (an instance of the field in a form) and Checker (a form) implement ICheckable.
  */
 
 import _ from 'lodash';

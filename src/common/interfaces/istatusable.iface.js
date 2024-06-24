@@ -5,7 +5,7 @@
  * - a true|false validity status,
  * - a CheckStatus status.
  *
- * Both FieldSpec (an instance of the field in a form) and Checker (a form) implement IStatusable.
+ * Both FormField (an instance of the field in a form) and Checker (a form) implement IStatusable.
  */
 
 import _ from 'lodash';

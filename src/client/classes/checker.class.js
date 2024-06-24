@@ -68,13 +68,14 @@ import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IMessager } from '../../common/interfaces/imessager.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
+import { Panel } from './panel.class.js';
+
 import { ICheckerEvents } from '../interfaces/ichecker-events.iface.js';
 import { ICheckerHierarchy } from '../interfaces/ichecker-hierarchy.iface.js';
 import { ICheckerStatus } from '../interfaces/ichecker-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
-import { IPanel } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, ICheckerHierarchy, ICheckerStatus, IStatusable ){
+export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy, ICheckerStatus, ICheckable, IStatusable ){
 
     // static data
 
@@ -237,7 +238,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
     // returns the Panel fields definition, may be null
     confPanel(){
         const panel = this.#conf.panel || null;
-        assert( !panel || panel instanceof IPanel, 'panel is expected to be a IPanel instance' );
+        assert( !panel || panel instanceof Panel, 'panel is expected to be a Panel instance' );
         return panel;
     }
 
@@ -297,7 +298,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
      *  - messager: an optional IMessager implementation
      *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
      *    > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
-     *  - panel: an optional IPanel implementation which defines the managed fields
+     *  - panel: an optional Panel instance which defines the managed fields
      *  - data: an optional data opaque object to be passed to check functions as additional argument
      *  - id: when the panel is array-ed, the row identifier
      *    will be passed as an option to field-defined check function
@@ -321,7 +322,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
         if( args ){
             assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
             assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
-            assert( !args.panel || args.panel instanceof IPanel, 'when set, panel must be a IPanel instance' );
+            assert( !args.panel || args.panel instanceof Panel, 'when set, panel must be a Panel instance' );
             assert( !args.id || _.isString( args.id ), 'when set, id must be a non-empty string' );
             assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object' );
             assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function' );
@@ -353,7 +354,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
 
         // initialize field-level data
         const cb = function( name, spec ){
-            spec.checkerInit( this );
+            spec.iFieldRunInit( this );
             return true;
         }
         this.fieldsIterate( cb );
@@ -376,7 +377,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
      * @summary Check a panel, and all rows of an array-ed panel, and update its status
      * @param {Object} opts an option object with following keys:
      *  - update: whether the value found in the form should update the edited object, defaulting to true
-     *  - id: the identifier of the checker or null, added by IFieldSpec.iFieldCheck() function
+     *  - id: the identifier of the checker or null, added by IFieldRun.iFieldRunCheck() function
      *  - ignoreFields: whether fields must be considered when consolidating the status, defaulting to false
      *    use case: when the checker actually manages an external component and the defined fields have to be ignored
      * @returns {Promise} which eventually resolves to the global validity status of the form as true|false
@@ -386,7 +387,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
         let valid = true;
         let promises = [];
         const cb = function( name, spec ){
-            promises.push( spec.iFieldCheck( opts ).then(( v ) => {
+            promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
                 valid &&= v;
                 return valid;
             }));
@@ -503,7 +504,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, IChec
         const self = this;
         console.warn( 'setForm' );
         const cb = function( name, field ){
-            const js = field.iFieldSelector();
+            const js = field.iSpecSelector();
             if( js ){
                 let $js = null;
                 if( opts.$parent ){
