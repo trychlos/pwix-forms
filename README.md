@@ -78,7 +78,7 @@ An interface whichs adds to the implementor the capability of being checked (.e.
 
 Each implementation instance is provided a random unique identifier at instanciation time. This identifier let us manages the published `TypedMessage`'s by emitter.
 
-Both `Checker` and `Field` classes implement this interface.
+Both `Checker` and `FieldSpec` classes implement this interface.
 
 ##### `Forms.IMessager`
 
@@ -107,6 +107,51 @@ Push a new message to the messages stack.
 Remove from the messages stack those published by the provided `ICheckable` identifiers.
 
 #### Classes
+
+##### `Forms.Checker`
+
+This is the class which manages all the checks to be done in a panel, publishing relevant messages if any.
+
+It should be instanciated as a ReactiveVar when the DOM is rendered.
+
+Example:
+
+```js
+    Template.myPanel.onRendered( function(){
+        const self = this;
+        // initialize the Checker for this panel as soon as we get the parent Checker
+        self.autorun(() => {
+            const parentChecker = Template.currentData().checker.get();
+            const checker = self.APP.checker.get();
+            if( parentChecker && !checker ){
+                self.APP.checker.set( new Forms.Checker( self, {
+                    parent: parentChecker,
+                    panel: self.AM.panel.fromSet( myCollection.fieldsSet ),
+                    data: {
+                        item: Template.currentData().item
+                    }
+                }));
+            }
+        });
+    });
+```
+
+##### `Forms.Panel`
+
+Let the calling application defines the fields managed in the panel.
+
+Usage:
+
+```js
+    const panel = new Forms.Panel({
+        username: {
+            js: '.js-username'
+        },
+        loginAllowed: {
+            js: '.js-login-allowed'
+        }
+    });
+```
 
 ### Blaze components
 
