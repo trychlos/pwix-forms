@@ -7,10 +7,10 @@ import '../../common/js/index.js';
 // provides base classes to Forms global object
 import { Checker } from '../classes/checker.class';
 import { Messager } from '../classes/messager.class.js';
-import { PanelSpec } from '../classes/panel-spec.class';
+import { Panel } from '../classes/panel.class';
 
 import '../stylesheets/forms.less';
 
 Forms.Checker = Checker;
-Forms.PanelSpec = PanelSpec;
+Forms.Panel = Panel;
 Forms.Messager = Messager;

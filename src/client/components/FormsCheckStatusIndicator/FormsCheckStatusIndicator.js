@@ -7,7 +7,7 @@
  *  We have to write all icon elements into the DOM, only making visible the one we are interested in.
  *
  * Parms:
- *  - statusRv: a ReactiveVar which contais the CheckStatus to be displayed
+ *  - statusRv: a ReactiveVar which contains the CheckStatus to be displayed
  *  - classes: if set, a list of classes to be added to the default
  *  - title: if set, a text to replace the default title
  */

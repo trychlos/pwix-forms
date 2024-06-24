@@ -72,7 +72,7 @@ import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
 import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
 import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
-import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
+import { IPanel } from '../interfaces/ipanel-spec.iface.js';
 
 export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
 
@@ -234,10 +234,10 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         return fn;
     }
 
-    // returns the PanelSpec fields definition, may be null
-    confPanelSpec(){
+    // returns the Panel fields definition, may be null
+    confPanel(){
         const panel = this.#conf.panel || null;
-        assert( !panel || panel instanceof IPanelSpec, 'panel is expected to be a IPanelSpec instance' );
+        assert( !panel || panel instanceof IPanel, 'panel is expected to be a IPanel instance' );
         return panel;
     }
 
@@ -297,7 +297,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
      *  - messager: an optional IMessager implementation
      *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
      *    > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
-     *  - panel: an optional IPanelSpec implementation which defines the managed fields
+     *  - panel: an optional IPanel implementation which defines the managed fields
      *  - data: an optional data opaque object to be passed to check functions as additional argument
      *  - id: when the panel is array-ed, the row identifier
      *    will be passed as an option to field-defined check function
@@ -321,7 +321,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
         if( args ){
             assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
             assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
-            assert( !args.panel || args.panel instanceof IPanelSpec, 'when set, panel must be a IPanelSpec instance' );
+            assert( !args.panel || args.panel instanceof IPanel, 'when set, panel must be a IPanel instance' );
             assert( !args.id || _.isString( args.id ), 'when set, id must be a non-empty string' );
             assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object' );
             assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function' );
@@ -438,7 +438,7 @@ export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckH
             check( spec, IFieldSpec );
             return cb.bind( self )( name, spec, arg );
         };
-        const panel = this.confPanelSpec();
+        const panel = this.confPanel();
         if( panel ){
             panel.iEnumerateKeys( _iterate, args );
         }

@@ -15,9 +15,7 @@ import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.
 
 import { FieldSpec } from '../classes/field-spec.class.js';
 
-import { IPanelSpec } from '../interfaces/ipanel-spec.iface.js';
-
-export class PanelSpec extends mix( Base ).with( IEnumerable, IInstanciationArgs, IPanelSpec ){
+export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
     // static data
 
@@ -39,18 +37,15 @@ export class PanelSpec extends mix( Base ).with( IEnumerable, IInstanciationArgs
     /**
      * Constructor
      * @locus Client
-     * @summary Instanciates a new PanelSpec instance
+     * @summary Instanciates a new Panel instance
      * @param {Object} arg an optional panel specification as provided by the application
-     * @returns {PanelSpec} this instance
+     * @returns {Panel} this instance
      */
     constructor( arg ){
         assert( !arg || _.isObject( arg ), 'expect a plain javascript object' );
 
         super( ...arguments );
         const self = this;
-
-        //Object.keys( args ).forEach(( key ) => {
-        //});
 
         // instanciate a FieldSpec object for each field description
         this.#set = {};
@@ -63,6 +58,25 @@ export class PanelSpec extends mix( Base ).with( IEnumerable, IInstanciationArgs
         // setup the new enumeration reference as a keyed object
         this.iEnumerableBase( this.#set );
 
+        return this;
+    }
+
+    /**
+     * @locus Client
+     * @summary Add to each field specification the informations provided in the FieldsSet
+     * @param {Field.Set} set the Field.Set defined for this collection
+     * @returns {Panel} this instance
+     */
+    fromSet( set ){
+        const self = this;
+        const cb = function( name, spec ){
+            const field = set.byName( name );
+            if( field ){
+                spec._defn( field.toForm());
+            }
+            return true;
+        }
+        this.iEnumerateKeys( cb );
         return this;
     }
 }
