@@ -69,13 +69,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     _checkBefore( opts ){
         _trace( 'IFieldRun._checkBefore' );
         // do not reset anything reactive to not flicker the display
-        // remove bootstrap classes (possible because no reactivity is based on that)
+        // remove bootstrap classes (as no reactivity is based on that)
         const $node = this.iRunNode();
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
         // clear the last messages we have emitted
-        this.iRunChecker()._messagerRemoveById([ this.iCheckableId() ]);
+        this.iRunChecker().messagerRemove([ this.iCheckableId() ]);
     }
 
     // consolidate several validity/status from besides fields

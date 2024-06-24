@@ -71,7 +71,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
 
     /**
      * @summary Remove from the stack the messages published by the provided ICheckable's
-     * @param {Array<String>} ids a list of identifiers
+     * @param {String|Array<String>} ids a list of identifiers
      */
     iMessagerRemove( ids ){
         _trace( 'IMessager.iMessagerRemove', ids );

@@ -2,6 +2,8 @@
  * pwix:forms/src/common/js/index.js
  */
 
+import { Messager } from '../classes/messager.class.js';
+
 import { CheckStatus } from '../definitions/check-status.def';
 import { FieldType } from '../definitions/field-type.def';
 
@@ -16,6 +18,8 @@ import './i18n.js';
 import './configure.js';
 import './functions.js';
 import './trace.js';
+
+Forms.Messager = Messager;
 
 Forms.CheckStatus = CheckStatus;
 Forms.FieldType = FieldType;

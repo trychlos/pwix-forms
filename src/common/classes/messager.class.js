@@ -13,10 +13,10 @@ import { ReactiveVar } from 'meteor/reactive-var';
 import { TM } from 'meteor/pwix:typed-message';
 import { Tracker } from 'meteor/tracker';
 
-import { Base } from '../../common/classes/base.class.js';
-import { Message } from '../../common/classes/message.class.js';
+import { Base } from './base.class.js';
+import { Message } from './message.class.js';
 
-import { IMessager } from '../../common/interfaces/imessager.iface.js';
+import { IMessager } from '../interfaces/imessager.iface.js';
 
 import '../../common/js/index.js';
 
@@ -65,7 +65,7 @@ export class Messager extends mix( Base ).with( IMessager ){
      * @param {String} id the ICheckable identifier
      */
     _push( tms, id ){
-        _trace( 'Messager._push' );
+        _trace( 'Messager._push', id );
         let set = this.#set.get();
         if( tms ){
             if( tms instanceof TM.TypedMessage ){
@@ -80,12 +80,14 @@ export class Messager extends mix( Base ).with( IMessager ){
 
     /*
      * @summary Remove listed identifiers from the stack
-     * @param {Array} ids a list of ICheckable identifiers to be removed
+     * @param {String|Array} ids a list of ICheckable identifiers to be removed
      */
     _remove( ids ){
         _trace( 'Messager._remove', ids, this.#set.get());
+        ids = _.isArray( ids ) ? ids : [ ids ];
         let newset = [];
         this.#set.get().forEach(( it ) => {
+            //console.debug( 'examining', it.emitter());
             if( ids.includes( it.emitter())){
                 //console.debug( 'removing', it );
             } else {

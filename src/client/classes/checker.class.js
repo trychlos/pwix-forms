@@ -129,7 +129,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // push a TypedMessage
     _messagerPush( tms, id ){
-        _trace( 'Checker._messagerPush' );
+        _trace( 'Checker._messagerPush', tms, id );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerPush( tms, id );
@@ -156,8 +156,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     // remove the messages send from this checker
+    // - checkables is an identifier or an array of identifiers
     _messagerRemoveById( checkables ){
-        _trace( 'Checker._messagerRemoveById' );
+        _trace( 'Checker._messagerRemoveById', checkables );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerRemove( checkables );
@@ -485,11 +486,20 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * @param {TypedMessage|Array<TypedMessage>} tms
-     * @param {Strig} id the emitter ICheckable identifier
+     * @param {String} id the emitter ICheckable identifier
      */
     messagerPush( tms, id=null ){
         _trace( 'Checker.messagerPush' );
         this.hierarchyUp( '_messagerPush', tms, id );
+    }
+
+    /**
+     * @summary Remove the messages published by these ICheckable's
+     * @param {String|Array<String>} ids
+     */
+    messagerRemove( ids ){
+        _trace( 'Checker.messagerRemove' );
+        this.hierarchyUp( '_messagerRemoveById', ids );
     }
 
     /**
