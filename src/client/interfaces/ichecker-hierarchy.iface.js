@@ -1,7 +1,7 @@
 /*
- * pwix:forms/src/common/interfaces/icheck-hierarchy.iface.js
+ * pwix:forms/src/common/interfaces/ichecker-hierarchy.iface.js
  *
- * ICheckHierarchy let us manage the tree of Checker's, from parent ot children (and vice-versa).
+ * ICheckerHierarchy let us manage the tree of Checker's, from parent ot children (and vice-versa).
  */
 
 import _ from 'lodash';
@@ -14,7 +14,7 @@ import '../../common/js/index.js';
 
 import { Checker } from '../classes/checker.class';
 
-export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends superclass {
+export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
 
@@ -30,10 +30,10 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
     }
 
     /**
-     * @returns {ICheckHierarchy} the instance
+     * @returns {ICheckerHierarchy} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckHierarchy.ICheckHierarchy' );
+        _trace( 'ICheckerHierarchy.ICheckerHierarchy' );
         super( ...arguments );
         return this;
     }
@@ -42,7 +42,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @summary Register against the parent (if any)
      */
     hierarchyRegister(){
-        _trace( 'ICheckHierarchy.hierarchyRegisterParent' );
+        _trace( 'ICheckerHierarchy.hierarchyRegisterParent' );
         const parent = this.confParent();
         if( parent ){
             parent.hierarchyRegisterChild( this );
@@ -54,7 +54,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @param {Checker} child
      */
     hierarchyRegisterChild( child ){
-        _trace( 'ICheckHierarchy.hierarchyRegisterChild', child );
+        _trace( 'ICheckerHierarchy.hierarchyRegisterChild', child );
         check( child, Checker );
         this.#children.push( child );
     }
@@ -64,7 +64,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @param {Checker} parent
      */
     hierarchyRemove( parent ){
-        _trace( 'ICheckHierarchy.hierarchyRemove' );
+        _trace( 'ICheckerHierarchy.hierarchyRemove' );
         check( parent, Checker );
         parent.hierarchyRemoveChild( this );
     }
@@ -73,7 +73,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @summary Unregister against the parent (if any)
      */
     hierarchyRemoveChild( child ){
-        _trace( 'ICheckHierarchy.hierarchyRemoveChild' );
+        _trace( 'ICheckerHierarchy.hierarchyRemoveChild' );
         check( child, Checker );
         const removedId = child.confId();
         const children = this.rtChildren();
@@ -96,7 +96,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @param {String} fn function name
      */
     hierarchyUp( fn ){
-        _trace( 'ICheckHierarchy.hierarchyUp', );
+        _trace( 'ICheckerHierarchy.hierarchyUp', );
         // ask the parent to apply the function to all its children
         const parent = this.confParent();
         let args = [ ...arguments ];
@@ -125,7 +125,7 @@ export const ICheckHierarchy = DeclareMixin(( superclass ) => class extends supe
      * @returns <Array> of Checker's children, maybe empty
      */
     rtChildren(){
-        _trace( 'ICheckHierarchy.rtChildren' );
+        _trace( 'ICheckerHierarchy.rtChildren' );
         return this.#children;
         let args = [ ...arguments ];
         args.shift();

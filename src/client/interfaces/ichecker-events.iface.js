@@ -1,7 +1,7 @@
 /*
- * pwix:forms/src/common/interfaces/icheck-events.iface.js
+ * pwix:forms/src/common/interfaces/ichecker-events.iface.js
  *
- * ICheckEvents let us manage the events from and to a Checker.
+ * ICheckerEvents let us manage the events from and to a Checker.
  */
 
 import _ from 'lodash';
@@ -10,7 +10,7 @@ import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import '../../common/js/index.js';
 
-export const ICheckEvents = DeclareMixin(( superclass ) => class extends superclass {
+export const ICheckerEvents = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
 
@@ -18,7 +18,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
 
     // returns the FieldSpec relative to the element which is the source of this event, or null
     _fieldSpecFromEvent( event ){
-        _trace( 'ICheckEvents._fieldSpecFromEvent' );
+        _trace( 'ICheckerEvents._fieldSpecFromEvent' );
         let found = null;
         const cb = function( name, spec ){
             const selector = spec.iFieldSelector();
@@ -36,7 +36,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
     // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
     // - event is a jQuery.Event
     _inputHandler( event ){
-        _trace( 'ICheckEvents._inputHandler', event );
+        _trace( 'ICheckerEvents._inputHandler', event );
         //console.debug( '_inputHandler', event );
         const spec = this._fieldSpecFromEvent( event );
         if( spec ){
@@ -49,15 +49,15 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
 
     // validity handler
     _validityHandler( event ){
-        _trace( 'ICheckEvents._validityHandler' );
+        _trace( 'ICheckerEvents._validityHandler' );
         console.debug( 'validityHandler', event );
     }
 
     /**
-     * @returns {ICheckEvents} the instance
+     * @returns {ICheckerEvents} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckEvents.ICheckEvents' );
+        _trace( 'ICheckerEvents.ICheckerEvents' );
         super( ...arguments );
         return this;
     }
@@ -66,7 +66,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
      * @summary Install an input handler on the topmost node (if any)
      */
     eventInstallInputHandler(){
-        _trace( 'ICheckEvents.eventInstallInputHandler' );
+        _trace( 'ICheckerEvents.eventInstallInputHandler' );
         const $node = this.rtTopmost();
         const self = this;
         $node.on( 'input', ( event ) => { self._inputHandler( event ); });
@@ -76,7 +76,7 @@ export const ICheckEvents = DeclareMixin(( superclass ) => class extends supercl
      * àsummary Install the validity handler on the topmost node (if any)
      */
     eventInstallValidityHandler(){
-        _trace( 'ICheckEvents.eventInstallValidityHandler' );
+        _trace( 'ICheckerEvents.eventInstallValidityHandler' );
         const $node = this.rtTopmost();
         const self = this;
         const validityEvent = self.confValidityEvent();

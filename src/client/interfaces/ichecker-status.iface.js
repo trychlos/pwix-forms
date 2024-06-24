@@ -1,7 +1,7 @@
 /*
- * pwix:forms/src/client/interfaces/icheck-status.iface.js
+ * pwix:forms/src/client/interfaces/ichecker-status.iface.js
  *
- * ICheckStatus manages, at the Checker level, both:
+ * ICheckerStatus manages, at the Checker level, both:
  * - a true|false validity
  * - a CheckStatus
  */
@@ -14,7 +14,7 @@ import '../../common/js/index.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
 
-export const ICheckStatus = DeclareMixin(( superclass ) => class extends superclass {
+export const ICheckerStatus = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
 
@@ -26,7 +26,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @param {Checker} parent the parent start point of the consolidation, defaulting to the parent of *this* checker
      */
     _consolidateStatusCheckers( parent ){
-        _trace( 'ICheckStatus._consolidateStatusCheckers' );
+        _trace( 'ICheckerStatus._consolidateStatusCheckers' );
         parent = parent || this.confParent();
         let valid = this.iStatusableValidity();
         if( parent ){
@@ -55,7 +55,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @returns {Boolean} the true|false validity of the checker
      */
     _consolidateStatusFields( opts ){
-        _trace( 'ICheckStatus._consolidateStatusFields' );
+        _trace( 'ICheckerStatus._consolidateStatusFields' );
         if( opts.ignoreFields !== true ){
             let valid = true;
             let statuses = [ CheckStatus.C.NONE ];
@@ -71,10 +71,10 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
     }
 
     /**
-     * @returns {ICheckStatus} the instance
+     * @returns {ICheckerStatus} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckStatus.ICheckStatus' );
+        _trace( 'ICheckerStatus.ICheckerStatus' );
         super( ...arguments );
         return this;
     }
@@ -87,7 +87,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @returns {Boolean} the true|false validity of this checker
      */
     statusConsolidate( opts ){
-        _trace( 'ICheckStatus.statusConsolidate' );
+        _trace( 'ICheckerStatus.statusConsolidate' );
         this._consolidateStatusFields( opts );
         this._consolidateStatusCheckers();
         return this.iStatusableValidity();
@@ -97,7 +97,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @summary Setup an autorun to update the OK button
      */
     statusInstallOkAutorun(){
-        _trace( 'ICheckStatus.statusInstallOkAutorun' );
+        _trace( 'ICheckerStatus.statusInstallOkAutorun' );
         const self = this;
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
@@ -116,7 +116,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @summary Setup an autorun to bubble up to the parent the check status
      */
     statusInstallStatusAutorun(){
-        _trace( 'ICheckStatus.statusInstallStatusAutorun' );
+        _trace( 'ICheckerStatus.statusInstallStatusAutorun' );
         /*
         const self = this;
         this.argInstance().autorun(() => {
@@ -130,7 +130,7 @@ export const ICheckStatus = DeclareMixin(( superclass ) => class extends supercl
      * @summary Setup an autorun to bubble up to the parent the validity result
      */
     statusInstallValidityAutorun(){
-        _trace( 'ICheckStatus.statusInstallValidityAutorun' );
+        _trace( 'ICheckerStatus.statusInstallValidityAutorun' );
         /*
         const self = this;
         this.argInstance().autorun(() => {

@@ -68,13 +68,13 @@ import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IMessager } from '../../common/interfaces/imessager.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
-import { ICheckEvents } from '../interfaces/icheck-events.iface.js';
-import { ICheckHierarchy } from '../interfaces/icheck-hierarchy.iface.js';
-import { ICheckStatus } from '../interfaces/icheck-status.iface.js';
+import { ICheckerEvents } from '../interfaces/ichecker-events.iface.js';
+import { ICheckerHierarchy } from '../interfaces/ichecker-hierarchy.iface.js';
+import { ICheckerStatus } from '../interfaces/ichecker-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IPanel } from '../interfaces/ipanel-spec.iface.js';
 
-export class Checker extends mix( Base ).with( ICheckable, ICheckEvents, ICheckHierarchy, ICheckStatus, IStatusable ){
+export class Checker extends mix( Base ).with( ICheckable, ICheckerEvents, ICheckerHierarchy, ICheckerStatus, IStatusable ){
 
     // static data
 
