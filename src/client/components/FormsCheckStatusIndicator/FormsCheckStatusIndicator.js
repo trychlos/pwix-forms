@@ -29,7 +29,7 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
     });
 
     // track status changes
-    if( false ){
+    if( true ){
         self.autorun(() => {
             const status = Template.currentData().statusRv && Template.currentData().statusRv.get();
             console.debug( 'status', status );

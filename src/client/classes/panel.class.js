@@ -60,7 +60,8 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * @locus Client
      * @summary Instanciates a new Panel instance
      * @param {Object} arg an optional panel specification as provided by the application
-     * @param {Field.Set} set a previously defined FormField.Set object
+     *  This is a keyed object, where keys are the field namesn and values the field specifications for this panel
+     * @param {Field.Set} set a previously defined Field.Set object
      * @returns {Panel} this instance
      */
     constructor( arg, set ){

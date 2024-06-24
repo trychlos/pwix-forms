@@ -13,13 +13,12 @@ import mix from '@vestergaard-company/js-mixin';
 import { Field } from 'meteor/pwix:field';
 
 import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
-import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
 
 import { IFieldRun } from '../interfaces/ifield-run.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 
-export class FormField extends mix( Field.Def ).with( ICheckable, IInstanciationArgs, IFieldRun, IFieldSpec, IStatusable ){
+export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICheckable, IStatusable ){
 
     // static data
 
@@ -39,17 +38,15 @@ export class FormField extends mix( Field.Def ).with( ICheckable, IInstanciation
      * Constructor
      * @locus Client
      * @summary Instanciates a new FormField instance
-     * @param {Object} args the Field.Def definition, to be passed as-is to the base class
-     * @param {Object} spec the specification for this panel
+     * @param {Object} args the Field.Def definition merged with the specification for this panel
      * @returns {FormField} this instance
      */
-    constructor( args, spec ){
-        assert( args && _.isObject( args ), 'expect a plain javascript Object' );
-        assert( spec && _.isObject( spec ), 'expect a plain javascript Object' );
+    constructor( args ){
+        assert( args && _.isObject( args ), 'expect a plain javascript Object, found', args );
 
         super( ...arguments );
 
-        console.debug( this );
+        //console.debug( this );
         return this;
     }
 }

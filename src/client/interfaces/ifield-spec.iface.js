@@ -46,8 +46,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec.iSpecCheck', this.name());
         let res = null;
         const defn = this._defn();
-        if( defn.check && _.isFunction( defn.check )){
-            res = defn.check;
+        if( defn.form_check && _.isFunction( defn.form_check )){
+            res = defn.form_check;
         } else if( Meteor.isDevelopment && !this.#warned ){
             console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );
             this.#warned = true;
@@ -81,7 +81,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     iSpecStatus(){
         _trace( 'IFieldSpec.iSpecStatus' );
         const defn = this._defn();
-        let status = defn.status;
+        let status = defn.form_status;
         return status;
     }
 
@@ -91,6 +91,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     iSpecType(){
         _trace( 'IFieldSpec.iSpecType' );
         const defn = this._defn();
-        return defn.type || null;
+        return defn.form_type || null;
     }
 });

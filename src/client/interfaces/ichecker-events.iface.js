@@ -37,10 +37,8 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     // - event is a jQuery.Event
     _inputHandler( event ){
         _trace( 'ICheckerEvents._inputHandler', event );
-        //console.debug( '_inputHandler', event );
         const spec = this._fieldSpecFromEvent( event );
         if( spec ){
-            //this.iCkFieldCheck( field, this.argInstance().$( event.target ));
             spec.iFieldRunInputHandler();
         } else {
             //console.debug( 'not handled here' );
