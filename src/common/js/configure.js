@@ -4,7 +4,11 @@
 
 import _ from 'lodash';
 
-Forms._conf = {};
+import { ReactiveVar} from 'meteor/reactive-var';
+
+let _conf = {};
+
+Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
     checkStatusOverridable: true,
@@ -21,14 +25,16 @@ Forms._defaults = {
  */
 Forms.configure = function( o ){
     if( o && _.isObject( o )){
-        _.merge( Forms._conf, Forms._defaults, o );
+        _.merge( _conf, Forms._defaults, o );
+        Forms._conf.set( _conf );
         // be verbose if asked for
         if( Forms._conf.verbosity & Forms.C.Verbose.CONFIGURE ){
             console.log( 'pwix:forms configure() with', o );
         }
     }
     // also acts as a getter
-    return Forms._conf;
+    return Forms._conf.get();
 }
 
-_.merge( Forms._conf, Forms._defaults );
+_.merge( _conf, Forms._defaults );
+Forms._conf.set( _conf );

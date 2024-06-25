@@ -184,7 +184,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     confDisplayFieldTypeIndicator(){
         let display = this.#conf.displayFieldTypeIndicator;
         if( display !== true && display !== false ){
-            display = Forms._conf.displayFieldTypeIndicator;
+            display = Forms.configure().displayFieldTypeIndicator;
         }
         if( display !== true && display !== false ){
             display = true; // hard-coded default value in case configure() has been wrongly fed
@@ -197,8 +197,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     //  considers the Checker configuration
     //  this may be overriden on a per-field basis
     confDisplayStatus(){
-        let display = Forms._conf.checkStatusShow;
-        const overridable = Forms._conf.checkStatusOverridable;
+        let display = Forms.configure().checkStatusShow;
+        const overridable = Forms.configure().checkStatusOverridable;
         if( overridable ){
             const opt = this.#conf.checkStatusShow;
             if( opt !== null ){

@@ -3,7 +3,7 @@
  */
 
 _verbose = function( level ){
-    if( Forms._conf.verbosity & level ){
+    if( Forms.configure().verbosity & level ){
         let args = [ ...arguments ];
         args.shift();
         console.debug( ...args );
