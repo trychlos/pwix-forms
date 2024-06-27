@@ -62,13 +62,13 @@ The exported `Forms` global object provides following items:
 
 ##### `Forms.configure()`
 
-    See [below](#configuration).
+See [below](#configuration).
 
 #####  `Forms.i18n.namespace()`
 
-    Returns the i18n namespace used by the package. Used to add translations at runtime.
+Returns the i18n namespace used by the package. Used to add translations at runtime.
 
-    Available both on the client and the server.
+Available both on the client and the server.
 
 #### Interfaces
 
@@ -140,12 +140,12 @@ Only available on the client.
 
 ##### `Forms.Panel`
 
-Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `FormField.Set` object.
+Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `Field.Set` object.
 
 Usage:
 
 ```js
-    import { FormField } from 'meteor/pwix:field';
+    import { Field } from 'meteor/pwix:field';
     import { Forms } from 'meteor/pwix:forms';
 
 const panel = new Forms.Panel({

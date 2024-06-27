@@ -40,7 +40,7 @@ function configure( api ){
     _use( 'pwix:ui-utils@1.1.0' );
     _use( 'reactive-dict' );
     _use( 'reactive-var' );
-    _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-beta.0', 'server' );
+    _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-rc300.0', 'server' );
     _use( 'tracker' );
     api.addFiles( 'src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js', 'client' );
     api.addFiles( 'src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js', 'client' );

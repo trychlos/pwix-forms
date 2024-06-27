@@ -93,4 +93,15 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         const defn = this._defn();
         return defn.form_type || null;
     }
+
+    /**
+     * @param {Object} item
+     * @returns {Any} the value got from the item
+     */
+    iSpecValFrom( item ){
+        _trace( 'IFieldSpec.iSpecValFrom' );
+        const defn = this._defn();
+        if( defn.form)
+        return defn.form_type || null;
+    }
 });

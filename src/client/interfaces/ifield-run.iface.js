@@ -217,33 +217,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         return res;
     }
 
-    /*
-     * @summary Get the value from the form
-     * @returns {String|Boolean} the value for this field
-     */
-    _valueFrom(){
-        _trace( 'IFieldRun._valueFrom' );
-        const $node = this.iRunNode();
-        const tagName = $node.prop( 'tagName' );
-        const eltType = $node.attr( 'type' );
-        let value = null;
-        if( $node ){
-            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-                value = $node.prop( 'checked' );
-            } else {
-                value = $node.val() || '';
-                // a small hack to handle 'true' and 'false' values from coreYesnoSelect
-                const $select = $node.closest( '.core-yesno-select' );
-                if( $select.length ){
-                    if( value === 'true' || value === 'false' ){
-                        value = ( value === 'true' );
-                    }
-                }
-            }
-        }
-        return value;
-    }
-
     /**
      * @returns {IFieldRun} the instance
      */
@@ -298,7 +271,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             const checker = this.iRunChecker();
             opts.id = checker.confId();
             const self = this;
-            res = checkFn( this._valueFrom(), checker.confData(), opts ).then( async ( res ) => {
+            res = checkFn( this.iRunValueFrom(), checker.confData(), opts ).then( async ( res ) => {
                 self._checkAfter( opts, res );
                 return self.iStatusableValidity();
             });
@@ -322,7 +295,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /**
      * @returns {jQuery} the jQuery object which represent this node in the Checker
      *  This is a just-in-time computation
-     *  Note that $node be NOT in the DOM, for example if the caller has defined a FormField, but not implemented it in the DOM
+     *  May return null if the node is not yet in the DOM
      */
     iRunNode(){
         _trace( 'IFieldRun.iRunNode' );
@@ -356,5 +329,66 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             this.#showStatus = display;
         }
         return this.#showStatus;
+    }
+
+    /**
+     * @summary Get the value from the form
+     * @returns {String|Boolean} the value for this field
+     */
+    iRunValueFrom(){
+        _trace( 'IFieldRun.iRunValueFrom' );
+        const $node = this.iRunNode();
+        const tagName = $node.prop( 'tagName' );
+        const eltType = $node.attr( 'type' );
+        let value = null;
+        if( $node ){
+            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                value = $node.prop( 'checked' );
+            } else {
+                value = $node.val() || '';
+                // a small hack to handle 'true' and 'false' values from coreYesnoSelect
+                const $select = $node.closest( '.core-yesno-select' );
+                if( $select.length ){
+                    if( value === 'true' || value === 'false' ){
+                        value = ( value === 'true' );
+                    }
+                }
+            }
+        }
+        return value;
+    }
+
+    /**
+     * @summary Set the value into the form
+     * @param {Object} item the object data source
+     * @param {Object} opts an optional options object
+     */
+    iRunValueTo( item, opts ){
+        _trace( 'IFieldRun.iRunValueTo' );
+        /*
+        let value = this.iSpecValFrom();
+        let valFrom = ;
+        if( eltData.defn.valTo ){
+            value = eltData.defn.valTo( item );
+        } else {
+            value = item[eltData.field];
+        }
+        const tagName = eltData.$js.prop( 'tagName' );
+        const eltType = eltData.$js.attr( 'type' );
+        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+            eltData.$js.prop( 'checked', value );
+            //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
+        } else {
+            const $select = eltData.$js.closest( '.core-yesno-select' );
+            if( $select.length ){
+                const def = CoreApp.YesNo.byValue( value );
+                if( def ){
+                    eltData.$js.val( CoreApp.YesNo.id( def ));
+                }
+            } else {
+                eltData.$js.val( value );
+            }
+        }
+            */
     }
 });

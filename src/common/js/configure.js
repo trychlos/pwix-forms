@@ -27,10 +27,7 @@ Forms.configure = function( o ){
     if( o && _.isObject( o )){
         _.merge( _conf, Forms._defaults, o );
         Forms._conf.set( _conf );
-        // be verbose if asked for
-        if( Forms._conf.verbosity & Forms.C.Verbose.CONFIGURE ){
-            console.log( 'pwix:forms configure() with', o );
-        }
+        _verbose( Forms.C.Verbose.CONFIGURE, 'pwix:forms configure() with', o );
     }
     // also acts as a getter
     return Forms._conf.get();

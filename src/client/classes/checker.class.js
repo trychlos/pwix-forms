@@ -96,6 +96,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         id: null,
         displayFieldTypeIndicator: null,
         checkStatusShow: null,
+        setForm: null,
         validityEvent: 'checker-validity.forms',
         parentClass: 'form-indicators-parent',
         rightSiblingClass: 'form-indicators-right-sibling'
@@ -271,6 +272,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         return event;
     }
 
+    // returns the item to be used to fimm-in the form at startup
+    confSetForm(){
+        const item = this.#conf.setForm || null;
+        return item;
+    }
+
     // returns the topmost node of the template as a jQuery object - always set
     // automaticaly computed the first time we need it
     rtTopmost(){
@@ -310,6 +317,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
      *  - checkStatusShow: whether and how to display the result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable
+     *  - setForm: if set, the item to be used to fill-in the form at startup, defaulting to none
      *
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
      *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
@@ -366,6 +374,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             this.argInstance().view.onViewDestroyed( function(){
                 console.debug( 'onViewDestroyed', confId );
             });
+        }
+
+        // if we have something to do to fill in the form ?
+        const filling = this.confSetForm();
+        if( filling ){
+            this.setForm( filling );
         }
 
         // run an initial check with default values (but do not update the provided data if any)
@@ -448,23 +462,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * @returns {Object} with data from the form
-     *  Note: doesn't work well in an array-ed panel
      */
     getForm(){
-        const self = this;
         let res = {};
-        /*
         const cb = function( name, spec ){
-            const eltData = self.iCkDomDataset( spec );
-            res[name] = self._valueFrom( eltData );
+            res[name] = spec.iRunValueFrom();
             return true;
         };
         this.fieldsIterate( cb );
-        Object.keys( self.#fields ).every(( f ) => {
-            o[f] = self.#instance.$( self.#fields[f].js ).val();
-            return true;
-        });
-        */
         return res;
     }
 
@@ -503,49 +508,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
-     * @summary initialize the form with the given data
-     * @param {Object} item
-     * @param {Object} opts an option object with following keys:
-     *  $parent: when set, the DOM parent of the targeted form - in case of an array-ed form
-     * @returns {FormChecker} this instance
-     */
-    /*
-    setForm( item, opts={} ){
-        const self = this;
-        console.warn( 'setForm' );
-        const cb = function( name, field ){
-            const js = field.iSpecSelector();
-            if( js ){
-                let $js = null;
-                if( opts.$parent ){
-                    $js = opts.$parent.find( js );
-                } else {
-                    const instance = self.argInstance();
-                    if( instance ){
-                        $js = instance.$( js );
-                    }
-                }
-                if( $js && $js.length === 1 ){
-                    eltData = $js.data( 'form-checker' );
-                    if( !eltData ){
-                        this._domDataSet( $js, field );
-                        eltData = $js.data( 'form-checker' );
-                    }
-                    if( eltData ){
-                        self._valueTo( eltData, item );
-                    } else {
-                        Meteor.isDevelopment && console.warn( name, field, 'eltData not set' );
-                    }
-                }
-            }
-            return true;
-        };
-        this.fieldsIterate( cb );
-        return this;
-    }
-    */
-
-    /**
      * @summary Remove this Checker from the hierarchy tree
      *  In an array-ed form, removing a row implies to also cleanup the associated Checker
      *  - remove the messages published from this Checker and its dependants
@@ -563,6 +525,22 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             //console.debug( 'siblings after', this.confParent().rtChildren().length );
             this.statusConsolidate( parent );
         }
+    }
+
+    /**
+     * @summary initialize the form with the given data
+     * @param {Object} item
+     * @param {Object} opts an optional options object
+     * @returns {Checker} this instance
+     */
+    setForm( item, opts={} ){
+        const self = this;
+        const cb = function( name, field ){
+            field.iRunValueTo( item, opts );
+            return true;
+        };
+        this.fieldsIterate( cb );
+        return this;
     }
 
     /**
