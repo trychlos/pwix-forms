@@ -69,7 +69,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     _checkBefore( opts ){
         _trace( 'IFieldRun._checkBefore' );
         // do not reset anything reactive to not flicker the display
-        // remove bootstrap classes (as no reactivity is based on that)
+        //  but still remove bootstrap classes (as no reactivity is based on that)
         const $node = this.iRunNode();
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
@@ -245,15 +245,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @summary Input handler
-     *  - check the field
-     */
-    iFieldRunInputHandler(){
-        _trace( 'IFieldRun.iFieldRunInputHandler' );
-        this.iFieldRunCheck();
-    }
-
-    /**
      * @locus Anywhere
      * @summary Check the field
      * @param {Any} opts an optional behaviour options
@@ -277,6 +268,15 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             });
         }
         return res;
+    }
+
+    /**
+     * @summary Input handler
+     *  - check the field
+     */
+    iFieldRunInputHandler(){
+        _trace( 'IFieldRun.iFieldRunInputHandler' );
+        this.iFieldRunCheck();
     }
 
     // getter/setter
