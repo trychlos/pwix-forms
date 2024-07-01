@@ -318,7 +318,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunShowStatus(){
         _trace( 'IFieldRun.iRunShowStatus' );
         if( !this.#showStatus ){
-            const display = this.iRunChecker().confDisplayStatus();
+            let display = this.iRunChecker().confDisplayStatus();
             const overridable = Forms.configure().checkStatusOverridable;
             if( overridable ){
                 const status = this.iSpecStatus();
@@ -338,10 +338,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         _trace( 'IFieldRun.iRunValueFrom' );
         const $node = this.iRunNode();
-        const tagName = $node.prop( 'tagName' );
-        const eltType = $node.attr( 'type' );
         let value = null;
         if( $node ){
+            const tagName = $node.prop( 'tagName' );
+            const eltType = $node.attr( 'type' );
             if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
                 value = $node.prop( 'checked' );
             } else {
@@ -365,30 +365,25 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunValueTo( item, opts ){
         _trace( 'IFieldRun.iRunValueTo' );
-        /*
-        let value = this.iSpecValFrom();
-        let valFrom = ;
-        if( eltData.defn.valTo ){
-            value = eltData.defn.valTo( item );
-        } else {
-            value = item[eltData.field];
-        }
-        const tagName = eltData.$js.prop( 'tagName' );
-        const eltType = eltData.$js.attr( 'type' );
-        if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-            eltData.$js.prop( 'checked', value );
-            //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
-        } else {
-            const $select = eltData.$js.closest( '.core-yesno-select' );
-            if( $select.length ){
-                const def = CoreApp.YesNo.byValue( value );
-                if( def ){
-                    eltData.$js.val( CoreApp.YesNo.id( def ));
-                }
+        const $node = this.iRunNode();
+        if( $node ){
+            const value = this.iSpecValFrom( item );
+            const tagName = $node.prop( 'tagName' );
+            const eltType = $node.attr( 'type' );
+            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                $node.prop( 'checked', value );
+                //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
             } else {
-                eltData.$js.val( value );
+                const $select = $node.closest( '.core-yesno-select' );
+                if( $select.length ){
+                    const def = null;//CoreApp.YesNo.byValue( value );
+                    if( def ){
+                        $node.val( CoreApp.YesNo.id( def ));
+                    }
+                } else {
+                    $node.val( value );
+                }
             }
         }
-            */
     }
 });
