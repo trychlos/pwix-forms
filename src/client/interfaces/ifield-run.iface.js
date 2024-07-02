@@ -331,21 +331,32 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         return this.#showStatus;
     }
 
+    /* Maintainer note:
+     *  iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
+     *  see iSpecValueTo() (resp. iSpecValueFrom()) to set (resp. get) the value into (resp. from) the item
+     */
+
     /**
      * @summary Get the value from the form
      * @returns {String|Boolean} the value for this field
      */
     iRunValueFrom(){
         _trace( 'IFieldRun.iRunValueFrom' );
+        const defn = this._defn();
         const $node = this.iRunNode();
         let value = null;
         if( $node ){
-            const tagName = $node.prop( 'tagName' );
-            const eltType = $node.attr( 'type' );
-            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-                value = $node.prop( 'checked' );
+            if( defn.formFrom ){
+                assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
+                value = defn.formFrom( $node );
             } else {
-                value = $node.val() || '';
+                value = $node.val();
+                const tagName = $node.prop( 'tagName' );
+                const eltType = $node.attr( 'type' );
+                if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                    value = $node.prop( 'checked' );
+                }
+                /*
                 // a small hack to handle 'true' and 'false' values from coreYesnoSelect
                 const $select = $node.closest( '.core-yesno-select' );
                 if( $select.length ){
@@ -353,6 +364,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                         value = ( value === 'true' );
                     }
                 }
+                */
             }
         }
         return value;
@@ -365,24 +377,29 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunValueTo( item, opts ){
         _trace( 'IFieldRun.iRunValueTo' );
+        const defn = this._defn();
         const $node = this.iRunNode();
         if( $node ){
-            const value = this.iSpecValFrom( item );
-            const tagName = $node.prop( 'tagName' );
-            const eltType = $node.attr( 'type' );
-            if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
-                $node.prop( 'checked', value );
-                //eltData.$js.find( '[value="'+value+'"]' ).prop( 'checked', true );
+            if( defn.formTo ){
+                assert( typeof defn.formTo === 'function', 'expect formTo() be a function, found '+defn.formTo );
+                defn.formTo( $node, item );
             } else {
+                const value = this.iSpecValueFrom( item );
+                $node.val( value );
+                const tagName = $node.prop( 'tagName' );
+                const eltType = $node.attr( 'type' );
+                if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                    $node.prop( 'checked', value == true );
+                }
+                /*
                 const $select = $node.closest( '.core-yesno-select' );
                 if( $select.length ){
                     const def = null;//CoreApp.YesNo.byValue( value );
                     if( def ){
                         $node.val( CoreApp.YesNo.id( def ));
                     }
-                } else {
-                    $node.val( value );
                 }
+                */
             }
         }
     }
