@@ -319,10 +319,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun.iRunShowStatus' );
         if( !this.#showStatus ){
             let display = this.iRunChecker().confDisplayStatus();
+            //console.debug( 'iRunShowStatus checker display', this.name(), display );
             const overridable = Forms.configure().checkStatusOverridable;
+            //console.debug( 'iRunShowStatus overridable', this.name(), overridable );
             if( overridable ){
                 const status = this.iSpecStatus();
-                if( status ){
+                //console.debug( 'iRunShowStatus spec display', this.name(), status );
+                if( status === true || status === false ){
                     display = status;
                 }
             }

@@ -12,7 +12,7 @@
  *  - formFrom( <$node> ): a function to read the value from the form, defaulting to the 'val()' function
  *  - formTo( <$node>, <item> ): a function to write the value into the form, defaulting to the 'val( <value> )' function
  *  - type: the mandatory/optional field type, defaulting to none
- *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to false
+ *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to Checker then configured values.
  */
 
 import _ from 'lodash';

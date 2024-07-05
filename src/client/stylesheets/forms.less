@@ -26,5 +26,10 @@ td.label {
 // make the standard blurred border a bit thinner
 input.form-check-input:focus,
 input.form-control:focus {
-    box-shadow: 0 0 0 0.15rem rgba(13,110,253,.25);
+    box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.25);
+}
+// change the color when readonly
+input.form-check-input.forms-readonly:focus,
+input.form-control.forms-readonly:focus {
+    box-shadow: 0 0 0 0.15rem rgba(114, 114, 114, 0.25);
 }
