@@ -11,6 +11,7 @@
  *  - valTo( <item>, <value> ): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
  *  - formFrom( <$node> ): a function to read the value from the form, defaulting to the 'val()' function
  *  - formTo( <$node>, <item> ): a function to write the value into the form, defaulting to the 'val( <value> )' function
+ *  - check: a check function, or false (warns if unset)
  *  - type: the mandatory/optional field type, defaulting to none
  *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to Checker then configured values.
  */
@@ -50,7 +51,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         const defn = this._defn();
         if( defn.form_check && _.isFunction( defn.form_check )){
             res = defn.form_check;
-        } else if( Meteor.isDevelopment && !this.#warned ){
+        } else if( defn.form_check !== false && Meteor.isDevelopment && !this.#warned ){
             console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );
             this.#warned = true;
         }
