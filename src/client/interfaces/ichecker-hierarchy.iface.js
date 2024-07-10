@@ -127,12 +127,5 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
     rtChildren(){
         _trace( 'ICheckerHierarchy.rtChildren' );
         return this.#children;
-        let args = [ ...arguments ];
-        args.shift();
-        this[fn]( ...args );
-        const parent = this.confParent();
-        if( parent ){
-            parent.iCkHierarchyUp( ...arguments );
-        }
     }
 });
