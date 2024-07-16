@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Improve display of check status indicator
 
 ### 1.0.0
 

@@ -45,11 +45,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // consolidate the result of the defined check function
     //  res: is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
-    _checkAfter( opts, res ){
+    _checkAfter( opts, value, res ){
         _trace( 'IFieldRun._checkAfter' );
         res = this.iCheckableResult( res );
         // consolidate each received TypedMessage into a single validity and status for the field
-        this._checkTMConsolidate();
+        this._checkTMConsolidate( value );
         // set the status indicator
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.BOOTSTRAP ){
@@ -82,8 +82,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /*
      * @summary Consolidate the validity and the status of the field from the Array<TypedMessage> result
+     *  Do not display any status if the field is empty
      */
-    _checkTMConsolidate(){
+    _checkTMConsolidate( value ){
         _trace( 'IFieldRun._checkConsolidate' );
         let valid = true;
         let status = CheckStatus.C.NONE;
@@ -108,7 +109,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             });
             status = CheckStatus.worst( statuses );
         // if no err has been reported, may want show a status depending of the type of the field
-        } else {
+        } else if( value ){
             const type = this.iSpecType();
             switch( type ){
                 case FieldType.C.INFO:
@@ -261,9 +262,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         if( checkFn ){
             const checker = this.iRunChecker();
             opts.id = checker.confId();
+            const value = this.iRunValueFrom();
             const self = this;
-            res = checkFn( this.iRunValueFrom(), checker.confData(), opts ).then( async ( res ) => {
-                self._checkAfter( opts, res );
+            res = checkFn( value, checker.confData(), opts ).then( async ( res ) => {
+                self._checkAfter( opts, value, res );
                 return self.iStatusableValidity();
             });
         }

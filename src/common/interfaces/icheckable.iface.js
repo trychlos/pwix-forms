@@ -44,7 +44,7 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
     }
 
     // getter/setter
-    // the last check result of the field or the Checker
+    // the last check result of the field or the Checker, as an array of TypedMessage's, or null
     iCheckableResult( result ){
         _trace( 'ICheckable.iCheckableResult' );
         if( result !== undefined ){
