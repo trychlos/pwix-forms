@@ -2,6 +2,12 @@
 
 ## ChangeLog
 
+### 1.0.2-rc
+
+    Release date: 
+
+    - 
+
 ### 1.0.1
 
     Release date: 2024- 7-17
