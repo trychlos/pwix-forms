@@ -120,6 +120,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     break
             }
         }
+        //console.debug( 'value', value, 'status', status );
         this.iStatusableStatus( status );
         this.iStatusableValidity( valid );
     }
