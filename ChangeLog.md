@@ -12,7 +12,7 @@
 
     Release date: 2024- 8-11
 
-    - 
+    - Define itemFrom() itemTo() definition functions
 
 ### 1.0.1
 
