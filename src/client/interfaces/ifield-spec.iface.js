@@ -110,9 +110,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         _trace( 'IFieldSpec.iSpecValueFrom' );
         const defn = this._defn();
         let value = null;
-        if( defn.valFrom ){
-            assert( typeof defn.valFrom === 'function', 'expect valFrom() be a function, found '+defn.valFrom );
-            value = defn.valFrom( item );
+        if( defn.form_itemFrom ){
+            assert( typeof defn.form_itemFrom === 'function', 'expect form_itemFrom() be a function, found '+defn.form_itemFrom );
+            value = defn.form_itemFrom( item );
         } else {
             value = item[this.name()];
         }
@@ -127,9 +127,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     iSpecValueTo( item, value ){
         _trace( 'IFieldSpec.iSpecValueTo' );
         const defn = this._defn();
-        if( defn.valTo ){
-            assert( typeof defn.valTo === 'function', 'expect valTo() be a function, found '+defn.valTo );
-            defn.valTo( item, value );
+        if( defn.form_itemTo ){
+            assert( typeof defn.form_itemTo === 'function', 'expect form_itemTo() be a function, found '+defn.form_itemTo );
+            defn.form_itemTo( item, value );
         } else {
             item[this.name()] = value;
         }

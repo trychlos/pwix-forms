@@ -519,9 +519,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // detach from the hierarchy tree
         const parent = this.confParent();
         if( parent ){
-            //console.debug( 'siblings before', this.confParent().rtChildren().length );
             this.hierarchyRemove( parent );
-            //console.debug( 'siblings after', this.confParent().rtChildren().length );
             this.statusConsolidate( parent );
         }
     }

@@ -26,7 +26,8 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
     // private data
 
     // the FormField's set
-    #set = null;
+    #set = null
+    #warneds = {};
 
     // runtime data
 
@@ -79,8 +80,11 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
                 const defn = field._defn();
                 _.merge( defn, value );
                 self.#set[key] = new FormField( defn );
-            } else {
+
+            // warn once
+            } else if( !Object.keys( self.#warneds ).includes( key )){
                 console.warn( 'unknown name', key, 'ignored' );
+                self.#warneds[key] = true;
             }
             return true;
         };

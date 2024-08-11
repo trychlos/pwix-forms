@@ -340,6 +340,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /* Maintainer note:
      *  iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
      *  see iSpecValueTo() (resp. iSpecValueFrom()) to set (resp. get) the value into (resp. from) the item
+     * 
+     *  formFrom(), formTo() functions can be defined at the panel level
+     *  form_formFrom(), form_formTo() functions can be defined at the fieldset level (though not suggested as they are rather panel specifics)
      */
 
     /**
@@ -355,6 +358,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             if( defn.formFrom ){
                 assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
                 value = defn.formFrom( $node );
+            } else if( defn.form_formFrom ){
+                assert( typeof defn.form_formFrom === 'function', 'expect form_formFrom() be a function, found '+defn.form_formFrom );
+                value = defn.form_formFrom( $node );
             } else {
                 value = $node.val();
                 const tagName = $node.prop( 'tagName' );
@@ -389,6 +395,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             if( defn.formTo ){
                 assert( typeof defn.formTo === 'function', 'expect formTo() be a function, found '+defn.formTo );
                 defn.formTo( $node, item );
+            } else if( defn.form_formTo ){
+                assert( typeof defn.form_formTo === 'function', 'expect form_formTo() be a function, found '+defn.form_formTo );
+                defn.form_formTo( $node, item );
             } else {
                 const value = this.iSpecValueFrom( item );
                 $node.val( value );
