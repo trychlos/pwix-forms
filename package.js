@@ -1,6 +1,6 @@
 Package.describe({
     name: 'pwix:forms',
-    version: '1.0.2-rc',
+    version: '1.0.2',
     summary: 'Meteor forms management',
     git: 'https://github.com/trychlos/pwix-forms.git',
     documentation: 'README.md'

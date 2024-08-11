@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.0.2-rc
+### 1.0.2
 
-    Release date: 
+    Release date: 2024- 8-11
 
     - 
 
@@ -22,4 +22,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Jul. 17th
+- Last updated on 2024, Aug. 11th
