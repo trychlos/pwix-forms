@@ -138,6 +138,10 @@ Example:
 
 Only available on the client.
 
+##### `Forms.Messager`
+
+Display the messages resulting from the done checks, as LIFO stack.
+
 ##### `Forms.Panel`
 
 Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `Field.Set` object.
