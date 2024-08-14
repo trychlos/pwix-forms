@@ -135,7 +135,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         _trace( 'Checker._messagerPush', tms, id );
         const messager = this.confIMessager();
         if( this.confName()){
-            console.debug( 'messagerPush', this.confName(), messager, tms );
+            //console.debug( 'messagerPush', this.confName(), messager, tms );
         }
         if( messager ){
             messager.iMessagerPush( tms, id );

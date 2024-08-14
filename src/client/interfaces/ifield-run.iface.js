@@ -267,6 +267,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const value = this.iRunValueFrom();
                 const self = this;
                 res = checkFn( value, checker.confData(), opts ).then( async ( res ) => {
+                    //console.debug( 'res', res );
                     self._checkAfter( opts, value, res );
                     return self.iStatusableValidity();
                 });
