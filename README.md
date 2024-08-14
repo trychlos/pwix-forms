@@ -136,6 +136,35 @@ Example:
     });
 ```
 
+Instanciation arguments:
+
+- `self`:
+
+    - let us defines autorun() functions
+    - provides a '$' jQuery operator which is tied to this template instance
+    - provides the DOM element which will act as a global event receiver
+    - provides the topmost DOM element to let us find all managed fields
+
+- an optional arguments object with following keys:
+
+    - `name`: an optional instance name
+    - `parent`: an optional parent Checker instance
+    - `messager`: an optional IMessager implementation
+      > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
+      > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
+    - `panel`: an optional Panel instance which defines the managed fields
+    - `data`: an optional data opaque object to be passed to check functions as additional argument
+    - `id`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check function
+    - `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
+    - `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
+    - `displayFieldTypeIndicator`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+    - `checkStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
+    - `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
+    - `validityEvent`: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
+    - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+    - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+    - `enabled`: whether the new checker will start with enabled checks, defaulting to true
+
 Only available on the client.
 
 ##### `Forms.Messager`

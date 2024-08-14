@@ -89,6 +89,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // configuration
     #defaultConf = {
+        name: null,
         parent: null,
         messager: null,
         panel: null,
@@ -99,7 +100,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         setForm: null,
         validityEvent: 'checker-validity.forms',
         parentClass: 'form-indicators-parent',
-        rightSiblingClass: 'form-indicators-right-sibling'
+        rightSiblingClass: 'form-indicators-right-sibling',
+        enabled: true
    };
     #conf = {};
 
@@ -132,6 +134,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     _messagerPush( tms, id ){
         _trace( 'Checker._messagerPush', tms, id );
         const messager = this.confIMessager();
+        if( this.confName()){
+            console.debug( 'messagerPush', this.confName(), messager, tms );
+        }
         if( messager ){
             messager.iMessagerPush( tms, id );
         }
@@ -209,6 +214,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         return display;
     }
 
+    // whether the Checker is enabled, defaulting to true
+    confEnabled(){
+        const enabled = this.#conf.enabled;
+        assert( enabled === true || enabled === false, 'enabled is expected to be a true|false Boolean, got '+enabled );
+        return enabled;
+    }
+
     // returns the id row identifier, may be null
     confId(){
         const id = this.#conf.id || null;
@@ -221,6 +233,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         const messager = this.#conf.messager || null;
         assert( !messager || messager instanceof IMessager, 'messager is expected to be a IMessager instance' );
         return messager;
+    }
+
+    // returns the Checker name, may be null
+    confName(){
+        const name = this.#conf.name || null;
+        assert( !name || _.isString( name ), 'name is expected to be a string, got '+name );
+        return name;
     }
 
     // returns the $ok jQuery object or null
@@ -302,6 +321,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - provides the DOM element which will act as a global event receiver
      *  - provides the topmost DOM element to let us find all managed fields
      * @param {Object} args an optional arguments object with following keys:
+     *  - name: an optional instance name
      *  - parent: an optional parent Checker instance
      *  - messager: an optional IMessager implementation
      *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
@@ -328,14 +348,16 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is mandatory, must be a Blaze.TemplateInstance instance');
         assert( !args || _.isObject( args ), 'when set, options must be a plain javascript Object' );
         if( args ){
-            assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance' );
-            assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance' );
-            assert( !args.panel || args.panel instanceof Panel, 'when set, panel must be a Panel instance' );
-            assert( !args.id || _.isString( args.id ), 'when set, id must be a non-empty string' );
-            assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object' );
-            assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function' );
-            assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string' );
-            assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string' );
+            assert( !args.name || _.isString( args.name ), 'when set, name must be a string, got '+args.name );
+            assert( !args.parent || args.parent instanceof Checker, 'when set, parent must be a Checker instance, got '+args.parent );
+            assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance, got '+args.messager );
+            assert( !args.panel || args.panel instanceof Panel, 'when set, panel must be a Panel instance, got '+args.panel );
+            assert( !args.id || _.isString( args.id ), 'when set, id must be a non-empty string, got '+args.id );
+            assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object, got '+args.$ok );
+            assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function, got '+args.okFn );
+            assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string, got '+args.validityEvent );
+            assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string, got '+args.parentClass );
+            assert( !Object.keys( args ).includes( 'enabled' ) || _.isBoolean( args.enabled ), 'when set, enabled must be a true|false Boolean, got '+args.enabled );
         }
 
         super( ...arguments );
@@ -425,6 +447,18 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         _trace( 'Checker.clear' );
         console.warn( 'clear() is obsoleted, please use messagerClear()' );
         this.messagerClear();
+    }
+
+    /**
+     * Getter/Setter
+     * @param {Boolean} enabled
+     * @returns {Boolean} whether checks are enabled
+     */
+    enabled( enabled ){
+        if( enabled === true || enabled === false ){
+            this.#conf.enabled = enabled;
+        }
+        this.confEnabled();
     }
 
     /**

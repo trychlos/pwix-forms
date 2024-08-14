@@ -256,26 +256,28 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     async iFieldRunCheck( opts={} ){
         _trace( 'IFieldRun.iFieldRunCheck', this.name());
         let res = true;
-        // some initializations and clearings before any check of this field
-        this._checkBefore( opts );
-        // if a check function has been defined, calls it (warning once if not exists)
-        const checkFn = this.iSpecCheck();
-        if( checkFn ){
-            const checker = this.iRunChecker();
-            opts.id = checker.confId();
-            const value = this.iRunValueFrom();
-            const self = this;
-            res = checkFn( value, checker.confData(), opts ).then( async ( res ) => {
-                self._checkAfter( opts, value, res );
-                return self.iStatusableValidity();
-            });
+        const checker = this.iRunChecker();
+        if( checker.confEnabled()){
+            // some initializations and clearings before any check of this field
+            this._checkBefore( opts );
+            // if a check function has been defined, calls it (warning once if not exists)
+            const checkFn = this.iSpecCheck();
+            if( checkFn ){
+                opts.id = checker.confId();
+                const value = this.iRunValueFrom();
+                const self = this;
+                res = checkFn( value, checker.confData(), opts ).then( async ( res ) => {
+                    self._checkAfter( opts, value, res );
+                    return self.iStatusableValidity();
+                });
+            }
         }
         return res;
     }
 
     /**
      * @summary Input handler
-     *  - check the field
+     *  - check the field (if the checker is enabled)
      */
     iFieldRunInputHandler(){
         _trace( 'IFieldRun.iFieldRunInputHandler' );

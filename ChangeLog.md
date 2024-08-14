@@ -2,11 +2,13 @@
 
 ## ChangeLog
 
-### 1.0.3-rc
+### 1.1.0-rc
 
     Release date: 
 
     - Improve README
+    - Let the Checker be named to make the debug easyer, thus bumping the minor candidate version number
+    - Let the Checker be disabled
 
 ### 1.0.2
 
