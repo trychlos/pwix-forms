@@ -25,7 +25,7 @@ _.merge( FieldType, {
         // optional value
         OPTIONAL: {
             class: 'fti-optional',
-            icon: 'fa-question',
+            icon: 'fa-wrench',
             title: 'field_type.optional_title'
         },
         // mandatory in order the document be saved
