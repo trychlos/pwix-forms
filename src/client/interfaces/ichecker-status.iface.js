@@ -25,11 +25,11 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  Update the relevant Checker data
      * @param {Checker} parent the parent start point of the consolidation, defaulting to the parent of *this* checker
      */
-    _consolidateStatusCheckers( parent ){
-        _trace( 'ICheckerStatus._consolidateStatusCheckers' );
+    _consolidateStatusCheckersUp( parent ){
+        _trace( 'ICheckerStatus._consolidateStatusCheckersUp' );
         parent = parent || this.confParent();
-        let valid = this.iStatusableValidity();
         if( parent ){
+            let valid = this.iStatusableValidity();
             const children = parent.rtChildren();
             if( children ){
                 //valid = true;
@@ -43,7 +43,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 parent.iStatusableValidity( valid );
                 parent.iStatusableStatus( CheckStatus.worst( statuses ));
             }
-            parent._consolidateStatusCheckers();
+            parent._consolidateStatusCheckersUp();
         }
     }
 
@@ -52,7 +52,6 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  Update the relevant Checker data
      * @param {Any} opts an optional behaviour options
      *  cf. Checker.check for a description of the known options
-     * @returns {Boolean} the true|false validity of the checker
      */
     _consolidateStatusFields( opts ){
         _trace( 'ICheckerStatus._consolidateStatusFields' );
@@ -84,12 +83,12 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  Update the relevant Checker data
      * @param {Any} opts an optional behaviour options
      *  cf. Checker.check for a description of the known options
-     * @returns {Boolean} the true|false validity of this checker
+     * @returns {Boolean} the true|false validity flag of this checker
      */
     statusConsolidate( opts ){
         _trace( 'ICheckerStatus.statusConsolidate' );
         this._consolidateStatusFields( opts );
-        this._consolidateStatusCheckers();
+        this._consolidateStatusCheckersUp();
         return this.iStatusableValidity();
     }
 

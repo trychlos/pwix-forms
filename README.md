@@ -163,7 +163,7 @@ Instanciation arguments:
     - `validityEvent`: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
     - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
     - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
-    - `enabled`: whether the new checker will start with enabled checks, defaulting to true
+    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
 
 Only available on the client.
 

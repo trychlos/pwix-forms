@@ -43,13 +43,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // private methods
 
     // consolidate the result of the defined check function
-    //  res: is null, or a TypedMessage, or an array of TypedMessage's
+    //  res: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
     _checkAfter( opts, value, res ){
         _trace( 'IFieldRun._checkAfter' );
         res = this.iCheckableResult( res );
-        // consolidate each received TypedMessage into a single validity and status for the field
-        this._checkTMConsolidate( value );
+        // consolidate received TypedMessage's into a single validity and status for the field
+        this._checkTMConsolidate( value, res );
         // set the status indicator
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.BOOTSTRAP ){
@@ -58,11 +58,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 $node.addClass( this.iStatusableValidity() ? 'is-valid' : 'is-invalid' );
             }
         }
-        // consolidate at the Checker level
+        // push all returned TypedMessage's up to the hierarchy - stopping if a checker is not enabled
         const checker = this.iRunChecker();
-        checker.statusConsolidate( opts );
-        // and push all returned TypedMessage's
         checker.messagerPush( res, this.iCheckableId());
+        // and consolidate the status at the Checker level
+        checker.statusConsolidate( opts );
     }
 
     // some initializations and clearings before any check of the field
@@ -78,20 +78,17 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         this.iRunChecker().messagerRemove([ this.iCheckableId() ]);
     }
 
-    // consolidate several validity/status from besides fields
-
     /*
-     * @summary Consolidate the validity and the status of the field from the Array<TypedMessage> result
+     * @summary Compute one validity boolean flag and one status value for this field from the Array<TypedMessage>'s result
      *  Do not display any status if the field is empty
      */
-    _checkTMConsolidate( value ){
+    _checkTMConsolidate( value, res ){
         _trace( 'IFieldRun._checkConsolidate' );
         let valid = true;
         let status = CheckStatus.C.NONE;
-        const result = this.iCheckableResult();
-        if( result ){
+        if( res ){
             let statuses = [ CheckStatus.C.VALID ];
-            result.forEach(( tm ) => {
+            res.forEach(( tm ) => {
                 let tmValid = true;
                 if( tm instanceof TM.TypedMessage ){
                     const level = tm.iTypedMessageLevel();
@@ -257,7 +254,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun.iFieldRunCheck', this.name());
         let res = true;
         const checker = this.iRunChecker();
-        if( checker.confEnabled()){
+        if( checker.enabled()){
             // some initializations and clearings before any check of this field
             this._checkBefore( opts );
             // if a check function has been defined, calls it (warning once if not exists)

@@ -135,7 +135,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         _trace( 'Checker._messagerPush', tms, id );
         const messager = this.confIMessager();
         if( this.confName()){
-            //console.debug( 'messagerPush', this.confName(), messager, tms );
+            console.debug( '_messagerPush', this.confName(), this.iCheckableId(), messager, tms );
         }
         if( messager ){
             messager.iMessagerPush( tms, id );
@@ -404,7 +404,11 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         }
 
         // run an initial check with default values (but do not update the provided data if any)
-        this.check({ update: false });
+        if( args.enabled !== false ){
+            this.check({ update: false });
+        }
+
+        console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
 
         return this;
     }
@@ -420,24 +424,39 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     async check( opts={} ){
         _trace( 'Checker.check' );
-        let valid = true;
-        let promises = [];
-        const cb = function( name, spec ){
-            promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
-                valid &&= v;
-                return valid;
-            }));
-            return true;
-        };
-        this.fieldsIterate( cb );
-        return Promise.allSettled( promises )
-            .then(() => {
-                //if( opts.display === false ){
-                //    self.clear();
-                //}
-                //self.#conf.entityChecker && console.debug( self.#conf.entityChecker );
-                return valid;
-            });
+        if( this.enabled()){
+            let valid = true;
+            let promises = [];
+            // check the children if any
+            /*
+            const children = this.rtChildren();
+            if( children && children.length ){
+                children.forEach(( child ) => {
+                    promises.push( child.check( opts ).then(( v ) => {
+                        valid &&= v;
+                        return valid;
+                    }));
+                });
+            }
+                */
+            // check the fields of this one
+            const cb = function( name, spec ){
+                promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
+                    valid &&= v;
+                    return valid;
+                }));
+                return true;
+            };
+            this.fieldsIterate( cb );
+            return Promise.allSettled( promises )
+                .then(() => {
+                    //if( opts.display === false ){
+                    //    self.clear();
+                    //}
+                    //self.#conf.entityChecker && console.debug( self.#conf.entityChecker );
+                    return valid;
+                });
+        }
     }
 
     /**
@@ -528,6 +547,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     messagerPush( tms, id=null ){
         _trace( 'Checker.messagerPush' );
+        console.debug( 'messagerPush', this.confName(), this.iCheckableId(), tms, id );
         this.hierarchyUp( '_messagerPush', tms, id );
     }
 

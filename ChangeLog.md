@@ -11,6 +11,7 @@
     - Let the Checker be disabled
     - Change the optional icon
     - Fix Checker/enabled() getter
+    - Stop the hierarchy up propagation when a checker is disabled
 
 ### 1.0.2
 
