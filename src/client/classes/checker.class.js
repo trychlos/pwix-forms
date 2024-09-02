@@ -135,7 +135,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         _trace( 'Checker._messagerPush', tms, id );
         const messager = this.confIMessager();
         if( this.confName()){
-            console.debug( '_messagerPush', this.confName(), this.iCheckableId(), messager, tms );
+            //console.debug( '_messagerPush', this.confName(), this.iCheckableId(), messager, tms );
         }
         if( messager ){
             messager.iMessagerPush( tms, id );
@@ -408,19 +408,19 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             this.check({ update: false });
         }
 
-        console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
+        //console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
 
         return this;
     }
 
     /**
-     * @summary Check a panel, and all rows of an array-ed panel, and update its status
+     * @summary Check a panel and recursively all its children (but not besides nor up), and all rows of an array-ed panel, and update its status
      * @param {Object} opts an option object with following keys:
      *  - update: whether the value found in the form should update the edited object, defaulting to true
      *  - id: the identifier of the checker or null, added by IFieldRun.iFieldRunCheck() function
      *  - ignoreFields: whether fields must be considered when consolidating the status, defaulting to false
      *    use case: when the checker actually manages an external component and the defined fields have to be ignored
-     * @returns {Promise} which eventually resolves to the global validity status of the form as true|false
+     * @returns {Promise} which eventually resolves to the validity boolean flag of the checker
      */
     async check( opts={} ){
         _trace( 'Checker.check' );
@@ -428,7 +428,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             let valid = true;
             let promises = [];
             // check the children if any
-            /*
             const children = this.rtChildren();
             if( children && children.length ){
                 children.forEach(( child ) => {
@@ -438,7 +437,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
                     }));
                 });
             }
-                */
             // check the fields of this one
             const cb = function( name, spec ){
                 promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
@@ -547,7 +545,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     messagerPush( tms, id=null ){
         _trace( 'Checker.messagerPush' );
-        console.debug( 'messagerPush', this.confName(), this.iCheckableId(), tms, id );
+        //console.debug( 'messagerPush', this.confName(), this.iCheckableId(), tms, id );
         this.hierarchyUp( '_messagerPush', tms, id );
     }
 
