@@ -458,7 +458,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         if( enabled === true || enabled === false ){
             this.#conf.enabled = enabled;
         }
-        this.confEnabled();
+        return this.confEnabled();
     }
 
     /**

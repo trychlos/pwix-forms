@@ -10,6 +10,7 @@
     - Let the Checker be named to make the debug easyer, thus bumping the minor candidate version number
     - Let the Checker be disabled
     - Change the optional icon
+    - Fix Checker/enabled() getter
 
 ### 1.0.2
 
