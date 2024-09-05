@@ -13,6 +13,7 @@
     - Fix Checker/enabled() getter
     - Stop the hierarchy up propagation when a checker is disabled
     - Make sure children are also checked
+    - Checker.messagerPush() now defaults to be self-emitted
 
 ### 1.0.2
 

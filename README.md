@@ -211,15 +211,15 @@ Display an indicator about the type of a field.
 
 Parameters:
 
-- type: a constant among:
+- `type`: a constant among:
     - `Forms.C.CheckResult.INVALID`,
     - `Forms.C.CheckResult.UNCOMPLETE`,
     - `Forms.C.CheckResult.VALID`,
     - `Forms.C.CheckResult.NONE`.
 
-- classes: if set, a list of classes to be added to the default
+- `classes`: if set, a list of classes to be added to the default
 
-- title: if set, a text to replace the default title
+- `title`: if set, a text to replace the default title
 
 #### `FormsMessager`
 

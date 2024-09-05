@@ -541,12 +541,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * @param {TypedMessage|Array<TypedMessage>} tms
-     * @param {String} id the emitter ICheckable identifier
+     * @param {String} id the emitter ICheckable identifier, defaulting to this Checker
      */
     messagerPush( tms, id=null ){
         _trace( 'Checker.messagerPush' );
         //console.debug( 'messagerPush', this.confName(), this.iCheckableId(), tms, id );
-        this.hierarchyUp( '_messagerPush', tms, id );
+        this.hierarchyUp( '_messagerPush', tms, id || this.iCheckableId());
     }
 
     /**
