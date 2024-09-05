@@ -88,10 +88,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         let status = CheckStatus.C.NONE;
         if( res ){
             let statuses = [ CheckStatus.C.VALID ];
+            let level;
             res.forEach(( tm ) => {
                 let tmValid = true;
                 if( tm instanceof TM.TypedMessage ){
-                    const level = tm.iTypedMessageLevel();
+                    level = tm.iTypedMessageLevel();
                     tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) < 0 );
                     valid &&= tmValid;
                 } else {
