@@ -201,7 +201,13 @@ Display an indicator about the check status of a field.
 
 Parameters:
 
-- `statusRv`: a mandatory ReactiveVar which contains the CheckStatus to be displayed
+- `statusRv`: a mandatory ReactiveVar which contains the CheckStatus to be displayed, among the possible values:
+
+    - `Forms.CheckStatus.C.INVALID`,
+    - `Forms.CheckStatus.C.UNCOMPLETE`,
+    - `Forms.CheckStatus.C.VALID`,
+    - `Forms.CheckStatus.C.NONE`.
+
 - `classes`: if set, a list of classes to be added to the default
 - `title`: if set, a text to replace the default title
 
@@ -212,10 +218,10 @@ Display an indicator about the type of a field.
 Parameters:
 
 - `type`: a constant among:
-    - `Forms.C.CheckResult.INVALID`,
-    - `Forms.C.CheckResult.UNCOMPLETE`,
-    - `Forms.C.CheckResult.VALID`,
-    - `Forms.C.CheckResult.NONE`.
+    - `Forms.FieldType.C.INFO`,
+    - `Forms.FieldType.C.OPTIONAL`,
+    - `Forms.FieldType.C.MANDATORY`,
+    - `Forms.FieldType.C.WORK`.
 
 - `classes`: if set, a list of classes to be added to the default
 
