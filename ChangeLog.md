@@ -15,6 +15,7 @@
     - Make sure children are also checked
     - Checker.messagerPush() now defaults to be self-emitted
     - Fix IFieldRun._checkConsolidate() level usage
+    - Honors checkStatusShow to modify the DOM context of each element field
 
 ### 1.0.2
 

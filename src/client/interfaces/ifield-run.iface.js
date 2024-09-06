@@ -234,14 +234,16 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun.iFieldRunInit' );
         check( checker, Checker );
         this.iRunChecker( checker );
-        let promises = [];
-        promises.push( this._initWrapParent( checker ));
-        promises.push( this._initRightSibling( checker ));
-        const self = this;
-        Promise.allSettled( promises ).then(() => {
-            self._initPrefixType( checker );
-            self._initSuffixStatus( checker )
-        });
+        if( checker.confDisplayStatus() !== Forms.C.CheckStatus.NONE ){
+            let promises = [];
+            promises.push( this._initWrapParent( checker ));
+            promises.push( this._initRightSibling( checker ));
+            const self = this;
+            Promise.allSettled( promises ).then(() => {
+                self._initPrefixType( checker );
+                self._initSuffixStatus( checker )
+            });
+        }
     }
 
     /**
@@ -264,9 +266,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 opts.id = checker.confId();
                 const value = this.iRunValueFrom();
                 const self = this;
-                res = checkFn( value, checker.confData(), opts ).then( async ( res ) => {
-                    //console.debug( 'res', res );
-                    self._checkAfter( opts, value, res );
+                res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
+                    self._checkAfter( opts, value, fnres );
                     return self.iStatusableValidity();
                 });
             }
