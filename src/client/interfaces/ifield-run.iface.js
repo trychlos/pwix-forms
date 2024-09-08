@@ -31,8 +31,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // the attached Checker
     #checker = null;
 
-    // the DOM node
-    #jqNode = null;
+    // the UI DOM node addressed by the 'js' parameter
+    #uiNode = null;
+
+    // the INPUT DOM node
+    #inputNode = null;
 
     // whether and how display the status of the field
     #showStatus = null;
@@ -53,7 +56,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         // set the status indicator
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.BOOTSTRAP ){
-            const $node = this.iRunNode();
+            const $node = this.iRunUINode();
             if( $node ){
                 $node.addClass( this.iStatusableValidity() ? 'is-valid' : 'is-invalid' );
             }
@@ -70,7 +73,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun._checkBefore' );
         // do not reset anything reactive to not flicker the display
         //  but still remove bootstrap classes (as no reactivity is based on that)
-        const $node = this.iRunNode();
+        const $node = this.iRunUINode();
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
@@ -132,7 +135,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         check( checker, Checker );
         const display = checker.confDisplayFieldTypeIndicator();
         const type = this.iSpecType();
-        const $node = this.iRunNode();
+        const $node = this.iRunUINode();
         if( display && type && FieldType.known( type ) && $node ){
             const data = {
                 type: type
@@ -151,7 +154,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun._initRightSibling' );
         check( checker, Checker );
         const siblingClass = checker.confRightSiblingClass();
-        const $node = this.iRunNode();
+        const $node = this.iRunUINode();
         let res = null;
         if( siblingClass && $node ){
             const $parent = $node.parent();
@@ -177,7 +180,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         check( checker, Checker );
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.INDICATOR ){
-            const $node = this.iRunNode();
+            const $node = this.iRunUINode();
             if( $node ){
                 const $parentNode = $node.closest( '.'+checker.confParentClass());
                 assert( $parentNode && $parentNode.length, 'unexpected parent not found' );
@@ -201,7 +204,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun._initWrapParent' );
         check( checker, Checker );
         const parentClass = checker.confParentClass();
-        const $node = this.iRunNode();
+        const $node = this.iRunUINode();
         let res = null;
         if( parentClass && $node ){
             const $parent = $node.parent();
@@ -267,6 +270,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const value = this.iRunValueFrom();
                 const self = this;
                 res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
+                    //console.debug( 'fnres', this.name(), fnres );
                     self._checkAfter( opts, value, fnres );
                     return self.iStatusableValidity();
                 });
@@ -298,22 +302,28 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @returns {jQuery} the jQuery object which represent this node in the Checker
-     *  This is a just-in-time computation
+     * @returns {jQuery} the jQuery object which represent the INPUT/SELECT node in the Checker
+     *  This is a cached computation
      *  May return null if the node is not yet in the DOM
      */
-    iRunNode(){
-        _trace( 'IFieldRun.iRunNode' );
-        if( !this.#jqNode ){
+    iRunInputNode(){
+        _trace( 'IFieldRun.iRunInputNode' );
+        if( !this.#inputNode ){
             const checker = this.iRunChecker();
             const instance = checker.argInstance();
             const selector = this.iSpecSelector();
-            const $node = instance.$( selector );
-            if( $node && $node instanceof jQuery && $node.length ){
-                this.#jqNode = $node;
+            let $node = instance.$( selector );
+            let tagName = $node.prop( 'tagName' );
+            if( tagName !== 'INPUT' && tagName !== 'SELECT' && tagName !== 'TEXTAREA' ){
+                $node = instance.$( selector+' :input' );
+                tagName = $node.prop( 'tagName' );
+            }
+            if( $node && $node instanceof jQuery && $node.length && ( tagName === 'INPUT' || tagName === 'SELECT' || tagName === 'TEXTAREA' )){
+                this.#inputNode = $node;
             }
         }
-        return this.#jqNode;
+        //console.debug( this.name(), this.#inputNode );
+        return this.#inputNode;
     }
 
     /**
@@ -339,6 +349,25 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         return this.#showStatus;
     }
 
+    /**
+     * @returns {jQuery} the jQuery object which represent the UI node in the Checker
+     *  This is a cached computation
+     *  May return null if the node doesn't yet exist in the DOM
+     */
+    iRunUINode(){
+        _trace( 'IFieldRun.iRunUINode' );
+        if( !this.#uiNode ){
+            const checker = this.iRunChecker();
+            const instance = checker.argInstance();
+            const selector = this.iSpecSelector();
+            const $node = instance.$( selector );
+            if( $node && $node instanceof jQuery && $node.length ){
+                this.#uiNode = $node;
+            }
+        }
+        return this.#uiNode;
+    }
+
     /* Maintainer note:
      *  iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
      *  see iSpecValueTo() (resp. iSpecValueFrom()) to set (resp. get) the value into (resp. from) the item
@@ -354,7 +383,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         _trace( 'IFieldRun.iRunValueFrom' );
         const defn = this._defn();
-        const $node = this.iRunNode();
+        const $node = this.iRunInputNode();
         let value = null;
         if( $node ){
             if( defn.formFrom ){
@@ -392,7 +421,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueTo( item, opts ){
         _trace( 'IFieldRun.iRunValueTo' );
         const defn = this._defn();
-        const $node = this.iRunNode();
+        const $node = this.iRunInputNode();
         if( $node ){
             if( defn.formTo ){
                 assert( typeof defn.formTo === 'function', 'expect formTo() be a function, found '+defn.formTo );

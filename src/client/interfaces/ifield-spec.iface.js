@@ -6,14 +6,15 @@
  * - or inherited from the Field.Def definition
  *
  * FormField specification is provided as a plain javascript object, with following keys:
- *  - js: a CSS selector; it is expected to let us address the field and its content
+ *  - js: a CSS selector; it is expected to let us address the field and its content, primarily used to setup the UI indicators
+ *    it must be either the INPUT/SELECT element itself, or a parent of this element
  *  - valFrom( <item> ): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - valTo( <item>, <value> ): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
  *  - formFrom( <$node> ): a function to read the value from the form, defaulting to the 'val()' function
  *  - formTo( <$node>, <item> ): a function to write the value into the form, defaulting to the 'val( <value> )' function
  *  - check: a check function, or false (warns if unset)
  *  - type: the mandatory/optional field type, defaulting to none
- *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to Checker then configured values.
+ *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to Checker then configured values
  */
 
 import _ from 'lodash';

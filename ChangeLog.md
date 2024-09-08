@@ -16,6 +16,7 @@
     - Checker.messagerPush() now defaults to be self-emitted
     - Fix IFieldRun._checkConsolidate() level usage
     - Honors checkStatusShow to modify the DOM context of each element field
+    - Be tolerant when the HTML INPUT event emitter is a descendant of the JS-addressed node
 
 ### 1.0.2
 

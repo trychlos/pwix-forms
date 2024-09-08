@@ -20,9 +20,10 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     _fieldSpecFromEvent( event ){
         _trace( 'ICheckerEvents._fieldSpecFromEvent' );
         let found = null;
+        const instance = this.argInstance();
         const cb = function( name, spec ){
-            const selector = spec.iSpecSelector();
-            if( selector && event.target.matches( selector )){
+            const uiNode = spec.iRunUINode();
+            if( uiNode[0].isSameNode( event.target ) || $.contains( uiNode[0], event.target )){
                 found = spec;
             }
             return found === null;
