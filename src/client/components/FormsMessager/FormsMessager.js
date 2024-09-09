@@ -36,7 +36,7 @@ Template.FormsMessager.onRendered( function(){
         this.autorun(() => {
             const messager = Template.currentData().messager;
             if( messager ){
-                console.debug( messager.iMessagerDump());
+                messager.iMessagerDump();
             }
         });
     }
@@ -52,13 +52,13 @@ Template.FormsMessager.helpers({
     //  because we do not want have several lines, or bold, or any other singularities here
     //  nevertheless the Blaze tempate itself is HTML-capable to be able to handle the '&nbsp;' character
     msgLabel(){
-        const o = this.messager?.iMessagerLast();
+        const o = this.messager?.iMessagerFirst();
         return o ? o.iTypedMessageMessage() : '&nbsp;';
     },
 
     // the class to be associated to the error message: may be an error, a warning, an info, etc.
     msgLevel(){
-        const o = this.messager?.iMessagerLast();
+        const o = this.messager?.iMessagerFirst();
         return o ? o.iTypedMessageLevel() : '';
     }
 });

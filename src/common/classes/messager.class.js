@@ -44,10 +44,18 @@ export class Messager extends mix( Base ).with( IMessager ){
         _trace( 'Messager._dump' );
         let i = 0;
         this.#set.get().forEach(( it ) => {
-            console.debug( 'dump['+i+'] tm', it.tm());
-            console.debug( 'dump['+i+'] emitter', it.emitter());
+            console.debug( 'dump['+i+'] tm', it.tm(), 'emitter', it.emitter());
             i += 1;
         });
+    }
+
+    /*
+     * @returns {TypedMessage} the first pushed message in the highest level order
+     */
+    _first(){
+        _trace( 'Messager._first' );
+        const set = this.#set.get();
+        return set.length ? set[0].tm() : null;
     }
 
     /*

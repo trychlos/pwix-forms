@@ -51,6 +51,14 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
+     * @returns {TypedMessage} the first pushed TypedMessage in level order
+     */
+    iMessagerFirst(){
+        _trace( 'IMessager.iMessagerFirst' );
+        return this._first();
+    }
+
+    /**
      * @returns {TypedMessage} the last pushed TypedMessage in level order
      */
     iMessagerLast(){

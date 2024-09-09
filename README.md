@@ -94,6 +94,10 @@ Clear the message displayed in the message zone.
 
 Dump the full content of the messages stack.
 
+- `Forms.IMessager.iMessagerFirst()`
+
+Returns the first pushed message in level order.
+
 - `Forms.IMessager.iMessagerLast()`
 
 Returns the last pushed message in level order.

@@ -17,6 +17,7 @@
     - Fix IFieldRun._checkConsolidate() level usage
     - Honors checkStatusShow to modify the DOM context of each element field
     - Be tolerant when the HTML INPUT event emitter is a descendant of the JS-addressed node
+    - Introduce iMessagerFirst() method
 
 ### 1.0.2
 
