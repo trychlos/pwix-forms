@@ -10,6 +10,8 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Tracker } from 'meteor/tracker';
+
 import '../../common/js/index.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
@@ -66,7 +68,6 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
             this.fieldsIterate( cb );
             this.iStatusableValidity( valid );
             this.iStatusableStatus( CheckStatus.worst( statuses ));
-            //console.debug( 'setting checker status, validity to', this.iStatusableStatus(), this.iStatusableValidity());
         }
     }
 
@@ -90,6 +91,8 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         _trace( 'ICheckerStatus.statusConsolidate' );
         this._consolidateStatusFields( opts );
         this._consolidateStatusCheckersUp();
+        console.debug( 'setting checker status, validity to', this.iCheckableId(), this.iStatusableStatus(), this.iStatusableValidity());
+        Tracker.flush();
         return this.iStatusableValidity();
     }
 
