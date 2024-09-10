@@ -61,11 +61,12 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
             const cb = function( name, spec ){
                 valid &&= spec.iStatusableValidity();
                 statuses.push( spec.iStatusableStatus());
-                return true;
+                return valid;
             };
             this.fieldsIterate( cb );
             this.iStatusableValidity( valid );
             this.iStatusableStatus( CheckStatus.worst( statuses ));
+            //console.debug( 'setting checker status, validity to', this.iStatusableStatus(), this.iStatusableValidity());
         }
     }
 
@@ -109,33 +110,5 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 okFn( valid );
             }
         });
-    }
-
-    /**
-     * @summary Setup an autorun to bubble up to the parent the check status
-     */
-    statusInstallStatusAutorun(){
-        _trace( 'ICheckerStatus.statusInstallStatusAutorun' );
-        /*
-        const self = this;
-        this.argInstance().autorun(() => {
-            const status = self.iStatusableStatus();
-            self.iCkHierarchyUp( '_updateStatus', status );
-        });
-        */
-    }
-
-    /**
-     * @summary Setup an autorun to bubble up to the parent the validity result
-     */
-    statusInstallValidityAutorun(){
-        _trace( 'ICheckerStatus.statusInstallValidityAutorun' );
-        /*
-        const self = this;
-        this.argInstance().autorun(() => {
-            const valid = self.iStatusableValidity();
-            self.iCkHierarchyUp( '_updateValidity', valid );
-        });
-        */
     }
 });

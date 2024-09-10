@@ -46,13 +46,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // private methods
 
     // consolidate the result of the defined check function
-    //  res: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
+    //  checkRes: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
-    _checkAfter( opts, value, res ){
+    _checkAfter( opts, value, checkRes ){
         _trace( 'IFieldRun._checkAfter' );
-        res = this.iCheckableResult( res );
+        checkRes = this.iCheckableResult( checkRes );
         // consolidate received TypedMessage's into a single validity and status for the field
-        this._checkTMConsolidate( value, res );
+        this._checkTMConsolidate( value, checkRes );
         // set the status indicator
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.BOOTSTRAP ){
@@ -63,7 +63,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         }
         // push all returned TypedMessage's up to the hierarchy - stopping if a checker is not enabled
         const checker = this.iRunChecker();
-        checker.messagerPush( res, this.iCheckableId());
+        checker.messagerPush( checkRes, this.iCheckableId());
         // and consolidate the status at the Checker level
         checker.statusConsolidate( opts );
     }
@@ -121,7 +121,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     break
             }
         }
-        //console.debug( 'value', value, 'status', status );
+        //console.debug( '_checkTMConsolidate', value, res, status, valid );
         this.iStatusableStatus( status );
         this.iStatusableValidity( valid );
     }
@@ -309,16 +309,17 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunInputNode(){
         _trace( 'IFieldRun.iRunInputNode' );
         if( !this.#inputNode ){
+            const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
             const checker = this.iRunChecker();
             const instance = checker.argInstance();
             const selector = this.iSpecSelector();
             let $node = instance.$( selector );
             let tagName = $node.prop( 'tagName' );
-            if( tagName !== 'INPUT' && tagName !== 'SELECT' && tagName !== 'TEXTAREA' ){
+            if( !inputTags.includes( tagName )){
                 $node = instance.$( selector+' :input' );
                 tagName = $node.prop( 'tagName' );
             }
-            if( $node && $node instanceof jQuery && $node.length && ( tagName === 'INPUT' || tagName === 'SELECT' || tagName === 'TEXTAREA' )){
+            if( $node && $node instanceof jQuery && $node.length && inputTags.includes( tagName )){
                 this.#inputNode = $node;
             }
         }
@@ -370,7 +371,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /* Maintainer note:
      *  iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
-     *  see iSpecValueTo() (resp. iSpecValueFrom()) to set (resp. get) the value into (resp. from) the item
+     *  see iSpecValueFrom() to get the value from the item
      * 
      *  formFrom(), formTo() functions can be defined at the panel level
      *  form_formFrom(), form_formTo() functions can be defined at the fieldset level (though not suggested as they are rather panel specifics)
@@ -431,6 +432,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 defn.form_formTo( $node, item );
             } else {
                 const value = this.iSpecValueFrom( item );
+                //console.debug( 'item', item, 'field', this.name(), 'value', value );
                 $node.val( value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );

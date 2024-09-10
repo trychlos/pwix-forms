@@ -99,7 +99,9 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /* Maintainer note:
-     *  iSpecValueTo() (resp. iSpecValueFrom()) to set (resp. get) the value into (resp. from) the item
+     *  iSpecValueFrom() get the value from the item
+        It is only used if there is not specific formTo() function.
+     *  Setting (whether reactively or not) the value into the item is the responsability of checkfFn functions
      *  see iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
      */
 
@@ -118,21 +120,5 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             value = item[this.name()];
         }
         return value;
-    }
-
-    /**
-     * @summary Set the value into the item
-     * @param {Object} item
-     * @param {String} value
-     */
-    iSpecValueTo( item, value ){
-        _trace( 'IFieldSpec.iSpecValueTo' );
-        const defn = this._defn();
-        if( defn.form_itemTo ){
-            assert( typeof defn.form_itemTo === 'function', 'expect form_itemTo() be a function, found '+defn.form_itemTo );
-            defn.form_itemTo( item, value );
-        } else {
-            item[this.name()] = value;
-        }
     }
 });

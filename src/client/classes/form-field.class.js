@@ -11,6 +11,7 @@ const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
 import { Field } from 'meteor/pwix:field';
+import { Tracker } from 'meteor/tracker';
 
 import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
 import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
@@ -43,8 +44,14 @@ export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICh
      */
     constructor( args ){
         assert( args && _.isObject( args ), 'expect a plain javascript Object, found', args );
-
         super( ...arguments );
+
+        // track field status and validity
+        if( false ){
+            Tracker.autorun(() => {
+                console.debug( this.name(), this.iStatusableStatus(), this.iStatusableValidity());
+            });
+        }
 
         //console.debug( this );
         return this;

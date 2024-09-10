@@ -56,8 +56,6 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
-import { check } from 'meteor/check';
-
 import '../../common/js/trace.js';
 
 import { Base } from '../../common/classes/base.class.js';
@@ -111,6 +109,33 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     #$topmost = null;
 
     // private methods
+
+    // recursive explain
+    _explainRec( title, prefix ){
+        _trace( 'Checker._explainRec' );
+        console.log( prefix+title, this.confName(), this.iCheckableId(), this.status(), this.validity());
+        console.log( prefix+'- children' );
+        let count = 0;
+        this.rtChildren().forEach(( child ) => {
+            child._explainRec( '', prefix+'  ' );
+            count += 1;
+        });
+        if( !count ){
+            console.log( prefix+'  (none)' );
+        }
+        console.log( prefix+'- fields' );
+        count = 0;
+        // check the fields of this one
+        const cb = function( name, spec ){
+            console.log( prefix+'  ', name, spec.iStatusableStatus(), spec.iStatusableValidity());
+            count += 1;
+            return true;
+        };
+        this.fieldsIterate( cb );
+        if( !count ){
+            console.log( prefix+'  (none)' );
+        }
+    }
 
     // clear the IMessager if any
     _messagerClear(){
@@ -379,8 +404,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         this.eventInstallValidityHandler();
         this.hierarchyRegister();
         this.statusInstallOkAutorun();
-        this.statusInstallStatusAutorun();
-        this.statusInstallValidityAutorun();
 
         // initialize field-level data
         const cb = function( name, spec ){
@@ -406,6 +429,15 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // run an initial check with default values (but do not update the provided data if any)
         if( args.enabled !== false ){
             this.check({ update: false });
+        }
+
+        // track checker status and validity
+        if( true ){
+            this.argInstance().autorun(() => {
+                const status = this.iStatusableStatus();
+                const validity = this.iStatusableValidity()
+                console.debug( 'Checker (autorun)', this.iCheckableId(), status, validity );
+            });
         }
 
         //console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
@@ -472,6 +504,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Boolean} whether checks are enabled
      */
     enabled( enabled ){
+        _trace( 'Checker.enabled' );
         if( enabled === true || enabled === false ){
             this.#conf.enabled = enabled;
         }
@@ -483,9 +516,18 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {ITypedMessage} tm
      */
     errorSet( tm ){
+        _trace( 'Checker.errorSet' );
         // in our model, only fields have TypedMessage's
         console.warn( 'errorSet() is obsoleted, please use messagerPush()' );
         this.messagerPush( tm );
+    }
+
+    /**
+     * @summary Try to explain the current status and validity
+     */
+    explain(){
+        _trace( 'Checker.explain' );
+        this._explainRec( 'This checker', '' );
     }
 
     /**
@@ -583,6 +625,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Checker} this instance
      */
     setForm( item, opts={} ){
+        _trace( 'Checker.setForm' );
         const self = this;
         const cb = function( name, field ){
             field.iRunValueTo( item, opts );
