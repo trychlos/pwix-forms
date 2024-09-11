@@ -96,7 +96,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 let tmValid = true;
                 if( tm instanceof TM.TypedMessage ){
                     level = tm.iTypedMessageLevel();
-                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) < 0 );
+                    // cf. man syslog 3: the higher the level, the lower the severity
+                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
                     valid &&= tmValid;
                 } else {
                     console.warn( 'expected ITypedMessage, got', tm );
@@ -121,7 +122,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     break
             }
         }
-        //console.debug( '_checkTMConsolidate', value, res, status, valid );
+        //console.debug( '_checkTMConsolidate', this.name(), value, res, status, valid );
         this.iStatusableStatus( status );
         this.iStatusableValidity( valid );
     }

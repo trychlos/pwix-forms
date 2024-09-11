@@ -19,6 +19,7 @@
     - Be tolerant when the HTML INPUT event emitter is a descendant of the JS-addressed node
     - Introduce iMessagerFirst() method
     - Remove (unused) iSpecValueTo() method
+    - Fix the messages level comparison
 
 ### 1.0.2
 
