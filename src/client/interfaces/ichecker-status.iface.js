@@ -10,8 +10,6 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
-import { Tracker } from 'meteor/tracker';
-
 import '../../common/js/index.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
@@ -25,26 +23,19 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
     /*
      * @summary Consolidate the validity/status of each checker to their parent (down-to-up)
      *  Update the relevant Checker data
-     * @param {Checker} parent the parent start point of the consolidation, defaulting to the parent of *this* checker
      */
-    _consolidateStatusCheckersUp( parent ){
+    _consolidateStatusCheckersUp(){
         _trace( 'ICheckerStatus._consolidateStatusCheckersUp' );
-        parent = parent || this.confParent();
+        const parent = this.confParent();
         if( parent ){
-            let valid = this.iStatusableValidity();
-            const children = parent.rtChildren();
-            if( children ){
-                //valid = true;
-                let statuses = [ CheckStatus.C.NONE ];
-                children.forEach(( child ) => {
-                    //console.debug( 'before valid', valid, 'child', child.iStatusableValidity());
-                    valid &&= child.iStatusableValidity();
-                    //console.debug( 'after valid', valid );
-                    statuses.push( child.iStatusableStatus());
-                });
-                parent.iStatusableValidity( valid );
-                parent.iStatusableStatus( CheckStatus.worst( statuses ));
-            }
+            let valid = true;
+            let statuses = [];
+            parent.rtChildren().forEach(( child ) => {
+                valid &&= child.iStatusableValidity();
+                statuses.push( child.iStatusableStatus());
+            });
+            parent.iStatusableValidity( valid );
+            parent.iStatusableStatus( CheckStatus.worst( statuses ));
             parent._consolidateStatusCheckersUp();
         }
     }
@@ -91,8 +82,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         _trace( 'ICheckerStatus.statusConsolidate' );
         this._consolidateStatusFields( opts );
         this._consolidateStatusCheckersUp();
-        console.debug( 'setting checker status, validity to', this.iCheckableId(), this.iStatusableStatus(), this.iStatusableValidity());
-        Tracker.flush();
+        //console.debug( 'setting checker status, validity to', this.iCheckableId(), this.iStatusableStatus(), this.iStatusableValidity());
         return this.iStatusableValidity();
     }
 
@@ -104,6 +94,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         const self = this;
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
+            //console.debug( 'running ok autorun', self.iCheckableId(), valid );
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
                 $ok.prop( 'disabled', !valid );

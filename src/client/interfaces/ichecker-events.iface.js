@@ -62,7 +62,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     }
 
     /**
-     * @summary Install an input handler on the topmost node (if any)
+     * @summary Install an input handler on the topmost node
      */
     eventInstallInputHandler(){
         _trace( 'ICheckerEvents.eventInstallInputHandler' );
@@ -72,7 +72,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     }
 
     /**
-     * àsummary Install the validity handler on the topmost node (if any)
+     * @summary Install the validity handler on the topmost node
      */
     eventInstallValidityHandler(){
         _trace( 'ICheckerEvents.eventInstallValidityHandler' );
