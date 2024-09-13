@@ -499,6 +499,24 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
+     * @summary Recursively clear the panel if it exists
+     * @param {Object} opts an optional options object with following keys:
+     *  - propagateDown: whether to also recursively clear all children, defaulting to false
+     */
+    clearPanel( opts={} ){
+        _trace( 'Checker.clearPanel' );
+        const clearField = function( name, field ){
+            field.iRunValueTo({}, { value: null });
+        };
+        this.fieldsIterate( clearField );
+        if( opts.propagateDown === true ){
+            this.rtChildren().forEach(( it ) => {
+                it.clearPanel( opts );
+            });
+        }
+    }
+
+    /**
      * Getter/Setter
      * @param {Boolean} enabled
      * @returns {Boolean} whether checks are enabled

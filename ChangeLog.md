@@ -21,6 +21,7 @@
     - Remove (unused) iSpecValueTo() method
     - Fix the messages level comparison
     - Fix the messages ordering to get the highest severity first
+    - Define new Checker.clearPanel() method
 
 ### 1.0.2
 

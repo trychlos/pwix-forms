@@ -119,6 +119,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         } else {
             value = item[this.name()];
         }
+        //console.debug( 'iSpecValueFrom', this.name(), value );
         return value;
     }
 });

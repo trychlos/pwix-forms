@@ -401,6 +401,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
                     value = $node.prop( 'checked' );
                 }
+                //console.debug( 'iRunValueFrom', this.name(), value );
                 /*
                 // a small hack to handle 'true' and 'false' values from coreYesnoSelect
                 const $select = $node.closest( '.core-yesno-select' );
@@ -418,9 +419,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /**
      * @summary Set the value into the form
      * @param {Object} item the object data source
-     * @param {Object} opts an optional options object
+     * @param {Object} opts an optional options object, with following keys:
+     *  - value: the value to be considered, defaulting to those returned by iSpecValueFrom()
      */
-    iRunValueTo( item, opts ){
+    iRunValueTo( item, opts={} ){
         _trace( 'IFieldRun.iRunValueTo' );
         const defn = this._defn();
         const $node = this.iRunInputNode();
@@ -432,8 +434,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 assert( typeof defn.form_formTo === 'function', 'expect form_formTo() be a function, found '+defn.form_formTo );
                 defn.form_formTo( $node, item );
             } else {
-                const value = this.iSpecValueFrom( item );
+                const value = Object.keys( opts ).includes( 'value' ) ? opts.value : this.iSpecValueFrom( item );
                 //console.debug( 'item', item, 'field', this.name(), 'value', value );
+                //console.warn( 'iRunValueTo', this.name(), value );
                 $node.val( value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
