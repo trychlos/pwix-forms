@@ -34,6 +34,7 @@ export class Message extends mix( Base ).with(){
     // private data
     #tm = null;
     #id = null;
+    #epoch = null;
 
     // runtime data
 
@@ -57,6 +58,7 @@ export class Message extends mix( Base ).with(){
         super( ...arguments );
         this.#tm = tm;
         this.#id = id;
+        this.#epoch = Date.now();
         return this;
     }
 
@@ -66,6 +68,16 @@ export class Message extends mix( Base ).with(){
      * @returns {String} the ICheckable identifier
      */
     emitter(){
+        _trace( 'Message.emitter' );
+        return this.#id;
+    }
+
+    /**
+     * Getter
+     * @locus Everywhere
+     * @returns {Integer} the epoch time at which the message has been pushed
+     */
+    epoch(){
         _trace( 'Message.emitter' );
         return this.#id;
     }

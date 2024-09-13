@@ -173,7 +173,7 @@ Only available on the client.
 
 ##### `Forms.Messager`
 
-Display the messages resulting from the done checks, as LIFO stack.
+Display the messages resulting from the done checks, as a stack ordered by level order first, and push time order then.
 
 ##### `Forms.Panel`
 

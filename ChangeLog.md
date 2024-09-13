@@ -20,6 +20,7 @@
     - Introduce iMessagerFirst() method
     - Remove (unused) iSpecValueTo() method
     - Fix the messages level comparison
+    - Fix the messages ordering to get the highest severity first
 
 ### 1.0.2
 

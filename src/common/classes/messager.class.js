@@ -39,32 +39,64 @@ export class Messager extends mix( Base ).with( IMessager ){
 
     /*
      * @summary dump the content
+     * @param {Object} an optional options object with following keys:
+     *  - msg: a prefix message to be added, defaulting to none
+     *  - set: the set to be dumped, defaulting to this.#set
      */
-    _dump(){
+    _dump( opts={} ){
         _trace( 'Messager._dump' );
         let i = 0;
-        this.#set.get().forEach(( it ) => {
-            console.debug( 'dump['+i+'] tm', it.tm(), 'emitter', it.emitter());
+        const set = opts.set || this.#set.get();
+        let msg = opts.msg || '';
+        msg = msg ? '.'+msg : msg;
+        set.forEach(( it ) => {
+            console.debug( 'dump['+i+'] tm'+msg, it.tm().iTypedMessageLevel(), it.tm(), 'emitter', it.emitter());
             i += 1;
         });
     }
 
     /*
      * @returns {TypedMessage} the first pushed message in the highest level order
+     *  A reactive data source
      */
     _first(){
         _trace( 'Messager._first' );
-        const set = this.#set.get();
-        return set.length ? set[0].tm() : null;
+        //this._dump({ msg: 'before' });
+        const set = this._order( this.#set.get());
+        const msg = set.length ? set[0].tm() : null;
+        //this._dump({ msg: 'after', set: set });
+        return msg;
     }
 
     /*
      * @returns {TypedMessage} the last pushed message in the highest level order
+     *  A reactive data source
      */
     _last(){
         _trace( 'Messager._last' );
-        const set = this.#set.get();
+        const set = this._order( this.#set.get());
         return set.length ? set[set.length-1].tm() : null;
+    }
+
+    /*
+     * @summary Order the set of message by increasing level order (decreasing severity) and increasing push time
+     * @param {Array<Message>} set
+     * @returns {Array<Message>} the ordered set
+     */
+    _order( set ){
+        _trace( 'Messager._order', set );
+        assert( _.isArray( set ), 'expects an array, got ', set );
+        const cmpFn = function( a, b ){
+            let res = -1 * a.tm().iTypedMessageCompare( b.tm());
+            //console.debug( a.tm().iTypedMessageLevel(), b.tm().iTypedMessageLevel(), res );
+            if( res === 0 ){
+                const epoch_a = a.epoch();
+                const epoch_b = b.epoch();
+                res = epoch_a < epoch_b ? -1 : ( epoch_a > epoch_b ? +1 : 0 );
+            }
+            return res;
+        };
+        return set.sort( cmpFn );
     }
 
     /*
@@ -80,6 +112,7 @@ export class Messager extends mix( Base ).with( IMessager ){
                 tms = [ tms ];
             }
             tms.forEach(( tm ) => {
+                assert( tm instanceof TM.TypedMessage, 'expects an instance of TM.TypedMessage, got '+tm );
                 set.push( new Message( tm, id ));
             });
         }
