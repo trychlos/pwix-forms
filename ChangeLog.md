@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.1.0-rc
+### 1.1.0
 
-    Release date: 
+    Release date: 2024- 9-13
 
     - Improve README
     - Let the Checker be named to make the debug easyer, thus bumping the minor candidate version number
@@ -43,4 +43,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Aug. 11th
+- Last updated on 2024, Sep. 13th
