@@ -12,7 +12,8 @@
 | ---: | :---       | :---                       |
 |    1 | 2024- 6-15 | get rid of Meteor.isDevelopment, replacing with a value from EnvSettings |
 |    2 | 2024- 1-13 | Checker doesn't work for radio buttons (moved from pwix:core-app) |
-|    3 |  |  |
+|    3 | 2024- 9-13 | panel.class: warn only once when a name is unknowned |
+|    4 |  |  |
 
 ---
 ## Done
