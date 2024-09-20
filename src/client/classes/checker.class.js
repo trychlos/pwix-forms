@@ -619,6 +619,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
+     * @returns {String} the configured name, or null
+     */
+    name(){
+        _trace( 'Checker.name' );
+        return this.confName();
+    }
+
+    /**
      * @summary Remove this Checker from the hierarchy tree
      *  In an array-ed form, removing a row implies to also cleanup the associated Checker
      *  - remove the messages published from this Checker and its dependants

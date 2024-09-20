@@ -8,6 +8,7 @@
 
     - Accept aldeed:simple-schema v2.0.0, thus bumping minor candidate version number
     - Define FieldType.C.NONE
+    - Define new Checker.name() method
 
 ### 1.1.0
 
