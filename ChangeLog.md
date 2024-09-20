@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.2.0-rc
+### 1.2.0
 
-    Release date: 
+    Release date: 2024- 9-20
 
     - Accept aldeed:simple-schema v2.0.0, thus bumping minor candidate version number
     - Define FieldType.C.NONE
@@ -51,4 +51,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Sep. 13th
+- Last updated on 2024, Sep. 20th
