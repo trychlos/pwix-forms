@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Set INFO messages to have bs-primary color
 
 ### 1.2.0
 
