@@ -684,6 +684,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * @returns {Boolean} the current (consolidated) true|false validity of this panel
+     *  A reactive data source.
      */
     validity(){
         _trace( 'Checker.validity' );
