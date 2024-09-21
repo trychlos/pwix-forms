@@ -93,13 +93,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
         // setup the new enumeration reference as a keyed object
         this.iEnumerableBase( this.#set );
 
-        // update from provided FormField.Set
-        /*
-        if( set ){
-            this._fromSet( set );
-        }
-            */
-
+        //console.debug( this );
         return this;
     }
 }
