@@ -123,7 +123,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             }
         }
         //console.debug( '_checkTMConsolidate', this.name(), value, res, status, valid );
-        this.iStatusableStatus( status );
+        // do not change the field status if it has been defined as transparent
+        if( this.iSpecStatus() !== Forms.C.CheckStatus.TRANSPARENT ){
+            this.iStatusableStatus( status );
+        }
         this.iStatusableValidity( valid );
     }
 
@@ -180,7 +183,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun._initSuffixStatus' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
-        if( display === Forms.C.CheckStatus.INDICATOR ){
+        if( display === Forms.C.CheckStatus.INDICATOR || display === Forms.C.CheckStatus.TRANSPARENT ){
             const $node = this.iRunUINode();
             if( $node ){
                 const $parentNode = $node.closest( '.'+checker.confParentClass());
@@ -343,7 +346,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             if( overridable ){
                 const status = this.iSpecStatus();
                 //console.debug( 'iRunShowStatus spec display', this.name(), status );
-                if( status === true || status === false ){
+                if( status ){
                     display = status;
                 }
             }

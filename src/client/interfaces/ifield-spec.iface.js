@@ -79,13 +79,18 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @returns {String} whether and how the status should be displayed for this field
-     *  No default is provided: without any specification, the checker configuration will apply for all fields
+     * @summary This is the way the status should be displayed for this field.
+     *  It is only considered if the package is configured for this way be overridable on a per-field basis.
+     * @returns {String} a value from Forms.C.CheckStatus, or null
      */
     iSpecStatus(){
         _trace( 'IFieldSpec.iSpecStatus' );
         const defn = this._defn();
-        let status = defn.form_status;
+        const status = defn.form_status || null;
+        if( status && !Object.values( Forms.C.CheckStatus ).includes( status )){
+            console.warn( 'pwix:forms unexpected form_status', this.name(), status );
+            status = null;
+        }
         return status;
     }
 

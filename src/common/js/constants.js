@@ -6,9 +6,10 @@ Forms.C = {
 
     // the way to display the check status
     CheckStatus: {
-        NONE:       'STATUS_NONE',
-        BOOTSTRAP:  'STATUS_BOOTSTRAP',
-        INDICATOR:  'STATUS_INDICATOR'
+        NONE:        'STATUS_NONE',
+        BOOTSTRAP:   'STATUS_BOOTSTRAP',
+        INDICATOR:   'STATUS_INDICATOR',
+        TRANSPARENT: 'STATUS_TRANSPARENT'
     },
 
     // verbosity levels

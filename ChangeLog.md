@@ -10,6 +10,7 @@
     - Define new Checker.messagerClearMine() method, thus bumping minor candidate version number
     - Refactor all classes and interfaces to client side only
     - Remove meteor/check dependency
+    - Introduce new Forms.C.CheckStatus.TRANSPARENT check status display constant
 
 ### 1.2.0
 
