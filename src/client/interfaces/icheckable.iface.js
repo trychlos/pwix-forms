@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/icheckable.iface.js
+ * pwix:forms/src/client/interfaces/icheckable.iface.js
  *
  * ICheckable if something which can be checked, either a field or a form.
  * The result of this check is either null, or a TypedMessage, or an array of TypedMessage's.

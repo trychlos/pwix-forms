@@ -8,7 +8,6 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
-import { check } from 'meteor/check';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { TM } from 'meteor/pwix:typed-message';
 import { Tracker } from 'meteor/tracker';
@@ -17,8 +16,6 @@ import { Base } from './base.class.js';
 import { Message } from './message.class.js';
 
 import { IMessager } from '../interfaces/imessager.iface.js';
-
-import '../../common/js/index.js';
 
 export class Messager extends mix( Base ).with( IMessager ){
 
@@ -113,6 +110,7 @@ export class Messager extends mix( Base ).with( IMessager ){
             }
             tms.forEach(( tm ) => {
                 assert( tm instanceof TM.TypedMessage, 'expects an instance of TM.TypedMessage, got '+tm );
+                //console.debug( '_push', this, tm, id );
                 set.push( new Message( tm, id ));
             });
         }
@@ -130,7 +128,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         this.#set.get().forEach(( it ) => {
             //console.debug( 'examining', it.emitter());
             if( ids.includes( it.emitter())){
-                //console.debug( 'removing', it );
+                //console.debug( 'removing', this, it );
             } else {
                 newset.push( it );
             }
@@ -143,6 +141,7 @@ export class Messager extends mix( Base ).with( IMessager ){
      */
     _reset(){
         _trace( 'Messager._reset' );
+        //console.warn( 'reset', this );
         this.#set.set( [] );
     }
 
@@ -155,7 +154,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         if( this.#saved.length ){
             let set = [];
             this.#saved.forEach(( it ) => {
-                check( it, Message );
+                assert( it && it instanceof Message, 'expects an instance of Message, got '+it );
                 if( it.emitter() === id ){
                     console.debug( 'ignoring', it );
                 } else {
@@ -197,7 +196,8 @@ export class Messager extends mix( Base ).with( IMessager ){
         // track the content
         if( false ){
             Tracker.autorun(() => {
-                console.debug( 'set.content', self._dump());
+                console.debug( 'set.content' );
+                self._dump();
             });
         }
 

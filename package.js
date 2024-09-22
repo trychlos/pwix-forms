@@ -1,6 +1,6 @@
 Package.describe({
     name: 'pwix:forms',
-    version: '1.2.1-rc',
+    version: '1.3.0-rc',
     summary: 'Meteor forms management',
     git: 'https://github.com/trychlos/pwix-forms.git',
     documentation: 'README.md'
@@ -29,7 +29,6 @@ function configure( api ){
     };
     api.versionsFrom([ '2.9.0', '3.0-rc.0' ]);
     _use( 'aldeed:simple-schema@1.13.1 || 2.0.0' );
-    _use( 'check' );
     _use( 'blaze-html-templates@2.0.0 || 3.0.0-alpha300.0', 'client' );
     _use( 'ecmascript' );
     _use( 'less@4.0.0', 'client' );

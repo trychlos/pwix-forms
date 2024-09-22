@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/ifield-spec.iface.js
+ * pwix:forms/src/client/interfaces/ifield-spec.iface.js
  *
  * IFieldSpec is the interface to let an application's access the field specifications
  * - either specific to the current panel (say the selector for example)

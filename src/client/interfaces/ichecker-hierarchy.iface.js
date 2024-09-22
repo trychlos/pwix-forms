@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/ichecker-hierarchy.iface.js
+ * pwix:forms/src/client/interfaces/ichecker-hierarchy.iface.js
  *
  * ICheckerHierarchy let us manage the tree of Checker's, from parent ot children (and vice-versa).
  */
@@ -7,10 +7,6 @@
 import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
-
-import { check } from 'meteor/check';
-
-import '../../common/js/index.js';
 
 import { Checker } from '../classes/checker.class';
 
@@ -55,7 +51,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      */
     hierarchyRegisterChild( child ){
         _trace( 'ICheckerHierarchy.hierarchyRegisterChild', child );
-        check( child, Checker );
+        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
         this.#children.push( child );
     }
 
@@ -65,7 +61,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      */
     hierarchyRemove( parent ){
         _trace( 'ICheckerHierarchy.hierarchyRemove' );
-        check( parent, Checker );
+        assert( parent && parent instanceof Checker, 'expects an instance of Checker, got '+parent );
         parent.hierarchyRemoveChild( this );
     }
 
@@ -74,7 +70,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      */
     hierarchyRemoveChild( child ){
         _trace( 'ICheckerHierarchy.hierarchyRemoveChild' );
-        check( child, Checker );
+        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
         const removedId = child.confId();
         const children = this.rtChildren();
         let found = -1;
@@ -100,6 +96,9 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
         if( this.enabled()){
             let args = [ ...arguments ];
             args.shift();
+            if( false && fn === '_messagerPush' && args.length ){
+                console.debug( 'hierarchyUp', this.iCheckableId(), fn, this.confName(), args );
+            }
             // apply the function to this checker
             if( this[fn] ){
                 this[fn]( ...args );
@@ -109,6 +108,8 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
             if( parent ){
                 parent.hierarchyUp( ...arguments );
             }
+        } else {
+            console.warn( 'pwix:forms stopping the up propagation on disabled', this.confName());
         }
     }
 

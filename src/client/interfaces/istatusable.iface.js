@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/istatusable.iface.js
+ * pwix:forms/src/client/interfaces/istatusable.iface.js
  *
  * IStatusable manages both:
  * - a true|false validity status,
@@ -60,6 +60,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
 
     /**
      * @returns {ReactiveVar} the ReactiveVar which contains the CheckStatus
+     *  Is provided in the FormsCheckStatusIndicator component data context.
      */
     iStatusableStatusRv(){
         _trace( 'IStatusable.iStatusableStatusRv' );

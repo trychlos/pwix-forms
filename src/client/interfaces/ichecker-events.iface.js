@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/ichecker-events.iface.js
+ * pwix:forms/src/client/interfaces/ichecker-events.iface.js
  *
  * ICheckerEvents let us manage the events from and to a Checker.
  */
@@ -7,8 +7,6 @@
 import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
-
-import '../../common/js/index.js';
 
 export const ICheckerEvents = DeclareMixin(( superclass ) => class extends superclass {
 

@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/ienumerate.iface.js
+ * pwix:forms/src/client/interfaces/ienumerate.iface.js
  *
  * IEnumerate let a class be enumerated.
  */

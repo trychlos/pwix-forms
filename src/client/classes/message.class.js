@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/classes/message.class.js
+ * pwix:forms/src/client/classes/message.class.js
  *
  * Forms wants to be able:
  * - to display the messages relative to the last checked fields

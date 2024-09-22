@@ -2,11 +2,14 @@
 
 ## ChangeLog
 
-### 1.2.1-rc
+### 1.3.0-rc
 
     Release date: 
 
     - Set INFO messages to have bs-primary color
+    - Define new Checker.messagerClearMine() method, thus bumping minor candidate version number
+    - Refactor all classes and interfaces to client side only
+    - Remove meteor/check dependency
 
 ### 1.2.0
 

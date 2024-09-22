@@ -10,8 +10,6 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
-import '../../common/js/index.js';
-
 import { CheckStatus } from '../../common/definitions/check-status.def.js'
 
 export const ICheckerStatus = DeclareMixin(( superclass ) => class extends superclass {

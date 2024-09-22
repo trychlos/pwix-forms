@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/ifield-run.iface.js
+ * pwix:forms/src/client/interfaces/ifield-run.iface.js
  *
  * IFieldRun is the interface to let an application's panel manage the field at runtime.
  */
@@ -8,7 +8,7 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
-import { check } from 'meteor/check';
+import { Blaze } from 'meteor/blaze';
 import { TM } from 'meteor/pwix:typed-message';
 import { UIU } from 'meteor/pwix:ui-utils';
 
@@ -133,7 +133,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     _initPrefixType( checker ){
         _trace( 'IFieldRun._initPrefixType' );
-        check( checker, Checker );
+        assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = checker.confDisplayFieldTypeIndicator();
         const type = this.iSpecType();
         const $node = this.iRunUINode();
@@ -153,7 +153,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     _initRightSibling( checker ){
         _trace( 'IFieldRun._initRightSibling' );
-        check( checker, Checker );
+        assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const siblingClass = checker.confRightSiblingClass();
         const $node = this.iRunUINode();
         let res = null;
@@ -178,7 +178,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     _initSuffixStatus( checker ){
         _trace( 'IFieldRun._initSuffixStatus' );
-        check( checker, Checker );
+        assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
         if( display === Forms.C.CheckStatus.INDICATOR ){
             const $node = this.iRunUINode();
@@ -191,6 +191,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const data = {
                     statusRv: this.iStatusableStatusRv()
                 };
+                //console.debug( this.name(), this.iStatusableStatus());
                 this.#views.push( Blaze.renderWithData( Template.FormsCheckStatusIndicator, data, $parentNode[0], $sibling[0] ));
             }
         }
@@ -203,7 +204,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     _initWrapParent( checker ){
         _trace( 'IFieldRun._initWrapParent' );
-        check( checker, Checker );
+        assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const parentClass = checker.confParentClass();
         const $node = this.iRunUINode();
         let res = null;
@@ -236,7 +237,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iFieldRunInit( checker ){
         _trace( 'IFieldRun.iFieldRunInit' );
-        check( checker, Checker );
+        assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         this.iRunChecker( checker );
         if( checker.confDisplayStatus() !== Forms.C.CheckStatus.NONE ){
             let promises = [];

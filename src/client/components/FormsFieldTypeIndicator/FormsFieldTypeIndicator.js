@@ -1,5 +1,5 @@
 /*
- * /imports/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js
+ * pwix:forms/src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js
  *
  * A small icon indicator to exhibit the type of field.
  *

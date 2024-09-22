@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/iinstanciation-args.iface.js
+ * pwix:forms/src/client/interfaces/iinstanciation-args.iface.js
  *
  * IInstanciationArgs let a class provides its instanciation arguments to the caller.
  */

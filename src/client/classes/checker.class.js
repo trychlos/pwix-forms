@@ -58,20 +58,18 @@ import mix from '@vestergaard-company/js-mixin';
 
 import '../../common/js/trace.js';
 
-import { Base } from '../../common/classes/base.class.js';
+import { Base } from './base.class.js';
+import { Panel } from './panel.class.js';
 
 import { CheckStatus } from '../../common/definitions/check-status.def.js';
 
-import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
-import { IMessager } from '../../common/interfaces/imessager.iface.js';
-import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
-
-import { Panel } from './panel.class.js';
-
+import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { ICheckerEvents } from '../interfaces/ichecker-events.iface.js';
 import { ICheckerHierarchy } from '../interfaces/ichecker-hierarchy.iface.js';
 import { ICheckerStatus } from '../interfaces/ichecker-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
+import { IMessager } from '../interfaces/imessager.iface.js';
+import { IStatusable } from '../interfaces/istatusable.iface.js';
 
 export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy, ICheckerStatus, ICheckable, IStatusable ){
 
@@ -114,6 +112,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     _explainRec( title, prefix ){
         _trace( 'Checker._explainRec' );
         console.log( prefix+title, this.confName(), this.iCheckableId(), this.status(), this.validity());
+        console.log( prefix+'- parent' );
+        const parent = this.confParent();
+        if( parent ){
+            console.log( prefix+'  '+parent.confName()+ ' '+parent.iCheckableId());
+        } else {
+            console.log( prefix+'  (none)' );
+        }
+        console.log( )
         console.log( prefix+'- children' );
         let count = 0;
         this.rtChildren().forEach(( child ) => {
@@ -135,6 +141,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         if( !count ){
             console.log( prefix+'  (none)' );
         }
+        console.log( prefix+'- messager' );
+        const messager = this.confIMessager();
+        if( messager ){
+            messager.iMessagerDump();
+        } else {
+            console.log( prefix+'  (none)' );
+        }
     }
 
     // clear the IMessager if any
@@ -143,6 +156,15 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerClear();
+        }
+    }
+
+    // clear the IMessager if any
+    _messagerClearMine( id ){
+        _trace( 'Checker._messagerClearMine' );
+        const messager = this.confIMessager();
+        if( messager ){
+            messager.iMessagerClearMine( id );
         }
     }
 
@@ -407,6 +429,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
         // initialize field-level data
         const cb = function( name, spec ){
+            //console.debug( 'iFieldRunInit', this, name, spec );
             spec.iFieldRunInit( this );
             return true;
         }
@@ -589,6 +612,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     messagerClear(){
         _trace( 'Checker.messagerClear' );
         this.hierarchyUp( '_messagerClear' );
+    }
+
+    /**
+     * @summary Clears the messages stack from the messages exclusively pushed by me
+     */
+    messagerClearMine(){
+        _trace( 'Checker.messagerClearMine' );
+        this.hierarchyUp( '_messagerClearMine', this.iCheckableId());
     }
 
     /**

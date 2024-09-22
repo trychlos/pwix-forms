@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/classes/form-field.class.js
+ * pwix:forms/src/client/classes/form-field.class.js
  *
  * The specifications to manage a field in a form panel.
  *
@@ -13,11 +13,10 @@ import mix from '@vestergaard-company/js-mixin';
 import { Field } from 'meteor/pwix:field';
 import { Tracker } from 'meteor/tracker';
 
-import { ICheckable } from '../../common/interfaces/icheckable.iface.js';
-import { IStatusable } from '../../common/interfaces/istatusable.iface.js';
-
+import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { IFieldRun } from '../interfaces/ifield-run.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
+import { IStatusable } from '../interfaces/istatusable.iface.js';
 
 export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICheckable, IStatusable ){
 

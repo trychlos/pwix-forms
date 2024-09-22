@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/interfaces/imessager.iface.js
+ * pwix:forms/src/client/interfaces/imessager.iface.js
  *
  * Provide a simple interface to a stack of messages.
  *
@@ -40,6 +40,16 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IMessager.iMessagerClear' );
         this._save();
         this._reset();
+    }
+
+    /**
+     * @summary Ask to clear the message(s) displayed in the message zone from the messages pushed by this iCheckable
+     * @param {String} id the ICheckable identifier
+     */
+    iMessagerClearMine( id ){
+        _trace( 'IMessager.iMessagerClearMine' );
+        this._save();
+        this._restoreBut( id );
     }
 
     /**

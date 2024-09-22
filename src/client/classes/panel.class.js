@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/common/classes/panel-spec.class.js
+ * pwix:forms/src/client/classes/panel-spec.class.js
  *
  * Gathers a keyed set of fields specifications for a form panel.
  */
@@ -10,12 +10,11 @@ import mix from '@vestergaard-company/js-mixin';
 
 import { Field } from 'meteor/pwix:field';
 
-import { Base } from '../../common/classes/base.class.js';
+import { Base } from './base.class.js';
+import { FormField } from './form-field.class.js';
 
-import { IEnumerable } from '../../common/interfaces/ienumerable.iface.js';
-import { IInstanciationArgs } from '../../common/interfaces/iinstanciation-args.iface.js';
-
-import { FormField } from '../classes/form-field.class.js';
+import { IEnumerable } from '../interfaces/ienumerable.iface.js';
+import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
 
 export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 

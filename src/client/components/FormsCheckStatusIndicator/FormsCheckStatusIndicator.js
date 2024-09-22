@@ -12,6 +12,10 @@
  *  - title: if set, a text to replace the default title
  */
 
+const assert = require( 'assert' ).strict; // up to nodejs v16.x
+
+import { ReactiveVar } from 'meteor/reactive-var';
+
 import { CheckStatus } from '../../../common/definitions/check-status.def.js';
 
 import './FormsCheckStatusIndicator.html';
@@ -19,13 +23,13 @@ import './FormsCheckStatusIndicator.less';
 
 Template.FormsCheckStatusIndicator.onRendered( function(){
     const self = this;
+    //console.debug( this );
 
     self.autorun(() => {
         self.$( '.FormsCheckStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
         const rv = Template.currentData().statusRv;
-        if( rv ){
-            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
-        }
+        assert( rv && rv instanceof ReactiveVar, 'expects an instance of ReactiveVar, got '+rv );
+        self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
     });
 
     // track status changes
