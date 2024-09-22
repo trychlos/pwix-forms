@@ -156,7 +156,7 @@ export class Messager extends mix( Base ).with( IMessager ){
             this.#saved.forEach(( it ) => {
                 assert( it && it instanceof Message, 'expects an instance of Message, got '+it );
                 if( it.emitter() === id ){
-                    console.debug( 'ignoring', it );
+                    //console.debug( 'ignoring', it );
                 } else {
                     set.push( it );
                 }
