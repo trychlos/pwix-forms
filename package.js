@@ -23,24 +23,20 @@ Package.onTest( function( api ){
 });
 
 function configure( api ){
-    const _use = function(){
-        api.use( ...arguments );
-        api.imply( ...arguments );
-    };
-    api.versionsFrom([ '2.9.0', '3.0-rc.0' ]);
-    _use( 'aldeed:simple-schema@1.13.1 || 2.0.0' );
-    _use( 'blaze-html-templates@2.0.0 || 3.0.0-alpha300.0', 'client' );
-    _use( 'ecmascript' );
-    _use( 'less@4.0.0', 'client' );
-    _use( 'pwix:field@1.0.0-rc' );
-    _use( 'pwix:typed-message@1.2.0' );
-    _use( 'pwix:ui-bootstrap5@2.0.0' );
-    _use( 'pwix:ui-fontawesome6@1.0.0' );
-    _use( 'pwix:ui-utils@1.1.0' );
-    _use( 'reactive-dict' );
-    _use( 'reactive-var' );
-    _use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-rc300.0', 'server' );
-    _use( 'tracker' );
+    api.versionsFrom([ '2.9.0', '3.0' ]);
+    api.use( 'aldeed:simple-schema@1.13.1 || 2.0.0' );
+    api.use( 'blaze-html-templates@2.0.0 || 3.0.0-alpha300.0', 'client' );
+    api.use( 'ecmascript' );
+    api.use( 'less@4.0.0', 'client' );
+    api.use( 'pwix:field@1.0.0-rc' );
+    api.use( 'pwix:typed-message@1.2.0' );
+    api.use( 'pwix:ui-bootstrap5@2.0.0' );
+    api.use( 'pwix:ui-fontawesome6@1.0.0' );
+    api.use( 'pwix:ui-utils@1.1.0' );
+    api.use( 'reactive-dict' );
+    api.use( 'reactive-var' );
+    api.use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-rc300.0', 'server' );
+    api.use( 'tracker' );
     api.addFiles( 'src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js', 'client' );
     api.addFiles( 'src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js', 'client' );
     api.addFiles( 'src/client/components/FormsMessager/FormsMessager.js', 'client' );
