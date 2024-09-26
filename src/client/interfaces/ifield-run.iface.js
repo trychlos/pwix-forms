@@ -235,6 +235,37 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
+     * @locus Anywhere
+     * @summary Check the field
+     * @param {Any} opts an optional behaviour options
+     *  cf. Checker.check for a description of the known options
+     * @returns {Promise} which resolve to the true|false validity status for this field
+     */
+    async iFieldRunCheck( opts={} ){
+        _trace( 'IFieldRun.iFieldRunCheck', this.name());
+        let res = true;
+        const checker = this.iRunChecker();
+        if( checker.enabled()){
+            // some initializations and clearings before any check of this field
+            this._checkBefore( opts );
+            // if a check function has been defined, calls it (warning once if not exists)
+            const checkFn = this.iSpecCheck();
+            //console.debug( this.name(), checkFn );
+            if( checkFn ){
+                opts.id = checker.confId();
+                const value = this.iRunValueFrom();
+                const self = this;
+                res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
+                    console.debug( 'fnres', this.name(), fnres );
+                    self._checkAfter( opts, value, fnres );
+                    return self.iStatusableValidity();
+                });
+            }
+        }
+        return res;
+    }
+
+    /**
      * @summary Initialize the runtime data at Checker instanciation
      * @param {Checker} checker
      */
@@ -252,36 +283,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 self._initSuffixStatus( checker )
             });
         }
-    }
-
-    /**
-     * @locus Anywhere
-     * @summary Check the field
-     * @param {Any} opts an optional behaviour options
-     *  cf. Checker.check for a description of the known options
-     * @returns {Promise} which resolve to the true|false validity status for this field
-     */
-    async iFieldRunCheck( opts={} ){
-        _trace( 'IFieldRun.iFieldRunCheck', this.name());
-        let res = true;
-        const checker = this.iRunChecker();
-        if( checker.enabled()){
-            // some initializations and clearings before any check of this field
-            this._checkBefore( opts );
-            // if a check function has been defined, calls it (warning once if not exists)
-            const checkFn = this.iSpecCheck();
-            if( checkFn ){
-                opts.id = checker.confId();
-                const value = this.iRunValueFrom();
-                const self = this;
-                res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
-                    //console.debug( 'fnres', this.name(), fnres );
-                    self._checkAfter( opts, value, fnres );
-                    return self.iStatusableValidity();
-                });
-            }
-        }
-        return res;
     }
 
     /**

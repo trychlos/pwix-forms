@@ -61,6 +61,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
     /**
      * @returns {ReactiveVar} the ReactiveVar which contains the FieldStatus
      *  Is provided in the FormsStatusIndicator component data context.
+     *  Use case: outside of the IField interfaces, when the caller wants just use the indicator.
      */
     iStatusableStatusRv(){
         _trace( 'IStatusable.iStatusableStatusRv' );
