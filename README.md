@@ -199,23 +199,23 @@ Only available on the client.
 
 ### Blaze components
 
-#### `FormsCheckStatusIndicator`
+#### `FormsStatusIndicator`
 
 Display an indicator about the check status of a field.
 
 Parameters:
 
-- `statusRv`: a mandatory ReactiveVar which contains the CheckStatus to be displayed, among the possible values:
+- `statusRv`: a mandatory ReactiveVar which contains the ShowStatus to be displayed, among the possible values:
 
-    - `Forms.CheckStatus.C.INVALID`,
-    - `Forms.CheckStatus.C.UNCOMPLETE`,
-    - `Forms.CheckStatus.C.VALID`,
-    - `Forms.CheckStatus.C.NONE`.
+    - `Forms.FieldStatus.C.INVALID`,
+    - `Forms.FieldStatus.C.UNCOMPLETE`,
+    - `Forms.FieldStatus.C.VALID`,
+    - `Forms.FieldStatus.C.NONE`.
 
 - `classes`: if set, a list of classes to be added to the default
 - `title`: if set, a text to replace the default title
 
-#### `FormsFieldTypeIndicator`
+#### `FormsTypeIndicator`
 
 Display an indicator about the type of a field.
 
@@ -252,25 +252,25 @@ Known configuration options are:
 
     Whether input fields should have a check status (valid/uncomplete/invalid) indicator, where available values are:
 
-    - `Forms.C.CheckStatus.NONE`
+    - `Forms.C.ShowStatus.NONE`
 
         Do not show any status indicator
 
-    - `Forms.C.CheckStatus.BOOTSTRAP`
+    - `Forms.C.ShowStatus.BOOTSTRAP`
 
         Uses the [Bootstrap](https://getbootstrap.com/) classes to indicate the status. Only applies to fields.
 
-    - `Forms.C.CheckStatus.INDICATOR`
+    - `Forms.C.ShowStatus.INDICATOR`
 
         Uses an icon indicator.
 
         On fields, the package is able to automatically append the indicator on the right of the field.
 
-    Defaults to `Forms.C.CheckStatus.INDICATOR`.
+    Defaults to `Forms.C.ShowStatus.INDICATOR`.
 
     `pwix:forms` is able to automagically add a status indicator on the right of each field, unless this feature is disabled by the package configuration, or at the `Checker` level, or individually for each field.
 
-    If the caller wishes an indicator at the panel level, it can use, in place or besides of fields indicators, the `FormsCheckStatusIndicator` Blaze component.
+    If the caller wishes an indicator at the panel level, it can use, in place or besides of fields indicators, the `FormsStatusIndicator` Blaze component.
 
 - `checkStatusOverridable`
 

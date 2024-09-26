@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js
+ * pwix:forms/src/client/components/FormsTypeIndicator/FormsTypeIndicator.js
  *
  * A small icon indicator to exhibit the type of field.
  *
@@ -11,10 +11,10 @@
 
 import { FieldType } from '../../../common/definitions/field-type.def.js';
 
-import './FormsFieldTypeIndicator.html';
-import './FormsFieldTypeIndicator.less';
+import './FormsTypeIndicator.html';
+import './FormsTypeIndicator.less';
 
-Template.FormsFieldTypeIndicator.helpers({
+Template.FormsTypeIndicator.helpers({
     // a class which encapsulates the icon
     //  determines the color through the stylesheet
     iconClass(){

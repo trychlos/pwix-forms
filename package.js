@@ -37,8 +37,8 @@ function configure( api ){
     api.use( 'reactive-var' );
     api.use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-rc300.0', 'server' );
     api.use( 'tracker' );
-    api.addFiles( 'src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js', 'client' );
-    api.addFiles( 'src/client/components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js', 'client' );
+    api.addFiles( 'src/client/components/FormsStatusIndicator/FormsStatusIndicator.js', 'client' );
+    api.addFiles( 'src/client/components/FormsTypeIndicator/FormsTypeIndicator.js', 'client' );
     api.addFiles( 'src/client/components/FormsMessager/FormsMessager.js', 'client' );
 }
 

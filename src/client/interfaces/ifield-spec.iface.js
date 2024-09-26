@@ -81,13 +81,13 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     /**
      * @summary This is the way the status should be displayed for this field.
      *  It is only considered if the package is configured for this way be overridable on a per-field basis.
-     * @returns {String} a value from Forms.C.CheckStatus, or null
+     * @returns {String} a value from Forms.C.ShowStatus, or null
      */
     iSpecStatus(){
         _trace( 'IFieldSpec.iSpecStatus' );
         const defn = this._defn();
         const status = defn.form_status || null;
-        if( status && !Object.values( Forms.C.CheckStatus ).includes( status )){
+        if( status && !Object.values( Forms.C.ShowStatus ).includes( status )){
             console.warn( 'pwix:forms unexpected form_status', this.name(), status );
             status = null;
         }

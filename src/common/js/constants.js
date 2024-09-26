@@ -5,7 +5,7 @@
 Forms.C = {
 
     // the way to display the check status
-    CheckStatus: {
+    ShowStatus: {
         NONE:        'STATUS_NONE',
         BOOTSTRAP:   'STATUS_BOOTSTRAP',
         INDICATOR:   'STATUS_INDICATOR',

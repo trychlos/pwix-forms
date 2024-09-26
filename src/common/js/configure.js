@@ -12,7 +12,7 @@ Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
     checkStatusOverridable: true,
-    checkStatusShow: Forms.C.CheckStatus.INDICATOR,
+    checkStatusShow: Forms.C.ShowStatus.INDICATOR,
     displayFieldTypeIndicator: true,
     verbosity: Forms.C.Verbose.CONFIGURE
 };

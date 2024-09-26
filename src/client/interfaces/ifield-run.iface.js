@@ -14,10 +14,10 @@ import { UIU } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
-import '../components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js';
-import '../components/FormsFieldTypeIndicator/FormsFieldTypeIndicator.js';
+import '../components/FormsStatusIndicator/FormsStatusIndicator.js';
+import '../components/FormsTypeIndicator/FormsTypeIndicator.js';
 
-import { CheckStatus } from '../../common/definitions/check-status.def.js';
+import { FieldStatus } from '../../common/definitions/field-status.def.js';
 import { FieldType } from '../../common/definitions/field-type.def.js'
 
 import { Checker } from '../classes/checker.class.js';
@@ -55,7 +55,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         this._checkTMConsolidate( value, checkRes );
         // set the status indicator
         const display = this.iRunShowStatus();
-        if( display === Forms.C.CheckStatus.BOOTSTRAP ){
+        if( display === Forms.C.ShowStatus.BOOTSTRAP ){
             const $node = this.iRunUINode();
             if( $node ){
                 $node.addClass( this.iStatusableValidity() ? 'is-valid' : 'is-invalid' );
@@ -88,9 +88,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     _checkTMConsolidate( value, res ){
         _trace( 'IFieldRun._checkConsolidate' );
         let valid = true;
-        let status = CheckStatus.C.NONE;
+        let status = FieldStatus.C.NONE;
         if( res ){
-            let statuses = [ CheckStatus.C.VALID ];
+            let statuses = [ FieldStatus.C.VALID ];
             let level;
             res.forEach(( tm ) => {
                 let tmValid = true;
@@ -104,27 +104,27 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 }
                 // compute the status
                 if( !tmValid ){
-                    statuses.push( CheckStatus.C.INVALID );
+                    statuses.push( FieldStatus.C.INVALID );
                 } else if( level === TM.MessageLevel.C.WARNING ){
-                    statuses.push( CheckStatus.C.UNCOMPLETE );
+                    statuses.push( FieldStatus.C.UNCOMPLETE );
                 }
             });
-            status = CheckStatus.worst( statuses );
+            status = FieldStatus.worst( statuses );
         // if no err has been reported, may want show a status depending of the type of the field
         } else if( value ){
             const type = this.iSpecType();
             switch( type ){
                 case FieldType.C.INFO:
-                    status = CheckStatus.C.NONE;
+                    status = FieldStatus.C.NONE;
                     break;
                 default:
-                    status = CheckStatus.C.VALID;
+                    status = FieldStatus.C.VALID;
                     break
             }
         }
         //console.debug( '_checkTMConsolidate', this.name(), value, res, status, valid );
         // do not change the field status if it has been defined as transparent
-        if( this.iSpecStatus() !== Forms.C.CheckStatus.TRANSPARENT ){
+        if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
             this.iStatusableStatus( status );
         }
         this.iStatusableValidity( valid );
@@ -145,7 +145,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 type: type
             };
             const parentNode = $node.closest( '.'+checker.confParentClass())[0];
-            this.#views.push( Blaze.renderWithData( Template.FormsFieldTypeIndicator, data, parentNode, $node[0] ));
+            this.#views.push( Blaze.renderWithData( Template.FormsTypeIndicator, data, parentNode, $node[0] ));
         }
     }
 
@@ -176,14 +176,14 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /*
-     * @summary Add a CheckStatus indicator after the field if it is defined
+     * @summary Add a FieldStatus indicator after the field if it is defined
      * @param {Checker} checker
      */
     _initSuffixStatus( checker ){
         _trace( 'IFieldRun._initSuffixStatus' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
-        if( display === Forms.C.CheckStatus.INDICATOR || display === Forms.C.CheckStatus.TRANSPARENT ){
+        if( display === Forms.C.ShowStatus.INDICATOR || display === Forms.C.ShowStatus.TRANSPARENT ){
             const $node = this.iRunUINode();
             if( $node ){
                 const $parentNode = $node.closest( '.'+checker.confParentClass());
@@ -195,7 +195,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     statusRv: this.iStatusableStatusRv()
                 };
                 //console.debug( this.name(), this.iStatusableStatus());
-                this.#views.push( Blaze.renderWithData( Template.FormsCheckStatusIndicator, data, $parentNode[0], $sibling[0] ));
+                this.#views.push( Blaze.renderWithData( Template.FormsStatusIndicator, data, $parentNode[0], $sibling[0] ));
             }
         }
     }
@@ -242,7 +242,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         _trace( 'IFieldRun.iFieldRunInit' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         this.iRunChecker( checker );
-        if( checker.confDisplayStatus() !== Forms.C.CheckStatus.NONE ){
+        if( checker.confDisplayStatus() !== Forms.C.ShowStatus.NONE ){
             let promises = [];
             promises.push( this._initWrapParent( checker ));
             promises.push( this._initRightSibling( checker ));
@@ -333,7 +333,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @returns {CheckStatus} the way the status should be displayed for this field
+     * @returns {FieldStatus} the way the status should be displayed for this field
      *  considering the package configuration, and the Checker instanciation options
      */
     iRunShowStatus(){

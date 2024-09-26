@@ -3,14 +3,14 @@
  *
  * ICheckerStatus manages, at the Checker level, both:
  * - a true|false validity
- * - a CheckStatus
+ * - a FieldStatus
  */
 
 import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
-import { CheckStatus } from '../../common/definitions/check-status.def.js'
+import { FieldStatus } from '../../common/definitions/field-status.def.js'
 
 export const ICheckerStatus = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -33,7 +33,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 statuses.push( child.iStatusableStatus());
             });
             parent.iStatusableValidity( valid );
-            parent.iStatusableStatus( CheckStatus.worst( statuses ));
+            parent.iStatusableStatus( FieldStatus.worst( statuses ));
             parent._consolidateStatusCheckersUp();
         }
     }
@@ -48,7 +48,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         _trace( 'ICheckerStatus._consolidateStatusFields' );
         if( opts.ignoreFields !== true ){
             let valid = true;
-            let statuses = [ CheckStatus.C.NONE ];
+            let statuses = [ FieldStatus.C.NONE ];
             const cb = function( name, spec ){
                 valid &&= spec.iStatusableValidity();
                 statuses.push( spec.iStatusableStatus());
@@ -56,7 +56,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
             };
             this.fieldsIterate( cb );
             this.iStatusableValidity( valid );
-            this.iStatusableStatus( CheckStatus.worst( statuses ));
+            this.iStatusableStatus( FieldStatus.worst( statuses ));
         }
     }
 

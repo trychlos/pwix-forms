@@ -3,7 +3,7 @@
  *
  * IStatusable manages both:
  * - a true|false validity status,
- * - a CheckStatus status.
+ * - a FieldStatus status.
  *
  * Both FormField (an instance of the field in a form) and Checker (a form) implement IStatusable.
  */
@@ -16,14 +16,14 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import '../../common/js/index.js';
 
-import { CheckStatus } from '../../common/definitions/check-status.def.js';
+import { FieldStatus } from '../../common/definitions/field-status.def.js';
 
 export const IStatusable = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
 
     // the check status of the field
-    #status = new ReactiveVar( CheckStatus.C.NONE );
+    #status = new ReactiveVar( FieldStatus.C.NONE );
 
     // the true|false validity status of the field
     #validity = new ReactiveVar( true );
@@ -41,13 +41,13 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
 
     /**
      * Getter/Setter
-     * @param {CheckStatus} status
-     * @returns {CheckStatus}
+     * @param {FieldStatus} status
+     * @returns {FieldStatus}
      */
     iStatusableStatus( status ){
         _trace( 'IStatusable.iStatusableStatus' );
         if( status !== undefined ){
-            const index = CheckStatus.index( status );
+            const index = FieldStatus.index( status );
             if( index >= 0 ){
                 this.#status.set( status );
                 //console.debug( 'status change', this.iCheckableId(), status );
@@ -59,8 +59,8 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
     }
 
     /**
-     * @returns {ReactiveVar} the ReactiveVar which contains the CheckStatus
-     *  Is provided in the FormsCheckStatusIndicator component data context.
+     * @returns {ReactiveVar} the ReactiveVar which contains the FieldStatus
+     *  Is provided in the FormsStatusIndicator component data context.
      */
     iStatusableStatusRv(){
         _trace( 'IStatusable.iStatusableStatusRv' );

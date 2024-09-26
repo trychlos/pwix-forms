@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/client/components/FormsCheckStatusIndicator/FormsCheckStatusIndicator.js
+ * pwix:forms/src/client/components/FormsStatusIndicator/FormsStatusIndicator.js
  *
  * A small icon indicator to exhibit the result of the check of the field.
  *
@@ -7,7 +7,7 @@
  *  We have to write all icon elements into the DOM, only making visible the one we are interested in.
  *
  * Parms:
- *  - statusRv: a ReactiveVar which contains the CheckStatus to be displayed
+ *  - statusRv: a ReactiveVar which contains the FieldStatus to be displayed
  *  - classes: if set, a list of classes to be added to the default
  *  - title: if set, a text to replace the default title
  */
@@ -16,21 +16,21 @@ const assert = require( 'assert' ).strict; // up to nodejs v16.x
 
 import { ReactiveVar } from 'meteor/reactive-var';
 
-import { CheckStatus } from '../../../common/definitions/check-status.def.js';
+import { FieldStatus } from '../../../common/definitions/field-status.def.js';
 
-import './FormsCheckStatusIndicator.html';
-import './FormsCheckStatusIndicator.less';
+import './FormsStatusIndicator.html';
+import './FormsStatusIndicator.less';
 
-Template.FormsCheckStatusIndicator.onRendered( function(){
+Template.FormsStatusIndicator.onRendered( function(){
     const self = this;
     //console.debug( this );
 
     self.autorun(() => {
-        self.$( '.FormsCheckStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
+        self.$( '.FormsStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
         const rv = Template.currentData().statusRv;
         if( rv ){
             assert( rv instanceof ReactiveVar, 'expects an instance of ReactiveVar, got '+rv );
-            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+            self.$( '.FormsStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
         }
     });
 
@@ -43,26 +43,26 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
     }
 });
 
-Template.FormsCheckStatusIndicator.helpers({
+Template.FormsStatusIndicator.helpers({
     // a class which encapsulates the icon
     //  determines the color through the stylesheet
     itClass( it ){
-        return CheckStatus.classes( it );
+        return FieldStatus.classes( it );
     },
 
     // the name of the icon
     itIcon( it ){
-        return CheckStatus.icon( it );
+        return FieldStatus.icon( it );
     },
 
     // a class which encapsulates the icon
     //  determines the color through the stylesheet
     itTitle( it ){
-        return this.title ? this.title : CheckStatus.title( it );
+        return this.title ? this.title : FieldStatus.title( it );
     },
 
     // list of known types
     itemsList(){
-        return CheckStatus.Knowns();
+        return FieldStatus.Knowns();
     }
 });

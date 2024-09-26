@@ -61,7 +61,7 @@ import '../../common/js/trace.js';
 import { Base } from './base.class.js';
 import { Panel } from './panel.class.js';
 
-import { CheckStatus } from '../../common/definitions/check-status.def.js';
+import { FieldStatus } from '../../common/definitions/field-status.def.js';
 
 import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { ICheckerEvents } from '../interfaces/ichecker-events.iface.js';
@@ -700,13 +700,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     setValid( valid ){
         _trace( 'Checker.setValid' );
-        this.iStatusableStatus( CheckStatus.C.NONE );
+        this.iStatusableStatus( FieldStatus.C.NONE );
         this.iStatusableValidity( valid );
         this.statusConsolidate({ ignoreFields: true });
     }
 
     /**
-     * @returns {CheckStatus} the current (consolidated) check status of this panel
+     * @returns {FieldStatus} the current (consolidated) check status of this panel
      */
     status(){
         _trace( 'Checker.status' );

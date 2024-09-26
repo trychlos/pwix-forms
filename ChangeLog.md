@@ -10,9 +10,12 @@
     - Define new Checker.messagerClearMine() method, thus bumping minor candidate version number
     - Refactor all classes and interfaces to client side only
     - Remove meteor/check dependency
-    - Introduce new Forms.C.CheckStatus.TRANSPARENT check status display constant
+    - Introduce new Forms.C.ShowStatus.TRANSPARENT check status display constant
     - package.js refactoring
     - Fix ReactiveVar assertion when FormsCheckStatusIndicator is used outside of the iField interface
+    - Rename FormsCheckStatusIndicator, FormsFieldTypeIndicator components to FormsStatusIndicator, FormsTypeIndicator
+    - ShowStatus definition (as None, Invalid, Uncomplete, Valid) is renamed to FieldStatus
+    - ShowStatus configuration parameter (as None, Bootstrap, Indicator, Transparent) is renamed to ShowStatus
 
 ### 1.2.0
 

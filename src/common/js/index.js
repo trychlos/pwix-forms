@@ -2,7 +2,7 @@
  * pwix:forms/src/common/js/index.js
  */
 
-import { CheckStatus } from '../definitions/check-status.def';
+import { FieldStatus } from '../definitions/field-status.def';
 import { FieldType } from '../definitions/field-type.def';
 
 import './global.js';
@@ -12,5 +12,5 @@ import './trace.js';
 //
 import './configure.js';
 
-Forms.CheckStatus = CheckStatus;
+Forms.FieldStatus = FieldStatus;
 Forms.FieldType = FieldType;
