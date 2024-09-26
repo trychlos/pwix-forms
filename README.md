@@ -161,7 +161,7 @@ Instanciation arguments:
     - `id`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check function
     - `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
     - `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
-    - `displayFieldTypeIndicator`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+    - `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
     - `fieldStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
     - `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
     - `validityEvent`: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
@@ -250,7 +250,7 @@ Known configuration options are:
 
 - `fieldStatusShow`
 
-    Whether input fields should have a check status (valid/uncomplete/invalid) indicator, where available values are:
+    Whether input fields should have a check status (none/valid/uncomplete/invalid) indicator, where available values are:
 
     - `Forms.C.ShowStatus.NONE`
 
@@ -266,6 +266,10 @@ Known configuration options are:
 
         On fields, the package is able to automatically append the indicator on the right of the field.
 
+    - `Forms.C.ShowStatus.TRANSPARENT`
+
+        Do not show any status indicator, but make it transparent allowing the user interface to keept a consistent width.
+
     Defaults to `Forms.C.ShowStatus.INDICATOR`.
 
     `pwix:forms` is able to automagically add a status indicator on the right of each field, unless this feature is disabled by the package configuration, or at the `Checker` level, or individually for each field.
@@ -278,7 +282,7 @@ Known configuration options are:
 
     Defaults to `true`.
 
-- `displayFieldTypeIndicator`
+- `fieldTypeShow`
 
     Whether input fields should default to be prefixed with a type (mandatory/optional) indicator.
 

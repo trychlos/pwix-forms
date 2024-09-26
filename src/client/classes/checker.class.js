@@ -91,7 +91,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         panel: null,
         data: null,
         id: null,
-        displayFieldTypeIndicator: null,
+        fieldTypeShow: null,
         fieldStatusShow: null,
         setForm: null,
         validityEvent: 'checker-validity.forms',
@@ -235,9 +235,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     // whether a field type indicator must be displayed for the fields of this checker
     //  defaulting to the configured value
     confDisplayFieldTypeIndicator(){
-        let display = this.#conf.displayFieldTypeIndicator;
+        let display = this.#conf.fieldTypeShow;
         if( display !== true && display !== false ){
-            display = Forms.configure().displayFieldTypeIndicator;
+            display = Forms.configure().fieldTypeShow;
         }
         if( display !== true && display !== false ){
             display = true; // hard-coded default value in case configure() has been wrongly fed
@@ -379,7 +379,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *    will be passed as an option to field-defined check function
      *  - $ok: an optional jQuery object which defines the OK button (to enable/disable it)
      *  - okFn( valid<Boolean> ): an optional function to be called when OK button must be enabled/disabled
-     *  - displayFieldTypeIndicator: whether to display a field type indicator on the left of each field,
+     *  - fieldTypeShow: whether to display a field type indicator on the left of each field,
      *    this value overrides the configured default value
      *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
      *  - fieldStatusShow: whether and how to display the result indicator on the right of the field

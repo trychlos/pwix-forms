@@ -14,9 +14,10 @@
     - package.js refactoring
     - Fix ReactiveVar assertion when FormsCheckStatusIndicator is used outside of the iField interface
     - Rename FormsCheckStatusIndicator, FormsFieldTypeIndicator components to FormsStatusIndicator, FormsTypeIndicator
-    - ShowStatus definition (as None, Invalid, Uncomplete, Valid) is renamed to FieldStatus
-    - ShowStatus configuration parameter (as None, Bootstrap, Indicator, Transparent) is renamed to ShowStatus
+    - CheckStatus definition (as None, Invalid, Uncomplete, Valid) is renamed to FieldStatus
+    - CheckStatus configuration parameter (as None, Bootstrap, Indicator, Transparent) is renamed to ShowStatus
     - 'checkStatusShow' Checker parameter is renamed to 'fieldStatusShow'
+    - 'displayFieldTypeIndicator' Checker parameter is renamed to 'fieldTypeShow'
 
 ### 1.2.0
 
