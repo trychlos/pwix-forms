@@ -12,6 +12,7 @@
     - Remove meteor/check dependency
     - Introduce new Forms.C.CheckStatus.TRANSPARENT check status display constant
     - package.js refactoring
+    - Fix ReactiveVar assertion when FormsCheckStatusIndicator is used outside of the iField interface
 
 ### 1.2.0
 

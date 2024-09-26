@@ -28,8 +28,10 @@ Template.FormsCheckStatusIndicator.onRendered( function(){
     self.autorun(() => {
         self.$( '.FormsCheckStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
         const rv = Template.currentData().statusRv;
-        assert( rv && rv instanceof ReactiveVar, 'expects an instance of ReactiveVar, got '+rv );
-        self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        if( rv ){
+            assert( rv instanceof ReactiveVar, 'expects an instance of ReactiveVar, got '+rv );
+            self.$( '.FormsCheckStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
+        }
     });
 
     // track status changes
