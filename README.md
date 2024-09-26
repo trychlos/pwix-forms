@@ -162,7 +162,7 @@ Instanciation arguments:
     - `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
     - `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
     - `displayFieldTypeIndicator`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-    - `checkStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
+    - `fieldStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
     - `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
     - `validityEvent`: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
     - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
@@ -248,7 +248,7 @@ The package's behavior can be configured through a call to the `Forms.configure(
 
 Known configuration options are:
 
-- `checkStatusShow`
+- `fieldStatusShow`
 
     Whether input fields should have a check status (valid/uncomplete/invalid) indicator, where available values are:
 
@@ -274,7 +274,7 @@ Known configuration options are:
 
 - `checkStatusOverridable`
 
-    Whether the previous `checkStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
+    Whether the previous `fieldStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
 
     Defaults to `true`.
 

@@ -16,6 +16,7 @@
     - Rename FormsCheckStatusIndicator, FormsFieldTypeIndicator components to FormsStatusIndicator, FormsTypeIndicator
     - ShowStatus definition (as None, Invalid, Uncomplete, Valid) is renamed to FieldStatus
     - ShowStatus configuration parameter (as None, Bootstrap, Indicator, Transparent) is renamed to ShowStatus
+    - 'checkStatusShow' Checker parameter is renamed to 'fieldStatusShow'
 
 ### 1.2.0
 

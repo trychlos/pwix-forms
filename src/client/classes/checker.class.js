@@ -92,7 +92,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         data: null,
         id: null,
         displayFieldTypeIndicator: null,
-        checkStatusShow: null,
+        fieldStatusShow: null,
         setForm: null,
         validityEvent: 'checker-validity.forms',
         parentClass: 'form-indicators-parent',
@@ -250,10 +250,10 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     //  considers the Checker configuration
     //  this may be overriden on a per-field basis
     confDisplayStatus(){
-        let display = Forms.configure().checkStatusShow;
+        let display = Forms.configure().fieldStatusShow;
         const overridable = Forms.configure().checkStatusOverridable;
         if( overridable ){
-            const opt = this.#conf.checkStatusShow;
+            const opt = this.#conf.fieldStatusShow;
             if( opt !== null ){
                 display = opt;
             }
@@ -382,7 +382,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - displayFieldTypeIndicator: whether to display a field type indicator on the left of each field,
      *    this value overrides the configured default value
      *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-     *  - checkStatusShow: whether and how to display the result indicator on the right of the field
+     *  - fieldStatusShow: whether and how to display the result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable
      *  - setForm: if set, the item to be used to fill-in the form at startup, defaulting to none
      *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
