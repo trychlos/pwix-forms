@@ -11,7 +11,7 @@ let _conf = {};
 Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
-    checkStatusOverridable: true,
+    showStatusOverridable: true,
     fieldStatusShow: Forms.C.ShowStatus.INDICATOR,
     fieldTypeShow: true,
     verbosity: Forms.C.Verbose.CONFIGURE

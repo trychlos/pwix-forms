@@ -276,7 +276,7 @@ Known configuration options are:
 
     If the caller wishes an indicator at the panel level, it can use, in place or besides of fields indicators, the `FormsStatusIndicator` Blaze component.
 
-- `checkStatusOverridable`
+- `showStatusOverridable`
 
     Whether the previous `fieldStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
 

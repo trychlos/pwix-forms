@@ -18,6 +18,7 @@
     - CheckStatus configuration parameter (as None, Bootstrap, Indicator, Transparent) is renamed to ShowStatus
     - 'checkStatusShow' Checker parameter is renamed to 'fieldStatusShow'
     - 'displayFieldTypeIndicator' Checker parameter is renamed to 'fieldTypeShow'
+    - 'checkStatusOverridable' configuration parameter is renamed to 'showStatusOverridable'
 
 ### 1.2.0
 

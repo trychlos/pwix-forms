@@ -251,7 +251,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     //  this may be overriden on a per-field basis
     confDisplayStatus(){
         let display = Forms.configure().fieldStatusShow;
-        const overridable = Forms.configure().checkStatusOverridable;
+        const overridable = Forms.configure().showStatusOverridable;
         if( overridable ){
             const opt = this.#conf.fieldStatusShow;
             if( opt !== null ){
