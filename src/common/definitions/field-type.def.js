@@ -26,7 +26,7 @@ _.merge( FieldType, {
         // mandatory in order the document be saved
         MANDATORY: {
             class: 'fti-mandatory',
-            icon: 'fa-square-pen',
+            icon: 'fa-asterisk',
             title: 'field_type.save_title'
         },
         // none - the field uses its place and width, but is not shown
