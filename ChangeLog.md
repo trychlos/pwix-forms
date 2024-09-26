@@ -19,6 +19,8 @@
     - 'checkStatusShow' Checker parameter is renamed to 'fieldStatusShow'
     - 'displayFieldTypeIndicator' Checker parameter is renamed to 'fieldTypeShow'
     - 'checkStatusOverridable' configuration parameter is renamed to 'showStatusOverridable'
+    - Introduce new 'showTypeOverridable' configuration parameter
+    - Fix the computing of whether display the indicators
 
 ### 1.2.0
 

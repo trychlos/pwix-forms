@@ -233,14 +233,18 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     // whether a field type indicator must be displayed for the fields of this checker
-    //  defaulting to the configured value
-    confDisplayFieldTypeIndicator(){
-        let display = this.#conf.fieldTypeShow;
-        if( display !== true && display !== false ){
-            display = Forms.configure().fieldTypeShow;
-        }
-        if( display !== true && display !== false ){
-            display = true; // hard-coded default value in case configure() has been wrongly fed
+    //  considers the configured default value and whether it is overridable
+    //  considers the Checker configuration
+    //  this may be overriden on a per-field basis
+    // returns true|false
+    confDisplayType(){
+        let display = Forms.configure().fieldTypeShow;
+        const overridable = Forms.configure().showTypeOverridable;
+        if( overridable ){
+            const opt = this.#conf.fieldTypeShow;
+            if( opt !== null ){
+                display = opt;
+            }
         }
         return display;
     }
@@ -249,6 +253,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     //  considers the configured default value and whether it is overridable
     //  considers the Checker configuration
     //  this may be overriden on a per-field basis
+    // returns none|bootstrap|indicator|trasnparent
     confDisplayStatus(){
         let display = Forms.configure().fieldStatusShow;
         const overridable = Forms.configure().showStatusOverridable;
@@ -257,6 +262,10 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             if( opt !== null ){
                 display = opt;
             }
+        }
+        if( display && !Object.values( Forms.C.ShowStatus ).includes( display )){
+            console.warn( 'pwix:forms unexpected status definition', this.name(), display );
+            display = Forms.configure().fieldStatusShow;
         }
         return display;
     }

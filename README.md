@@ -276,12 +276,6 @@ Known configuration options are:
 
     If the caller wishes an indicator at the panel level, it can use, in place or besides of fields indicators, the `FormsStatusIndicator` Blaze component.
 
-- `showStatusOverridable`
-
-    Whether the previous `fieldStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
-
-    Defaults to `true`.
-
 - `fieldTypeShow`
 
     Whether input fields should default to be prefixed with a type (mandatory/optional) indicator.
@@ -296,6 +290,19 @@ Known configuration options are:
     - `Forms.FieldType.C.MANDATORY`
     - `Forms.FieldType.C.OPTIONAL`
     - `Forms.FieldType.C.WORK`
+    - `Forms.FieldType.C.NONE`
+
+- `showStatusOverridable`
+
+    Whether the previous `fieldStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
+
+    Defaults to `true`.
+
+- `showTypeOverridable`
+
+    Whether the previous `fieldTypeShow` is overridable when instanciating a `Checker` or specifying a field in the panel.
+
+    Defaults to `true`.
 
 - `verbosity`
 

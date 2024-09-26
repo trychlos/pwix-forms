@@ -47,7 +47,7 @@ _.merge( FieldStatus, {
     // check that the type is known
     _byType( type ){
         if( !Object.keys( FieldStatus.K ).includes( type )){
-            console.warn( 'FieldStatus: unknown type', type );
+            console.warn( 'FieldStatus: unknown status', type );
             return null;
         }
         return FieldStatus.K[type];

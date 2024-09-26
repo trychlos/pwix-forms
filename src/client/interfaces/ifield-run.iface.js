@@ -40,6 +40,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // whether and how display the status of the field
     #showStatus = null;
 
+    // whether display the type of the field
+    #showType = null;
+
     // dynamically rendered Blaze views
     #views = [];
 
@@ -137,10 +140,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     _initPrefixType( checker ){
         _trace( 'IFieldRun._initPrefixType' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
-        const display = checker.confDisplayFieldTypeIndicator();
+        const display = this.iRunShowType();
         const type = this.iSpecType();
         const $node = this.iRunUINode();
-        if( display && type && FieldType.known( type ) && $node ){
+        //console.debug( this.name(), 'display', display, 'type', type, FieldType.known( type ), $node );
+        if( display === true && type && FieldType.known( type ) && $node ){
             const data = {
                 type: type
             };
@@ -201,11 +205,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /*
-     * @summary Insert a parent in the DOM to prepare future potential indicator insertions
+     * @summary Insert a parent in the DOM to prepare future potential indicators insertion
      * @param {Checker} checker
      * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
      */
-    _initWrapParent( checker ){
+    async _initWrapParent( checker ){
         _trace( 'IFieldRun._initWrapParent' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const parentClass = checker.confParentClass();
@@ -215,6 +219,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             const $parent = $node.parent();
             assert( $parent && $parent.length, 'unexpected parent not found' );
             if( !$parent.hasClass( parentClass )){
+                //console.debug( 'initWrapParent', this.name());
                 $node.wrap( '<div class="'+parentClass+'"></div>' );
                 const waitedSelector = '.'+parentClass+' '+this.iSpecSelector();
                 res = UIU.DOM.waitFor( waitedSelector ).then(() => {
@@ -256,7 +261,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const value = this.iRunValueFrom();
                 const self = this;
                 res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
-                    console.debug( 'fnres', this.name(), fnres );
+                    //console.debug( 'fnres', this.name(), fnres );
                     self._checkAfter( opts, value, fnres );
                     return self.iStatusableValidity();
                 });
@@ -269,20 +274,21 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Initialize the runtime data at Checker instanciation
      * @param {Checker} checker
      */
-    iFieldRunInit( checker ){
+    async iFieldRunInit( checker ){
         _trace( 'IFieldRun.iFieldRunInit' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         this.iRunChecker( checker );
-        if( checker.confDisplayStatus() !== Forms.C.ShowStatus.NONE ){
-            let promises = [];
-            promises.push( this._initWrapParent( checker ));
-            promises.push( this._initRightSibling( checker ));
-            const self = this;
-            Promise.allSettled( promises ).then(() => {
-                self._initPrefixType( checker );
-                self._initSuffixStatus( checker )
-            });
-        }
+        let promises = [];
+        const self = this;
+        this._initWrapParent( checker ).then(() => {
+            if( self.iRunShowType() === true ){
+                promises.push( self._initPrefixType( checker ));
+            }
+            if( self.iRunShowStatus() !== Forms.C.ShowStatus.NONE ){
+                promises.push( this._initRightSibling( checker ).then(() => { return self._initSuffixStatus( checker ) }));
+            }
+        });
+        Promise.allSettled( promises );
     }
 
     /**
@@ -335,25 +341,51 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /**
      * @returns {FieldStatus} the way the status should be displayed for this field
-     *  considering the package configuration, and the Checker instanciation options
+     *  - confDisplayStatus() returns the way of the package is configured, maybe overriden at the checker level
+     *  - if the package allows overridable, then consider the field defintion if it is valid
      */
     iRunShowStatus(){
         _trace( 'IFieldRun.iRunShowStatus' );
         if( !this.#showStatus ){
             let display = this.iRunChecker().confDisplayStatus();
-            //console.debug( 'iRunShowStatus checker display', this.name(), display );
+            //console.debug( 'iRunShowStatus confDisplayStatus', this.name(), display );
             const overridable = Forms.configure().showStatusOverridable;
             //console.debug( 'iRunShowStatus overridable', this.name(), overridable );
             if( overridable ){
                 const status = this.iSpecStatus();
-                //console.debug( 'iRunShowStatus spec display', this.name(), status );
+                //console.debug( 'iRunShowStatus iSpecStatus', this.name(), status );
                 if( status ){
                     display = status;
                 }
             }
             this.#showStatus = display;
         }
+        //console.debug( 'iRunShowStatus returns', this.#showStatus );
         return this.#showStatus;
+    }
+
+    /**
+     * @returns {Boolean} whether a type should be displayed for this field
+     *  considering the package configuration, and the Checker instanciation options
+     */
+    iRunShowType(){
+        _trace( 'IFieldRun.iRunShowType' );
+        //console.debug( 'iRunShowType', this.name(), 'this.#showStatus', this.#showStatus );
+        if( this.#showType === null ){
+            let display = this.iRunChecker().confDisplayType();
+            const overridable = Forms.configure().showTypeOverridable;
+            //console.debug( 'iRunShowType', this.name(), 'confDisplayType', display, 'overridable', overridable );
+            if( overridable ){
+                const status = this.iSpecType();
+                //console.debug( 'iRunShowType iSpecType', this.name(), status );
+                if( status && FieldType.known( status )){
+                    display = ( status !== FieldType.C.NONE );
+                }
+            }
+            this.#showType = display;
+        }
+        //console.debug( 'iRunShowType returns', this.#showType );
+        return this.#showType;
     }
 
     /**
