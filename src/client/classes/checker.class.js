@@ -723,6 +723,23 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
+     * @param {Array<String>} fields the array of field names to be consolidated
+     * @returns {FieldStatus} the current (consolidated) check status of the fields
+     */
+    statusByFields( fields ){
+        _trace( 'Checker.statusByFields' );
+        let statuses = [ FieldStatus.C.NONE ];
+        const cb = function( name, field ){
+            if( fields.includes( name )){
+                statuses.push( field.iStatusableStatus());
+            }
+            return true;
+        };
+        this.fieldsIterate( cb );
+        return FieldStatus.worst( statuses );
+    }
+
+    /**
      * @returns {Boolean} the current (consolidated) true|false validity of this panel
      *  A reactive data source.
      */

@@ -21,6 +21,7 @@
     - 'checkStatusOverridable' configuration parameter is renamed to 'showStatusOverridable'
     - Introduce new 'showTypeOverridable' configuration parameter
     - Fix the computing of whether display the indicators
+    - Define new statusByFields() checker method
 
 ### 1.2.0
 
