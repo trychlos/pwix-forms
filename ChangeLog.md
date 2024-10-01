@@ -22,6 +22,7 @@
     - Introduce new 'showTypeOverridable' configuration parameter
     - Fix the computing of whether display the indicators
     - Define new statusByFields() checker method
+    - Fix configuration overrides
 
 ### 1.2.0
 

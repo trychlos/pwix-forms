@@ -7,7 +7,6 @@ import _ from 'lodash';
 import { ReactiveVar} from 'meteor/reactive-var';
 
 let _conf = {};
-
 Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
@@ -26,7 +25,7 @@ Forms._defaults = {
  */
 Forms.configure = function( o ){
     if( o && _.isObject( o )){
-        _.merge( _conf, Forms._defaults, o );
+        _conf = _.merge( Forms._defaults, _conf, o );
         Forms._conf.set( _conf );
         _verbose( Forms.C.Verbose.CONFIGURE, 'pwix:forms configure() with', o );
     }
@@ -34,5 +33,5 @@ Forms.configure = function( o ){
     return Forms._conf.get();
 }
 
-_.merge( _conf, Forms._defaults );
+_conf = _.merge( {}, Forms._defaults );
 Forms._conf.set( _conf );
