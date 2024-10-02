@@ -23,6 +23,7 @@
     - Fix the computing of whether display the indicators
     - Define new statusByFields() checker method
     - Fix configuration overrides
+    - Fix null data context in FormsStatusIndicator component
 
 ### 1.2.0
 

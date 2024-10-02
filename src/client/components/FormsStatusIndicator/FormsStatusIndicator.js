@@ -27,7 +27,7 @@ Template.FormsStatusIndicator.onRendered( function(){
 
     self.autorun(() => {
         self.$( '.FormsStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
-        const rv = Template.currentData().statusRv;
+        const rv = Template.currentData()?.statusRv;
         if( rv ){
             assert( rv instanceof ReactiveVar, 'expects an instance of ReactiveVar, got '+rv );
             self.$( '.FormsStatusIndicator .fcsi-display[data-type="'+rv.get()+'"]' ).removeClass( 'hidden' ).addClass( 'visible' );
