@@ -24,6 +24,7 @@
     - Define new statusByFields() checker method
     - Fix configuration overrides
     - Fix null data context in FormsStatusIndicator component
+    - Extend the FormsStatusIndicator component to be able to act as a button
 
 ### 1.2.0
 

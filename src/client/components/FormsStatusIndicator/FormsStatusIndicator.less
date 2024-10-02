@@ -13,34 +13,69 @@
     .hidden {
         display: none;
     }
-    .fcsi-invalid {
+    .fcsi-display.disabled {
+        color: gray;
+        svg.svg-inline--fa {
+            border-color: gray;
+        }
+    }
+
+    // FieldStatus.C.INVALID
+    .fcsi-invalid:not(.btn){
         color: var( --bs-danger );
         svg.svg-inline--fa {
             border-color: var( --bs-danger );
         }
     }
+    .fcsi-invalid.btn {
+        color: var( --bs-danger );
+        border-color: var( --bs-danger );
+    }
+    .fcsi-invalid.btn:hover {
+        border-color: var( --bs-danger );
+        background-color: var( --bs-danger );
+        color: var( --bs-btn-active-color );
+    }
+
+    // FieldStatus.C.NONE
     .fcsi-none {
         color: transparent;
         svg.svg-inline--fa {
             border-color: transparent;
         }
     }
-    .fcsi-uncomplete {
+
+    // FieldStatus.C.UNCOMPLETE
+    .fcsi-uncomplete:not(.btn){
         color: orange;
         svg.svg-inline--fa {
             border-color: orange;
         }
     }
-    .fcsi-valid {
+    .fcsi-uncomplete.btn {
+        color: orange;
+        border-color: orange;
+    }
+    .fcsi-uncomplete.btn:hover {
+        border-color: orange;
+        background-color: orange;
+        color: var( --bs-btn-active-color );
+    }
+
+    // FieldStatus.C.VALID
+    .fcsi-valid:not(.btn){
         color: var( --bs-success );
         svg.svg-inline--fa {
             border-color: var( --bs-success );
         }
     }
-    .fcsi-display.disabled {
-        color: gray;
-        svg.svg-inline--fa {
-            border-color: gray;
-        }
+    .fcsi-valid.btn {
+        color: var( --bs-success );
+        border-color: var( --bs-success );
+    }
+    .fcsi-valid.btn:hover {
+        border-color: var( --bs-success );
+        background-color: var( --bs-success );
+        color: var( --bs-btn-active-color );
     }
 }

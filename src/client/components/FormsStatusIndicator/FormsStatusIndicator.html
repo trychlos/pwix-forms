@@ -2,7 +2,7 @@
     <div class="FormsStatusIndicator">
 
         {{#each it in itemsList }}
-            <span class="{{ itClass it }} {{ classes }} form-rounded fcsi-display" data-type="{{ it }}" title="{{ itTitle it }}">
+            <span class="{{ itClass it }} {{ classes }} {{ formClass it }} fcsi-display" data-type="{{ it }}" title="{{ itTitle it }}">
                 <span class="fa-solid fa-fw {{ itIcon it }}"></span>
             </span>
         {{/each}}

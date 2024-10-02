@@ -44,6 +44,17 @@ Template.FormsStatusIndicator.onRendered( function(){
 });
 
 Template.FormsStatusIndicator.helpers({
+    // either the standard 'form-rounder' class, same that other indicators
+    //  or a button class if asked for
+    formClass( it ){
+        if(( it === FieldStatus.C.INVALID && this.invalidButton === true ) ||
+            ( it === FieldStatus.C.UNCOMPLETE && this.uncompleteButton === true ) ||
+            ( it === FieldStatus.C.VALID && this.validButton === true )){
+            return 'btn btn-sm btn-outline-secondary form-button';
+        }
+        return 'form-rounded';
+    },
+
     // a class which encapsulates the icon
     //  determines the color through the stylesheet
     itClass( it ){
@@ -64,5 +75,13 @@ Template.FormsStatusIndicator.helpers({
     // list of known types
     itemsList(){
         return FieldStatus.Knowns();
+    }
+});
+
+Template.FormsStatusIndicator.events({
+    'click .fcsi-display.btn'( event, instance ){
+        if( this.buttonOnClick && typeof this.buttonOnClick === 'function' ){
+            this.buttonOnClick({ type: instance.$( event.currentTarget ).data( 'type' )});
+        }
     }
 });

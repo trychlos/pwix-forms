@@ -214,6 +214,10 @@ Parameters:
 
 - `classes`: if set, a list of classes to be added to the default
 - `title`: if set, a text to replace the default title
+- `invalidButton`: if set to true, the `Forms.FieldStatus.C.INVALID` status is displayed as a button
+- `uncompleteButton`: if set to true, the `Forms.FieldStatus.C.UNCOMPLETE` status is displayed as a button
+- `validButton`: if set to true, the `Forms.FieldStatus.C.VALID` status is displayed as a button
+- `buttonOnClick`: a function to trigger on click on button
 
 #### `FormsTypeIndicator`
 
