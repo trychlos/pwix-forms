@@ -50,7 +50,8 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
             const index = FieldStatus.index( status );
             if( index >= 0 ){
                 this.#status.set( status );
-                //console.debug( 'status change', this.iCheckableId(), status );
+                //console.warn( 'status change', this.iCheckableId(), status );
+                //console.warn( 'status change', this.name(), status );
             } else {
                 console.warn( 'unknwon status', status );
             }

@@ -90,6 +90,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     _checkTMConsolidate( value, res ){
         _trace( 'IFieldRun._checkConsolidate' );
+        //if( this.name() === 'identitiesEmailAddressesMinCount' ) console.debug( 'value', value, 'res', res );
         let valid = true;
         let status = FieldStatus.C.NONE;
         if( res ){
@@ -126,6 +127,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             }
         }
         //console.debug( '_checkTMConsolidate', this.name(), value, res, status, valid );
+        //if( this.name() === 'identitiesEmailAddressesMinCount' ) console.debug( 'specStatus', this.iSpecStatus(), 'status', status, 'valid', valid );
         // do not change the field status if it has been defined as transparent
         if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
             this.iStatusableStatus( status );
