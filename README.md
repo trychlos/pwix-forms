@@ -168,8 +168,19 @@ Instanciation arguments:
     - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
     - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
     - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
+    - `crossCheckFn`: if set, a cross check function to be called after each field check when this later returns a valid status
 
 Only available on the client.
+
+**`crossCheckFn` note:**
+
+The Checker behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
+
+When installed at checker instanciation, the `crossCheckFn` function is called with teh configured `data`.
+
+The Checker has also a `Checker.crosshCheckFn()` method which let any caller to add a cross check function to the checker. All functions are pushed in array, and called one in this same order. These functions must bring their own data arguments, which defaults to the data attached to the checker.
+
+`crosscheckFn` protoype is: `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`.
 
 ##### `Forms.Messager`
 

@@ -25,6 +25,7 @@
     - Fix configuration overrides
     - Fix null data context in FormsStatusIndicator component
     - Extend the FormsStatusIndicator component to be able to act as a button
+    - Define 'crossCheckFn' parameter to Checker instanciation
 
 ### 1.2.0
 

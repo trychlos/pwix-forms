@@ -51,7 +51,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // consolidate the result of the defined check function
     //  checkRes: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
-    _checkAfter( opts, value, checkRes ){
+    async _checkAfter( opts, value, checkRes ){
         _trace( 'IFieldRun._checkAfter' );
         checkRes = this.iCheckableResult( checkRes );
         // consolidate received TypedMessage's into a single validity and status for the field
@@ -262,11 +262,16 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 opts.id = checker.confId();
                 const value = this.iRunValueFrom();
                 const self = this;
-                res = checkFn( value, checker.confData(), opts ).then( async ( fnres ) => {
-                    //console.debug( 'fnres', this.name(), fnres );
-                    self._checkAfter( opts, value, fnres );
-                    return self.iStatusableValidity();
-                });
+                res = checkFn( value, checker.confData(), opts )
+                    .then( async ( fnres ) => {
+                        return self._checkAfter( opts, value, fnres );
+                    })
+                    .then( async () => {
+                        return self.iCheckableResult() || opts.crossCheck === false ? null : checker.crossCheck( opts );
+                    })
+                    .then(() => {
+                        return self.iStatusableValidity();
+                    });
             }
         }
         return res;

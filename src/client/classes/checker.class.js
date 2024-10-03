@@ -97,9 +97,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         validityEvent: 'checker-validity.forms',
         parentClass: 'form-indicators-parent',
         rightSiblingClass: 'form-indicators-right-sibling',
-        enabled: true
+        enabled: true,
+        crossCheck: null
    };
     #conf = {};
+
+    // an array of crossCheckFn for this checker
+    #crossCheckArray = null;
 
     // runtime data
 
@@ -107,6 +111,32 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     #$topmost = null;
 
     // private methods
+
+    // Run the crossCheck function(s) (if any)
+    // counting the checks which return something, returning zero if all are valids (supposed to as they didn't return anything)
+    async _crossCheck( opts={} ){
+        _trace( 'Checker._crossCheck' );
+        const array = this.confCrossCheckArray();
+        const self = this;
+        if( array ){
+            let count = 0;
+            let promises = [];
+            this._messagerClearMine( this.iCheckableId());
+            for await ( const o of array ){
+                const res = await o.fn( o.args, opts );
+                if( res ){
+                    count += 1;
+                    self.messagerPush( res );
+                }
+            };
+            Promise.allSettled( promises )
+            // rather a shortcut, shoudl be a bit more precise about statuses
+            if( count > 0 ){
+                this.iStatusableStatus( FieldStatus.C.INVALID );
+                this.iStatusableValidity( false );
+            }
+        }
+    }
 
     // recursive explain
     _explainRec( title, prefix ){
@@ -225,6 +255,11 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         const instance = this.#instance || null;
         assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is expected to be a Blaze.TemplateInstance instance' );
         return instance;
+    }
+
+    // returns the function(s) to be called to cross-check the panel, may be null
+    confCrossCheckArray(){
+        return this.#crossCheckArray || null;
     }
 
     // returns the data to be passed to field-defined check functions, may be null
@@ -414,6 +449,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string, got '+args.validityEvent );
             assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string, got '+args.parentClass );
             assert( !Object.keys( args ).includes( 'enabled' ) || _.isBoolean( args.enabled ), 'when set, enabled must be a true|false Boolean, got '+args.enabled );
+            assert( !args.crossCheckFn || _.isFunction( args.crossCheckFn ), 'when set, crossCheckFn must be a function, got '+args.crossCheckFn );
         }
 
         super( ...arguments );
@@ -426,8 +462,10 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // build the configuration
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
-        // if we want some debug display that before logs of interfaces initializations
-        //console.debug( this, this.confId());
+        // crossCheckFn is pushed to an array (the crossCheckFn() setter is able to push other function if this same array)
+        if( args.crossCheckFn ){
+            this.#crossCheckArray = [{ fn: args.crossCheckFn, args: this.confData() }];
+        }
 
         // initialize panel-level runtime data
         // have to wait for having returned from super() and have built the configuration
@@ -502,6 +540,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
                 });
             }
             // check the fields of this one
+            // crossed checks are only called at last if the fields are all valid
+            opts.crossCheck = false;
             const cb = function( name, spec ){
                 promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
                     valid &&= v;
@@ -512,10 +552,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             this.fieldsIterate( cb );
             return Promise.allSettled( promises )
                 .then(() => {
-                    //if( opts.display === false ){
-                    //    self.clear();
-                    //}
-                    //self.#conf.entityChecker && console.debug( self.#conf.entityChecker );
+                    delete opts.crossCheck;
+                    if( valid ){
+                        this.crossCheck( opts );
+                    }
+                })
+                .then(() => {
                     return valid;
                 });
         }
@@ -546,6 +588,28 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
                 it.clearPanel( opts );
             });
         }
+    }
+
+    /**
+     * @summary Run the crossCheck function (if any)
+     *  Note that this function will not change any field status, but is only capable of pushing new error messages
+     * @returns {Boolean} whether the cross checks are all valid
+     */
+    async crossCheck( opts={} ){
+        _trace( 'Checker.crossCheck' );
+        this.hierarchyUp( '_crossCheck' );
+    }
+
+    /**
+     * Setter
+     * @param {Function} fn a crossCheckFn function
+     * @param {Any} args the arguments to be called
+     * @summary Add a crossCheckFn function to this checker
+     */
+    async crossCheckFn( fn, args ){
+        _trace( 'Checker.crossCheck' );
+        this.#crossCheckArray = this.#crossCheckArray || [];
+        this.#crossCheckArray.push({ fn: fn, args: args });
     }
 
     /**
