@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.3.0-rc
+### 1.3.0
 
-    Release date: 
+    Release date: 2024-10- 4
 
     - Set INFO messages to have bs-primary color
     - Define new Checker.messagerClearMine() method, thus bumping minor candidate version number
@@ -76,4 +76,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Sep. 20th
+- Last updated on 2024, Oct. 4th
