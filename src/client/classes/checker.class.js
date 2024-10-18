@@ -449,7 +449,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string, got '+args.validityEvent );
             assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string, got '+args.parentClass );
             assert( !Object.keys( args ).includes( 'enabled' ) || _.isBoolean( args.enabled ), 'when set, enabled must be a true|false Boolean, got '+args.enabled );
-            assert( !args.crossCheckFn || _.isFunction( args.crossCheckFn ), 'when set, crossCheckFn must be a function, got '+args.crossCheckFn );
+            assert( !args.crossCheckFn || _.isFunction( args.crossCheckFn ) || _.isArray( args.crossCheckFn ), 'when set, crossCheckFn must be a function or an array of functions, got '+args.crossCheckFn );
         }
 
         super( ...arguments );
@@ -464,7 +464,15 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
         // crossCheckFn is pushed to an array (the crossCheckFn() setter is able to push other function if this same array)
         if( args.crossCheckFn ){
-            this.#crossCheckArray = [{ fn: args.crossCheckFn, args: this.confData() }];
+            if( _.isFunction( args.crossCheckFn )){
+                this.#crossCheckArray = [{ fn: args.crossCheckFn, args: this.confData() }];
+            } else {
+                assert( _.isArray( args.crossCheckFn ), 'when set, crossCheckFn must be a function or an array of functions, got '+args.crossCheckFn );
+                this.#crossCheckArray = [];
+                args.crossCheckFn.forEach(( it ) => {
+                    this.#crossCheckArray.push({ fn: it, args: this.confData() });
+                });
+            }
         }
 
         // initialize panel-level runtime data

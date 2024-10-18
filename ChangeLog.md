@@ -7,6 +7,7 @@
     Release date: 
 
     - Introduce Forms.FieldType.C.TRANSPARENT so that NONE and TRANSPARENT are both possible and different semantics, thus bumping minor candidate version number
+    - Extend crossCheckFn instanciation paramater to also accept an array of functions
 
 ### 1.3.0
 
