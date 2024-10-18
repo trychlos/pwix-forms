@@ -254,6 +254,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const checker = this.iRunChecker();
         if( checker.enabled()){
             // some initializations and clearings before any check of this field
+            opts.checker = checker;
             this._checkBefore( opts );
             // if a check function has been defined, calls it (warning once if not exists)
             const checkFn = this.iSpecCheck();
