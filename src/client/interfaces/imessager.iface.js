@@ -43,16 +43,6 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @summary Ask to clear the message(s) displayed in the message zone from the messages pushed by this iCheckable
-     * @param {String} id the ICheckable identifier
-     */
-    iMessagerClearMine( id ){
-        _trace( 'IMessager.iMessagerClearMine' );
-        this._save();
-        this._restoreBut( id );
-    }
-
-    /**
      * @summary Ask to clear the message(s) displayed in the message zone
      */
     iMessagerDump(){
@@ -83,7 +73,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      */
     iMessagerPush( tms, id ){
         _trace( 'IMessager.iMessagerPush', tms, id );
-        this._restoreBut( id );
+        this._removeById( id );
         this._push( tms, id );
     }
 
@@ -93,6 +83,6 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      */
     iMessagerRemove( ids ){
         _trace( 'IMessager.iMessagerRemove', ids );
-        this._remove( ids )
+        this._removeById( ids )
     }
 });

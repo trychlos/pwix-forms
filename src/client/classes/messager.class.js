@@ -121,10 +121,11 @@ export class Messager extends mix( Base ).with( IMessager ){
      * @summary Remove listed identifiers from the stack
      * @param {String|Array} ids a list of ICheckable identifiers to be removed
      */
-    _remove( ids ){
-        _trace( 'Messager._remove', ids, this.#set.get());
+    _removeById( ids ){
+        _trace( 'Messager._removeById', ids, this.#set.get());
         ids = _.isArray( ids ) ? ids : [ ids ];
         let newset = [];
+        //console.debug( '_removeById before', this.#set.get(), ids );
         this.#set.get().forEach(( it ) => {
             //console.debug( 'examining', it.emitter());
             if( ids.includes( it.emitter())){
@@ -133,6 +134,7 @@ export class Messager extends mix( Base ).with( IMessager ){
                 newset.push( it );
             }
         });
+        //console.debug( '_removeById after', newset );
         this.#set.set( newset );
     }
 
@@ -143,27 +145,6 @@ export class Messager extends mix( Base ).with( IMessager ){
         _trace( 'Messager._reset' );
         //console.warn( 'reset', this );
         this.#set.set( [] );
-    }
-
-    /*
-     * @param {String} id a ICheckable identifier to not restore
-     * @summary Save the set of messages, and clears it
-     */
-    _restoreBut( id ){
-        _trace( 'Messager._restoreBut', id );
-        if( this.#saved.length ){
-            let set = [];
-            this.#saved.forEach(( it ) => {
-                assert( it && it instanceof Message, 'expects an instance of Message, got '+it );
-                if( it.emitter() === id ){
-                    //console.debug( 'ignoring', it );
-                } else {
-                    set.push( it );
-                }
-            });
-            this.#set.set( set );
-            this.#saved = [];
-        }
     }
 
     /*

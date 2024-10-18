@@ -94,26 +94,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         let valid = true;
         let status = FieldStatus.C.NONE;
         if( res ){
-            let statuses = [ FieldStatus.C.VALID ];
-            let level;
-            res.forEach(( tm ) => {
-                let tmValid = true;
-                if( tm instanceof TM.TypedMessage ){
-                    level = tm.iTypedMessageLevel();
-                    // cf. man syslog 3: the higher the level, the lower the severity
-                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
-                    valid &&= tmValid;
-                } else {
-                    console.warn( 'expected ITypedMessage, got', tm );
-                }
-                // compute the status
-                if( !tmValid ){
-                    statuses.push( FieldStatus.C.INVALID );
-                } else if( level === TM.MessageLevel.C.WARNING ){
-                    statuses.push( FieldStatus.C.UNCOMPLETE );
-                }
-            });
-            status = FieldStatus.worst( statuses );
+            const o = this.iStatusableConsolidate( res );
+            status = o.status;
+            valid = o.valid;
         // if no err has been reported, may want show a status depending of the type of the field
         } else if( value ){
             const type = this.iSpecType();
@@ -285,6 +268,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     async iFieldRunInit( checker ){
         _trace( 'IFieldRun.iFieldRunInit' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
+        //if( checker.name() === 'identity_address_row' ){
+        //    console.debug( this.name(), this.iCheckableId());
+        //}
         this.iRunChecker( checker );
         let promises = [];
         const self = this;

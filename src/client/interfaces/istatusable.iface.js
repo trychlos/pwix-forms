@@ -13,6 +13,7 @@ const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { ReactiveVar } from 'meteor/reactive-var';
+import { TM } from 'meteor/pwix:typed-message';
 
 import '../../common/js/index.js';
 
@@ -37,6 +38,42 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
         _trace( 'IStatusable.IStatusable' );
         super( ...arguments );
         return this;
+    }
+
+    /**
+     * @param {Array<TypedMessage>} tms
+     * @returns {Object} an object with following keys:
+     *  - status: the worst status computed from the messages
+     *  - valid: whether the result is valid or not
+     */
+    iStatusableConsolidate( tms ){
+        _trace( 'IStatusable.iStatusableConsolidate' );
+        let valid = true;
+        let status = FieldStatus.C.NONE;
+        if( tms ){
+            let statuses = [ FieldStatus.C.VALID ];
+            let level;
+            tms.forEach(( tm ) => {
+                let tmValid = true;
+                if( tm instanceof TM.TypedMessage ){
+                    level = tm.iTypedMessageLevel();
+                    // cf. man syslog 3: the higher the level, the lower the severity
+                    //console.debug( level, TM.MessageLevel.C.ERROR, TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
+                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
+                    valid &&= tmValid;
+                } else {
+                    console.warn( 'expected ITypedMessage, got', tm );
+                }
+                // compute the status
+                if( !tmValid ){
+                    statuses.push( FieldStatus.C.INVALID );
+                } else if( level === TM.MessageLevel.C.WARNING ){
+                    statuses.push( FieldStatus.C.UNCOMPLETE );
+                }
+            });
+            status = FieldStatus.worst( statuses );
+        }
+        return { status: status, valid: valid };
     }
 
     /**

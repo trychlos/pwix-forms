@@ -90,6 +90,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
     /**
      * @summary Apply a function to this checker, and up to the parents hierarchy
      * @param {String} fn function name
+     * @param {Any} args to pass to the function
      */
     hierarchyUp( fn ){
         _trace( 'ICheckerHierarchy.hierarchyUp' );

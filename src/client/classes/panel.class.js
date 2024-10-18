@@ -15,6 +15,8 @@ import { FormField } from './form-field.class.js';
 
 import { IEnumerable } from '../interfaces/ienumerable.iface.js';
 import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
+import { IFieldRun } from '../interfaces/ifield-run.iface.js';
+import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 
 export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
@@ -94,5 +96,22 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
         //console.debug( this );
         return this;
+    }
+
+    /**
+     * @returns {Object} an object indexed by field names with field values
+     */
+    objectData( args=null ){
+        _trace( 'Panel.objectData' );
+        let result = {};
+        const self = this;
+        const _iterate = function( name, spec, arg ){
+            assert( spec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+spec );
+            assert( spec instanceof IFieldRun, 'expects an instance of IFieldRun, got '+spec );
+            result[name] = spec.iRunValueFrom();
+            return true;
+        };
+        this.iEnumerateKeys( _iterate, args );
+        return result;
     }
 }

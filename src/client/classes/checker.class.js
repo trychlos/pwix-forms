@@ -113,28 +113,27 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     // private methods
 
     // Run the crossCheck function(s) (if any)
-    // counting the checks which return something, returning zero if all are valids (supposed to as they didn't return anything)
     async _crossCheck( opts={} ){
         _trace( 'Checker._crossCheck' );
         const array = this.confCrossCheckArray();
+        //console.debug( 'crossCheck', this.name(), this.iCheckableId(), array );
         const self = this;
         if( array ){
-            let count = 0;
-            let promises = [];
-            this._messagerClearMine( this.iCheckableId());
+            let msgs = [];
+            this.messagerRemove( this.iCheckableId());
             for await ( const o of array ){
                 const res = await o.fn( o.args, opts );
                 if( res ){
-                    count += 1;
+                    msgs = msgs.concat( res );
                     self.messagerPush( res );
                 }
             };
-            Promise.allSettled( promises )
-            // rather a shortcut, shoudl be a bit more precise about statuses
-            if( count > 0 ){
-                this.iStatusableStatus( FieldStatus.C.INVALID );
-                this.iStatusableValidity( false );
-            }
+            // consolidate the result
+            const o = this.iStatusableConsolidate( msgs );
+            this.iStatusableStatus( o.status  );
+            this.iStatusableValidity( o.valid );
+            //console.debug( msgs, o );
+            this._consolidateStatusCheckersUp();
         }
     }
 
@@ -186,15 +185,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerClear();
-        }
-    }
-
-    // clear the IMessager if any
-    _messagerClearMine( id ){
-        _trace( 'Checker._messagerClearMine' );
-        const messager = this.confIMessager();
-        if( messager ){
-            messager.iMessagerClearMine( id );
         }
     }
 
@@ -518,8 +508,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             });
         }
 
-        //console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
-
+        //if( this.confName() === 'identity_address_row' ){
+        //    console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
+        //}
         return this;
     }
 
@@ -605,7 +596,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     async crossCheck( opts={} ){
         _trace( 'Checker.crossCheck' );
-        this.hierarchyUp( '_crossCheck' );
+        this.hierarchyUp( '_crossCheck', opts );
     }
 
     /**
@@ -700,7 +691,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     messagerClearMine(){
         _trace( 'Checker.messagerClearMine' );
-        this.hierarchyUp( '_messagerClearMine', this.iCheckableId());
+        this._messagerRemoveById( this.iCheckableId());
     }
 
     /**
@@ -736,6 +727,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     name(){
         _trace( 'Checker.name' );
         return this.confName();
+    }
+
+    /**
+     * @returns {Panel} the configured panel, or null
+     */
+    panel(){
+        _trace( 'Checker.panel' );
+        return this.confPanel();
     }
 
     /**
