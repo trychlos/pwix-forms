@@ -2,11 +2,11 @@
 
 ## ChangeLog
 
-### 1.3.1-rc
+### 1.4.0-rc
 
     Release date: 
 
-    - 
+    - Introduce Forms.FieldType.C.TRANSPARENT so that NONE and TRANSPARENT are both possible and different semantics, thus bumping minor candidate version number
 
 ### 1.3.0
 

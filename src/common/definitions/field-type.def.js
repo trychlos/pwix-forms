@@ -8,11 +8,12 @@ import { pwixI18n } from 'meteor/pwix:i18n';
 
 export const FieldType = {
     C: {
-        INFO:       'INFO',
-        MANDATORY:  'MANDATORY',
-        NONE:       'NONE',
-        OPTIONAL:   'OPTIONAL',
-        WORK:       'WORK'
+        INFO:        'INFO',
+        MANDATORY:   'MANDATORY',
+        NONE:        'NONE',
+        OPTIONAL:    'OPTIONAL',
+        TRANSPARENT: 'TRANSPARENT',
+        WORK:        'WORK'
     }
 };
 _.merge( FieldType, {
@@ -29,16 +30,21 @@ _.merge( FieldType, {
             icon: 'fa-asterisk',
             title: 'field_type.save_title'
         },
-        // none - the field uses its place and width, but is not shown
+        // none - the field is not displayed
         NONE: {
-            class: 'ui-transparent',
-            icon: 'fa-face-grin-beam'
+            class: 'ui-hidden',
+            icon: 'fa-circle'
         },
         // optional value
         OPTIONAL: {
             class: 'fti-optional',
             icon: 'fa-face-grin-beam',
             title: 'field_type.optional_title'
+        },
+        // transparent - the field uses its place and width, but is not shown
+        TRANSPARENT: {
+            class: 'ui-transparent',
+            icon: 'fa-circle'
         },
         // not mandatory for save, but SHOULD be set to be fully operational
         WORK: {

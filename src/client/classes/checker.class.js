@@ -657,7 +657,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         _trace( 'Checker.fieldsIterate' );
         const self = this;
         const _iterate = function( name, spec, arg ){
-            check( spec, IFieldSpec );
+            assert( spec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+spec );
             return cb.bind( self )( name, spec, arg );
         };
         const panel = this.confPanel();
