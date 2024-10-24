@@ -592,7 +592,6 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     /**
      * @summary Run the crossCheck function (if any)
      *  Note that this function will not change any field status, but is only capable of pushing new error messages
-     * @returns {Boolean} whether the cross checks are all valid
      */
     async crossCheck( opts={} ){
         _trace( 'Checker.crossCheck' );

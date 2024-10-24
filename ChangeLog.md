@@ -11,6 +11,7 @@
     - Check functions now receive the Checker instance as an option member
     - Define new Checker.panel() and Panel.objectData() methods
     - Fix the crossChecks behaviours
+    - Fix the Panel initialization
 
 ### 1.3.0
 

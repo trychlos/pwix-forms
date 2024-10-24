@@ -160,6 +160,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     //console.debug( 'got waitedSelector', waitedSelector );
                 });
             }
+        } else {
+            if( !siblingClass ){
+                console.warn( 'no sibling class' );
+            }
+            if( !$node ){
+                console.warn( 'unable to get UI node for', this.name());
+            }
         }
         return res;
     }
@@ -251,7 +258,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                         return self._checkAfter( opts, value, fnres );
                     })
                     .then( async () => {
-                        return self.iCheckableResult() || opts.crossCheck === false ? null : checker.crossCheck( opts );
+                        return self.iCheckableResult() || opts.crossCheck === false ? null : await checker.crossCheck( opts );
                     })
                     .then(() => {
                         return self.iStatusableValidity();

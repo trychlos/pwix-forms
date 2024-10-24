@@ -61,7 +61,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * Constructor
      * @locus Client
      * @summary Instanciates a new Panel instance
-     * @param {Object} arg an optional panel specification as provided by the application
+     * @param {Object} arg a panel specification as provided by the application
      *  This is a keyed object, where keys are the field names, and values the field specifications for this panel
      * @param {Field.Set} set a previously defined Field.Set object
      * @returns {Panel} this instance
@@ -78,8 +78,8 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
         const cb = function( key, value ){
             const field = set.byName( key );
             if( field ){
-                const defn = field._defn();
-                _.merge( defn, value );
+                let defn = field._defn();
+                defn = _.merge( defn, value );
                 self.#set[key] = new FormField( defn );
 
             // warn once
