@@ -32,6 +32,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 valid &&= child.iStatusableValidity();
                 statuses.push( child.iStatusableStatus());
             });
+            //console.debug( 'pushing', valid );
             parent.iStatusableValidity( valid );
             parent.iStatusableStatus( FieldStatus.worst( statuses ));
             parent._consolidateStatusCheckersUp();
@@ -92,7 +93,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         const self = this;
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
-            //console.debug( 'running ok autorun', self.iCheckableId(), valid );
+            //console.debug( 'running ok autorun', self.iCheckableId(), self.name(), valid );
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
                 $ok.prop( 'disabled', !valid );

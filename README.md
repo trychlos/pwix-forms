@@ -74,7 +74,7 @@ Available both on the client and the server.
 
 ##### `Forms.ICheckable`
 
-An interface whichs adds to the implementor the capability of being checked (.e. have a `check()` function), and to provide the expected result.
+An interface whichs adds to the implementor the capability of being checked (i.e. have a `check()` function), and to provide the expected result.
 
 Each implementation instance is provided a random unique identifier at instanciation time. This identifier let us manages the published `TypedMessage`'s by emitter.
 

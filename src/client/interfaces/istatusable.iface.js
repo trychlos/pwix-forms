@@ -48,8 +48,10 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      */
     iStatusableConsolidate( tms ){
         _trace( 'IStatusable.iStatusableConsolidate' );
-        let valid = true;
-        let status = FieldStatus.C.NONE;
+        //let valid = true;
+        //let status = FieldStatus.C.NONE;
+        let valid = this.iStatusableValidity();
+        let status = this.iStatusableStatus();
         if( tms ){
             let statuses = [ FieldStatus.C.VALID ];
             let level;
@@ -118,7 +120,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
         if( valid !== undefined ){
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );
-            //console.debug( 'validity change', this.iCheckableId(), valid );
+            //console.warn( 'validity change', this.iCheckableId(), this.name(), valid );
         }
         return this.#validity.get();
     }

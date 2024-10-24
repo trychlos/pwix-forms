@@ -7,11 +7,13 @@
     Release date: 
 
     - Introduce Forms.FieldType.C.TRANSPARENT so that NONE and TRANSPARENT are both possible and different semantics, thus bumping minor candidate version number
-    - Extend crossCheckFn instanciation paramater to also accept an array of functions
+    - Extend crossCheckFn instanciation parameter to also accept an array of functions
     - Check functions now receive the Checker instance as an option member
     - Define new Checker.panel() and Panel.objectData() methods
     - Fix the crossChecks behaviours
     - Fix the Panel initialization
+    - Define new Panel.byName()
+    - Actually make the Field.Set optional when instanciating a Panel
 
 ### 1.3.0
 

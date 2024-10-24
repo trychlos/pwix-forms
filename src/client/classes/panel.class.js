@@ -63,12 +63,12 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * @summary Instanciates a new Panel instance
      * @param {Object} arg a panel specification as provided by the application
      *  This is a keyed object, where keys are the field names, and values the field specifications for this panel
-     * @param {Field.Set} set a previously defined Field.Set object
+     * @param {Field.Set} set an optional previously defined Field.Set object which is able to provide default values
      * @returns {Panel} this instance
      */
     constructor( arg, set ){
         assert( arg && _.isObject( arg ), 'expect a plain javascript object' );
-        assert( set && set instanceof Field.Set, 'expect a Field.Set instance' );
+        assert( !set || set instanceof Field.Set, 'expect a Field.Set instance' );
 
         super( ...arguments );
         const self = this;
@@ -76,17 +76,18 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
         // instanciate a FormField object for each field description
         this.#set = {};
         const cb = function( key, value ){
-            const field = set.byName( key );
-            if( field ){
-                let defn = field._defn();
-                defn = _.merge( defn, value );
-                self.#set[key] = new FormField( defn );
-
-            // warn once
-            } else if( !Object.keys( self.#warneds ).includes( key )){
-                console.warn( 'unknown name', key, 'ignored' );
-                self.#warneds[key] = true;
+            let defn = value;
+            if( set ){
+                const spec = set.byName( key );
+                if( spec ){
+                    defn = _.merge( spec.def(), value );
+                    // warn once
+                } else if( !Object.keys( self.#warneds ).includes( key )){
+                    console.warn( 'unknown name', key, 'ignored' );
+                    self.#warneds[key] = true;
+                }
             }
+            self.#set[key] = new FormField( defn );
             return true;
         };
         this.iEnumerateKeys( cb );
@@ -96,6 +97,25 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
         //console.debug( this );
         return this;
+    }
+
+    /**
+     * @param {String} name the searched field name
+     * @returns {FormField} the definition for this named field, or null
+     */
+    byName( name ){
+        _trace( 'Panel.byName' );
+        let spec = null;
+        const cb = function( fieldName, fieldSpec, arg ){
+            assert( fieldSpec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+fieldSpec );
+            assert( fieldSpec instanceof IFieldRun, 'expects an instance of IFieldRun, got '+fieldSpec );
+            if( name === fieldName ){
+                spec = fieldSpec;
+            }
+            return spec === null;
+        };
+        this.iEnumerateKeys( cb );
+        return spec;
     }
 
     /**
