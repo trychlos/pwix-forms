@@ -31,18 +31,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // the attached Checker
     #checker = null;
 
-    // the UI DOM node addressed by the 'js' parameter
-    #uiNode = null;
-
-    // the INPUT DOM node
-    #inputNode = null;
-
-    // whether and how display the status of the field
-    #showStatus = null;
-
-    // whether display the type of the field
-    #showType = null;
-
     // dynamically rendered Blaze views
     #views = [];
 
@@ -122,7 +110,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a fieldtype indicator before the field if it is defined
      * @param {Checker} checker
      */
-    _initPrefixType( checker ){
+    async _initPrefixType( checker ){
         _trace( 'IFieldRun._initPrefixType' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowType();
@@ -143,7 +131,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @param {Checker} checker
      * @returns {Promise} which will resolve when the DIV is actually present in the DOM, or null
      */
-    _initRightSibling( checker ){
+    async _initRightSibling( checker ){
         _trace( 'IFieldRun._initRightSibling' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const siblingClass = checker.confRightSiblingClass();
@@ -175,7 +163,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a FieldStatus indicator after the field if it is defined
      * @param {Checker} checker
      */
-    _initSuffixStatus( checker ){
+    async _initSuffixStatus( checker ){
         _trace( 'IFieldRun._initSuffixStatus' );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
@@ -190,7 +178,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const data = {
                     statusRv: this.iStatusableStatusRv()
                 };
-                //console.debug( this.name(), this.iStatusableStatus());
+                //console.debug( this.name(), this.iStatusableStatus(), $parentNode, $sibling );
                 this.#views.push( Blaze.renderWithData( Template.FormsStatusIndicator, data, $parentNode[0], $sibling[0] ));
             }
         }
@@ -318,75 +306,63 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {jQuery} the jQuery object which represent the INPUT/SELECT node in the Checker
      *  This is a cached computation
      *  May return null if the node is not yet in the DOM
+     *  NB: do not cache the result to handle dynamic UIs
      */
     iRunInputNode(){
         _trace( 'IFieldRun.iRunInputNode' );
-        if( !this.#inputNode ){
-            const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
-            const checker = this.iRunChecker();
-            const instance = checker.argInstance();
-            const selector = this.iSpecSelector();
-            let $node = instance.$( selector );
-            let tagName = $node.prop( 'tagName' );
-            if( !inputTags.includes( tagName )){
-                $node = instance.$( selector+' :input' );
-                tagName = $node.prop( 'tagName' );
-            }
-            if( $node && $node instanceof jQuery && $node.length && inputTags.includes( tagName )){
-                this.#inputNode = $node;
-            }
+        const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
+        const checker = this.iRunChecker();
+        const instance = checker.argInstance();
+        const selector = this.iSpecSelector();
+        let $node = instance.$( selector );
+        let tagName = $node.prop( 'tagName' );
+        if( !inputTags.includes( tagName )){
+            $node = instance.$( selector+' :input' );
+            tagName = $node.prop( 'tagName' );
         }
-        //console.debug( this.name(), this.#inputNode );
-        return this.#inputNode;
+        return $node;
     }
 
     /**
      * @returns {FieldStatus} the way the status should be displayed for this field
      *  - confDisplayStatus() returns the way of the package is configured, maybe overriden at the checker level
      *  - if the package allows overridable, then consider the field defintion if it is valid
+     *  NB: do not cache the result to handle dynamic UIs
      */
     iRunShowStatus(){
         _trace( 'IFieldRun.iRunShowStatus' );
-        if( !this.#showStatus ){
-            let display = this.iRunChecker().confDisplayStatus();
-            //console.debug( 'iRunShowStatus confDisplayStatus', this.name(), display );
-            const overridable = Forms.configure().showStatusOverridable;
-            //console.debug( 'iRunShowStatus overridable', this.name(), overridable );
-            if( overridable ){
-                const status = this.iSpecStatus();
-                //console.debug( 'iRunShowStatus iSpecStatus', this.name(), status );
-                if( status ){
-                    display = status;
-                }
+        let display = this.iRunChecker().confDisplayStatus();
+        //console.debug( 'iRunShowStatus confDisplayStatus', this.name(), display );
+        const overridable = Forms.configure().showStatusOverridable;
+        //console.debug( 'iRunShowStatus overridable', this.name(), overridable );
+        if( overridable ){
+            const status = this.iSpecStatus();
+            //console.debug( 'iRunShowStatus iSpecStatus', this.name(), status );
+            if( status ){
+                display = status;
             }
-            this.#showStatus = display;
         }
-        //console.debug( 'iRunShowStatus returns', this.#showStatus );
-        return this.#showStatus;
+        return display;
     }
 
     /**
      * @returns {Boolean} whether a type should be displayed for this field
      *  considering the package configuration, and the Checker instanciation options
+     *  NB: do not cache the result to handle dynamic UIs
      */
     iRunShowType(){
         _trace( 'IFieldRun.iRunShowType' );
-        //console.debug( 'iRunShowType', this.name(), 'this.#showStatus', this.#showStatus );
-        if( this.#showType === null ){
-            let display = this.iRunChecker().confDisplayType();
-            const overridable = Forms.configure().showTypeOverridable;
-            //console.debug( 'iRunShowType', this.name(), 'confDisplayType', display, 'overridable', overridable );
-            if( overridable ){
-                const status = this.iSpecType();
-                //console.debug( 'iRunShowType iSpecType', this.name(), status );
-                if( status && FieldType.known( status )){
-                    display = ( status !== FieldType.C.NONE );
-                }
+        let display = this.iRunChecker().confDisplayType();
+        const overridable = Forms.configure().showTypeOverridable;
+        //console.debug( 'iRunShowType', this.name(), 'confDisplayType', display, 'overridable', overridable );
+        if( overridable ){
+            const status = this.iSpecType();
+            //console.debug( 'iRunShowType iSpecType', this.name(), status );
+            if( status && FieldType.known( status )){
+                display = ( status !== FieldType.C.NONE );
             }
-            this.#showType = display;
         }
-        //console.debug( 'iRunShowType returns', this.#showType );
-        return this.#showType;
+        return display;
     }
 
     /**
@@ -396,16 +372,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunUINode(){
         _trace( 'IFieldRun.iRunUINode' );
-        if( !this.#uiNode ){
-            const checker = this.iRunChecker();
-            const instance = checker.argInstance();
-            const selector = this.iSpecSelector();
-            const $node = instance.$( selector );
-            if( $node && $node instanceof jQuery && $node.length ){
-                this.#uiNode = $node;
-            }
-        }
-        return this.#uiNode;
+        const checker = this.iRunChecker();
+        const instance = checker.argInstance();
+        const selector = this.iSpecSelector();
+        const $node = instance.$( selector );
+        return $node;
     }
 
     /* Maintainer note:
@@ -425,6 +396,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const defn = this._defn();
         const $node = this.iRunInputNode();
         let value = null;
+        //console.debug( this.name(), $node );
         if( $node ){
             if( defn.formFrom ){
                 assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
@@ -439,7 +411,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
                     value = $node.prop( 'checked' );
                 }
-                //console.debug( 'iRunValueFrom', this.name(), value );
+                //console.debug( 'iRunValueFrom', this.name(), $node, value );
                 /*
                 // a small hack to handle 'true' and 'false' values from coreYesnoSelect
                 const $select = $node.closest( '.core-yesno-select' );

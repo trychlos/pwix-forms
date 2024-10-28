@@ -14,6 +14,7 @@
     - Fix the Panel initialization
     - Define new Panel.byName()
     - Actually make the Field.Set optional when instanciating a Panel
+    - No more cache the computed nodes to handle dynamic UIs
 
 ### 1.3.0
 
