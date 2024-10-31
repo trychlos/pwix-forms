@@ -43,7 +43,7 @@
  *  ```
  *
  * Validity consolidation:
- *  All underlying components/pane/panels/Forms.Checker's may advertize their own validity status through:
+ *  All underlying components/pane/panels/Forms.Checker's may advertise their own validity status through:
  *  - a 'form-validity' event, holding data as { emitter, ok, ... }
  *  - a call to Checker.formValidity( emitter, ok, .. })
  *      where:
@@ -419,7 +419,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - fieldStatusShow: whether and how to display the result indicator on the right of the field
      *    only considered if the corresponding package configured value is overridable
      *  - setForm: if set, the item to be used to fill-in the form at startup, defaulting to none
-     *  - validityEvent: if set, the event used to advertize of each Checker validity status, defaulting to 'checker-validity'
+     *  - validityEvent: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
      *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
      *  - rightSiblingClass: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
      * @returns {Checker} this Checker instance
