@@ -17,6 +17,7 @@
     - No more cache the computed nodes to handle dynamic UIs
     - Minor spelling fixes
     - Remove useless aldeed:simple-schema dependency
+    - Use margin instead of padding to keep the FormsStatusIndicator svg centered inside the button
 
 ### 1.3.0
 
