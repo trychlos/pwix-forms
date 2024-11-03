@@ -19,6 +19,7 @@
     - Remove useless aldeed:simple-schema dependency
     - Use margin instead of padding to keep the FormsStatusIndicator svg centered inside the button
     - Improve comments
+    - Improve radio button management
 
 ### 1.3.0
 

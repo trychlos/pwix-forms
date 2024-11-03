@@ -303,22 +303,21 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
+     * @param {String} attrs
      * @returns {jQuery} the jQuery object which represent the INPUT/SELECT node in the Checker
-     *  This is a cached computation
      *  May return null if the node is not yet in the DOM
      *  NB: do not cache the result to handle dynamic UIs
      */
-    iRunInputNode(){
+    iRunInputNode( attrs='' ){
         _trace( 'IFieldRun.iRunInputNode' );
         const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
         const checker = this.iRunChecker();
         const instance = checker.argInstance();
         const selector = this.iSpecSelector();
-        let $node = instance.$( selector );
+        let $node = instance.$( selector+attrs );
         let tagName = $node.prop( 'tagName' );
         if( !inputTags.includes( tagName )){
-            $node = instance.$( selector+' :input' );
-            tagName = $node.prop( 'tagName' );
+            $node = instance.$( selector+' :input'+attrs );
         }
         return $node;
     }
@@ -367,7 +366,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /**
      * @returns {jQuery} the jQuery object which represent the UI node in the Checker
-     *  This is a cached computation
      *  May return null if the node doesn't yet exist in the DOM
      */
     iRunUINode(){
@@ -394,7 +392,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         _trace( 'IFieldRun.iRunValueFrom' );
         const defn = this._defn();
-        const $node = this.iRunInputNode();
+        let $node = this.iRunInputNode();
         let value = null;
         //console.debug( this.name(), $node );
         if( $node ){
@@ -408,8 +406,12 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 value = $node.val();
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
-                if( tagName === 'INPUT' && ( eltType === 'checkbox' )){
+                if( tagName === 'INPUT' && eltType === 'checkbox' ){
                     value = $node.prop( 'checked' );
+                }
+                if( tagName === 'INPUT' && eltType === 'radio' ){
+                    $node = this.iRunInputNode( ':checked' );
+                    value = $node.val();
                 }
                 //console.debug( 'iRunValueFrom', this.name(), $node, value );
                 /*
