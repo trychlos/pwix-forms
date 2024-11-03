@@ -14,7 +14,9 @@
  *  - formTo( <$node>, <item> ): a function to write the value into the form, defaulting to the 'val( <value> )' function
  *  - check: a check function, or false (warns if unset)
  *  - type: the mandatory/optional field type, defaulting to none
+ *      ref. Forms.FieldType.C
  *  - status: whether the field should be appended with an indicator to show valid|invalid state, defaulting to Checker then configured values
+ *      ref. Forms.C.ShowStatus
  */
 
 import _ from 'lodash';

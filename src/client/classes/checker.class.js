@@ -452,7 +452,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // build the configuration
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
-        // crossCheckFn is pushed to an array (the crossCheckFn() setter is able to push other function if this same array)
+        // crossCheckFn is pushed to an array (the crossCheckFn() setter is able to push other functions if this same array)
         if( args.crossCheckFn ){
             if( _.isFunction( args.crossCheckFn )){
                 this.#crossCheckArray = [{ fn: args.crossCheckFn, args: this.confData() }];

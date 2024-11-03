@@ -18,6 +18,7 @@
     - Minor spelling fixes
     - Remove useless aldeed:simple-schema dependency
     - Use margin instead of padding to keep the FormsStatusIndicator svg centered inside the button
+    - Improve comments
 
 ### 1.3.0
 
