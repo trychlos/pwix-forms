@@ -690,7 +690,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      */
     messagerClearMine(){
         _trace( 'Checker.messagerClearMine' );
-        this._messagerRemoveById( this.iCheckableId());
+        this.messagerRemove( this.iCheckableId());
     }
 
     /**

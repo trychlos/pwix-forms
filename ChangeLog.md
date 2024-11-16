@@ -20,6 +20,7 @@
     - Use margin instead of padding to keep the FormsStatusIndicator svg centered inside the button
     - Improve comments
     - Improve radio button management
+    - Fix Checker.messagerClearMine() to bubble up in the hierarchy
 
 ### 1.3.0
 
