@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.4.0-rc
+### 1.4.0
 
-    Release date: 
+    Release date: 2024-11-19
 
     - Introduce Forms.FieldType.C.TRANSPARENT so that NONE and TRANSPARENT are both possible and different semantics, thus bumping minor candidate version number
     - Extend crossCheckFn instanciation parameter to also accept an array of functions
@@ -96,4 +96,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Oct. 4th
+- Last updated on 2024, Nov. 19th
