@@ -372,4 +372,4 @@ In case of support or error, please report your issue request to our [Issues tra
 
 ---
 P. Wieser
-- Last updated on 2024, Nov. 19th
+- Last updated on 2025, Jul. 8th

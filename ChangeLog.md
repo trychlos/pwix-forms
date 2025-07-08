@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.4.1-rc
+### 1.4.1
 
-    Release date: 
+    Release date: 2025- 7- 8
 
     - Update to pwix:ui-utils v1.4
 
@@ -102,4 +102,4 @@
 
 ---
 P. Wieser
-- Last updated on 2024, Nov. 19th
+- Last updated on 2025, Jul. 8th
