@@ -10,7 +10,7 @@ import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { Blaze } from 'meteor/blaze';
 import { TM } from 'meteor/pwix:typed-message';
-import { UIU } from 'meteor/pwix:ui-utils';
+import { UIUtils } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
 
@@ -144,7 +144,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             const $siblings = $parent.find( waitedSelector );
             if( !$siblings.length ){
                 $node.after( '<div class="'+siblingClass+'"></div>' );
-                res = UIU.DOM.waitFor( waitedSelector ).then(() => {
+                res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
                     //console.debug( 'got waitedSelector', waitedSelector );
                 });
             }
@@ -202,7 +202,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 //console.debug( 'initWrapParent', this.name());
                 $node.wrap( '<div class="'+parentClass+'"></div>' );
                 const waitedSelector = '.'+parentClass+' '+this.iSpecSelector();
-                res = UIU.DOM.waitFor( waitedSelector ).then(() => {
+                res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
                     //console.debug( 'got waitedSelector', waitedSelector );
                 });
             }

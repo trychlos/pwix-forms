@@ -31,7 +31,7 @@ function configure( api ){
     api.use( 'pwix:typed-message@1.2.0' );
     api.use( 'pwix:ui-bootstrap5@2.0.0' );
     api.use( 'pwix:ui-fontawesome6@1.0.0' );
-    api.use( 'pwix:ui-utils@1.1.0' );
+    api.use( 'pwix:ui-utils@1.4.0' );
     api.use( 'reactive-dict' );
     api.use( 'reactive-var' );
     api.use( 'tmeasday:check-npm-versions@1.0.2 || 2.0.0-rc300.0', 'server' );

@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Update to pwix:ui-utils v1.4
 
 ### 1.4.0
 
