@@ -196,6 +196,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const $node = this.iRunUINode();
         let res = null;
         if( parentClass && $node ){
+            //console.debug( 'parentClass', parentClass, '$node', $node );
             const $parent = $node.parent();
             assert( $parent && $parent.length, 'unexpected parent not found' );
             if( !$parent.hasClass( parentClass )){
@@ -374,7 +375,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const instance = checker.argInstance();
         const selector = this.iSpecSelector();
         const $node = instance.$( selector );
-        return $node;
+        return $node.length ? $node : null;
     }
 
     /* Maintainer note:

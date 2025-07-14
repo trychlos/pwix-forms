@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Add (commented) debug code
 
 ### 1.4.1
 
