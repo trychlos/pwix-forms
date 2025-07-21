@@ -306,6 +306,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /**
      * @param {String} attrs
      * @returns {jQuery} the jQuery object which represent the INPUT/SELECT node in the Checker
+     *  This is expected to be the exact DOM node where get or set the value
      *  May return null if the node is not yet in the DOM
      *  NB: do not cache the result to handle dynamic UIs
      */
@@ -316,11 +317,13 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const instance = checker.argInstance();
         const selector = this.iSpecSelector();
         let $node = instance.$( selector+attrs );
-        let tagName = $node.prop( 'tagName' );
-        if( !inputTags.includes( tagName )){
-            $node = instance.$( selector+' :input'+attrs );
+        if( $node.length ){
+            let tagName = $node.prop( 'tagName' );
+            if( !inputTags.includes( tagName ) && !$node[0].isContentEditable ){
+                $node = instance.$( selector+' :input'+attrs );
+            }
         }
-        return $node;
+        return $node.length ? $node : null;
     }
 
     /**
@@ -392,11 +395,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunValueFrom(){
         _trace( 'IFieldRun.iRunValueFrom' );
-        const defn = this._defn();
         let $node = this.iRunInputNode();
         let value = null;
         //console.debug( this.name(), $node );
-        if( $node ){
+        if( $node && $node.length ){
+            const defn = this._defn();
             if( defn.formFrom ){
                 assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
                 value = defn.formFrom( $node );
@@ -409,10 +412,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const eltType = $node.attr( 'type' );
                 if( tagName === 'INPUT' && eltType === 'checkbox' ){
                     value = $node.prop( 'checked' );
-                }
-                if( tagName === 'INPUT' && eltType === 'radio' ){
+                } else if( tagName === 'INPUT' && eltType === 'radio' ){
                     $node = this.iRunInputNode( ':checked' );
                     value = $node.val();
+                } else if( tagName === 'DIV' && $node[0].isContentEditable ){
+                    value = $node.text();
                 }
                 //console.debug( 'iRunValueFrom', this.name(), $node, value );
                 /*
