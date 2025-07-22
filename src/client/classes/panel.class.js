@@ -80,7 +80,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
             if( set ){
                 const spec = set.byName( key );
                 if( spec ){
-                    defn = _.merge( spec.def(), value );
+                    defn = _.merge( {}, spec.def(), value );
                     // warn once
                 } else if( !Object.keys( self.#warneds ).includes( key )){
                     console.warn( 'unknown name', key, 'ignored' );
