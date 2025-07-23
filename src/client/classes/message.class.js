@@ -78,8 +78,8 @@ export class Message extends mix( Base ).with(){
      * @returns {Integer} the epoch time at which the message has been pushed
      */
     epoch(){
-        _trace( 'Message.emitter' );
-        return this.#id;
+        _trace( 'Message.epoch' );
+        return this.#epoch;
     }
 
     /**
