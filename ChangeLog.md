@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.5.0-rc
+### 1.5.0
 
-    Release date: 
+    Release date: 2026- 2-10
 
     - Add (commented) debug code
     - Get runtime value of a field from a ContentEditable DIV, thus bumping minor candidate version number
@@ -111,4 +111,4 @@
 
 ---
 P. Wieser
-- Last updated on 2025, Jul. 8th
+- Last updated on 2026, Feb. 10th
