@@ -28,6 +28,7 @@ This Meteor package is installable with the usual command:
 
 ```sh
     meteor add pwix:forms
+    meteor npm install lodash @vestergaard-company/js-mixin --save
 ```
 
 ## Usage

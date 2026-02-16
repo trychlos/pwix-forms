@@ -7,7 +7,7 @@
  * - manage a TypedMessage's error message stack.
  *
  * Checker is bound to a Blaze.TemplateInstance. When your form is built with several Blaze components,
- * then you will have a tree of Checker's which will all cooperate together to produce consollidated results.
+ * then you will have a tree of Checker's which will all cooperate together to produce consolidated results.
  *
  * Array-ed panels:
  *  Checker doesn't manage array-ed forms. In this case, you should have a template per row in your array, and so a Checker per row.
