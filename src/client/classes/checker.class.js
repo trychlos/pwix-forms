@@ -56,7 +56,7 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
-import '../../common/js/trace.js';
+import { Logger } from 'meteor/pwix:logger';
 
 import { Base } from './base.class.js';
 import { Panel } from './panel.class.js';
@@ -70,6 +70,8 @@ import { ICheckerStatus } from '../interfaces/ichecker-status.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { IStatusable } from '../interfaces/istatusable.iface.js';
+
+const logger = Logger.get();
 
 export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy, ICheckerStatus, ICheckable, IStatusable ){
 
@@ -114,9 +116,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // Run the crossCheck function(s) (if any)
     async _crossCheck( opts={} ){
-        _trace( 'Checker._crossCheck' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._crossCheck()', opts );
         const array = this.confCrossCheckArray();
-        //console.debug( 'crossCheck', this.name(), this.iCheckableId(), array );
         const self = this;
         if( array ){
             let msgs = [];
@@ -132,56 +133,55 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             const o = this.iStatusableConsolidate( msgs );
             this.iStatusableStatus( o.status  );
             this.iStatusableValidity( o.valid );
-            //console.debug( msgs, o );
             this._consolidateStatusCheckersUp();
         }
     }
 
     // recursive explain
     _explainRec( title, prefix ){
-        _trace( 'Checker._explainRec' );
-        console.log( prefix+title, this.confName(), this.iCheckableId(), this.status(), this.validity());
-        console.log( prefix+'- parent' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._explainRec()', title, prefix );
+        logger.log( prefix+title, this.confName(), this.iCheckableId(), this.status(), this.validity());
+        logger.log( prefix+'- parent' );
         const parent = this.confParent();
         if( parent ){
-            console.log( prefix+'  '+parent.confName()+ ' '+parent.iCheckableId());
+            logger.log( prefix+'  '+parent.confName()+ ' '+parent.iCheckableId());
         } else {
-            console.log( prefix+'  (none)' );
+            logger.log( prefix+'  (none)' );
         }
-        console.log( )
-        console.log( prefix+'- children' );
+        logger.log( )
+        logger.log( prefix+'- children' );
         let count = 0;
         this.rtChildren().forEach(( child ) => {
             child._explainRec( '', prefix+'  ' );
             count += 1;
         });
         if( !count ){
-            console.log( prefix+'  (none)' );
+            logger.log( prefix+'  (none)' );
         }
-        console.log( prefix+'- fields' );
+        logger.log( prefix+'- fields' );
         count = 0;
         // check the fields of this one
         const cb = function( name, spec ){
-            console.log( prefix+'  ', name, spec.iStatusableStatus(), spec.iStatusableValidity());
+            logger.log( prefix+'  ', name, spec.iStatusableStatus(), spec.iStatusableValidity());
             count += 1;
             return true;
         };
         this.fieldsIterate( cb );
         if( !count ){
-            console.log( prefix+'  (none)' );
+            logger.log( prefix+'  (none)' );
         }
-        console.log( prefix+'- messager' );
+        logger.log( prefix+'- messager' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerDump();
         } else {
-            console.log( prefix+'  (none)' );
+            logger.log( prefix+'  (none)' );
         }
     }
 
     // clear the IMessager if any
     _messagerClear(){
-        _trace( 'Checker._messagerClear' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerClear()' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerClear();
@@ -190,7 +190,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // dump the IMessager
     _messagerDump(){
-        _trace( 'Checker._messagerDump' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerDump()' );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerDump();
@@ -199,7 +199,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // push a TypedMessage
     _messagerPush( tms, id ){
-        _trace( 'Checker._messagerPush', tms, id );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerPush()', tms, id );
         const messager = this.confIMessager();
         if( this.confName()){
             //console.debug( '_messagerPush', this.confName(), this.iCheckableId(), messager, tms );
@@ -212,7 +212,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     // remove all messages emitted by this Checker and its fields
     //  and recurse on the children
     _messagerRemove(){
-        _trace( 'Checker._messagerRemove' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerRemove()' );
         // cleanup the messages stack from this checker
         let checkables = [];
         const cb = function( name, spec ){
@@ -231,7 +231,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     // remove the messages send from this checker
     // - checkables is an identifier or an array of identifiers
     _messagerRemoveById( checkables ){
-        _trace( 'Checker._messagerRemoveById', checkables );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerRemoveById()', checkables );
         const messager = this.confIMessager();
         if( messager ){
             messager.iMessagerRemove( checkables );
@@ -289,7 +289,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             }
         }
         if( display && !Object.values( Forms.C.ShowStatus ).includes( display )){
-            console.warn( 'pwix:forms unexpected status definition', this.name(), display );
+            logger.warn( 'Checker.confDisplayStatus() unexpected status definition', this.name(), display );
             display = Forms.configure().fieldStatusShow;
         }
         return display;
@@ -425,7 +425,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Checker} this Checker instance
      */
     constructor( instance, args={} ){
-        _trace( 'Checker.Checker' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.Checker()', instance, args );
         assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is mandatory, must be a Blaze.TemplateInstance instance');
         assert( !args || _.isObject( args ), 'when set, options must be a plain javascript Object' );
         if( args ){
@@ -484,7 +484,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         if( false ){
             const confId = this.confId();
             this.argInstance().view.onViewDestroyed( function(){
-                console.debug( 'onViewDestroyed', confId );
+                //console.debug( 'onViewDestroyed', confId );
             });
         }
 
@@ -504,7 +504,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             this.argInstance().autorun(() => {
                 const status = this.iStatusableStatus();
                 const validity = this.iStatusableValidity()
-                console.debug( 'Checker (autorun)', this.iCheckableId(), status, validity );
+                //console.debug( 'Checker (autorun)', this.iCheckableId(), status, validity );
             });
         }
 
@@ -524,7 +524,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Promise} which eventually resolves to the validity boolean flag of the checker
      */
     async check( opts={} ){
-        _trace( 'Checker.check' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.check()', opts );
         if( this.enabled()){
             let valid = true;
             let promises = [];
@@ -566,8 +566,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Clears the validity indicators
      */
     clear(){
-        _trace( 'Checker.clear' );
-        console.warn( 'clear() is obsoleted, please use messagerClear()' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.clear()' );
+        logger.warn( 'Checker.clear() is obsoleted, please use messagerClear()' );
         this.messagerClear();
     }
 
@@ -577,7 +577,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - propagateDown: whether to also recursively clear all children, defaulting to false
      */
     clearPanel( opts={} ){
-        _trace( 'Checker.clearPanel' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.clearPanel()', opts );
         const clearField = function( name, field ){
             field.iRunValueTo({}, { value: null });
         };
@@ -594,7 +594,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  Note that this function will not change any field status, but is only capable of pushing new error messages
      */
     async crossCheck( opts={} ){
-        _trace( 'Checker.crossCheck' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.crossCheck()', opts );
         this.hierarchyUp( '_crossCheck', opts );
     }
 
@@ -605,7 +605,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Add a crossCheckFn function to this checker
      */
     async crossCheckFn( fn, args ){
-        _trace( 'Checker.crossCheck' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.crossCheckFn()', fn, args );
         this.#crossCheckArray = this.#crossCheckArray || [];
         this.#crossCheckArray.push({ fn: fn, args: args });
     }
@@ -616,7 +616,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Boolean} whether checks are enabled
      */
     enabled( enabled ){
-        _trace( 'Checker.enabled' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.enabled()', enabled );
         if( enabled === true || enabled === false ){
             this.#conf.enabled = enabled;
         }
@@ -628,9 +628,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {ITypedMessage} tm
      */
     errorSet( tm ){
-        _trace( 'Checker.errorSet' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.errorSet()', tm );
         // in our model, only fields have TypedMessage's
-        console.warn( 'errorSet() is obsoleted, please use messagerPush()' );
+        logger.warn( 'Checker.errorSet() is obsoleted, please use messagerPush()' );
         this.messagerPush( tm );
     }
 
@@ -638,7 +638,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Try to explain the current status and validity
      */
     explain(){
-        _trace( 'Checker.explain' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.explain()' );
         this._explainRec( 'This checker', '' );
     }
 
@@ -652,7 +652,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {Any} args to be passed to the callback
      */
     fieldsIterate( cb, args=null ){
-        _trace( 'Checker.fieldsIterate' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.fieldsIterate()', cb, args );
         const self = this;
         const _iterate = function( name, spec, arg ){
             assert( spec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+spec );
@@ -681,7 +681,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Clears the messages stack
      */
     messagerClear(){
-        _trace( 'Checker.messagerClear' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerClear()' );
         this.hierarchyUp( '_messagerClear' );
     }
 
@@ -689,7 +689,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Clears the messages stack from the messages exclusively pushed by me
      */
     messagerClearMine(){
-        _trace( 'Checker.messagerClearMine' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerClearMine()' );
         this.messagerRemove( this.iCheckableId());
     }
 
@@ -697,7 +697,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @summary Dump the Messager content in the display order
      */
     messagerDump(){
-        _trace( 'Checker.messagerDump' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerDump()' );
         this.hierarchyUp( '_messagerDump' );
     }
 
@@ -706,8 +706,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {String} id the emitter ICheckable identifier, defaulting to this Checker
      */
     messagerPush( tms, id=null ){
-        _trace( 'Checker.messagerPush' );
-        //console.debug( 'messagerPush', this.confName(), this.iCheckableId(), tms, id );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerPush()', tms, id );
         this.hierarchyUp( '_messagerPush', tms, id || this.iCheckableId());
     }
 
@@ -716,7 +715,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {String|Array<String>} ids
      */
     messagerRemove( ids ){
-        _trace( 'Checker.messagerRemove' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerRemove()', ids );
         this.hierarchyUp( '_messagerRemoveById', ids );
     }
 
@@ -724,7 +723,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {String} the configured name, or null
      */
     name(){
-        _trace( 'Checker.name' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.name()' );
         return this.confName();
     }
 
@@ -732,7 +731,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Panel} the configured panel, or null
      */
     panel(){
-        _trace( 'Checker.panel' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.panel()' );
         return this.confPanel();
     }
 
@@ -743,7 +742,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - remove all this subtree from the hierarchy tree
      */
     removeMe(){
-        _trace( 'Checker.removeMe' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.removeMe()' );
         // cleanup the messages stack from this checker
         this._messagerRemove();
         // detach from the hierarchy tree
@@ -761,7 +760,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {Checker} this instance
      */
     setForm( item, opts={} ){
-        _trace( 'Checker.setForm' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.setForm()', item, opts );
         const self = this;
         const cb = function( name, field ){
             field.iRunValueTo( item, opts );
@@ -778,7 +777,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {Boolean} valid
      */
     setValid( valid ){
-        _trace( 'Checker.setValid' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.setValid()', valid );
         this.iStatusableStatus( FieldStatus.C.NONE );
         this.iStatusableValidity( valid );
         this.statusConsolidate({ ignoreFields: true });
@@ -788,7 +787,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {FieldStatus} the current (consolidated) check status of this panel
      */
     status(){
-        _trace( 'Checker.status' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.status()' );
         return this.iStatusableStatus();
     }
 
@@ -797,7 +796,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @returns {FieldStatus} the current (consolidated) check status of the fields
      */
     statusByFields( fields ){
-        _trace( 'Checker.statusByFields' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.statusByFields()', fields );
         let statuses = [ FieldStatus.C.NONE ];
         const cb = function( name, field ){
             if( fields.includes( name )){
@@ -814,7 +813,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  A reactive data source.
      */
     validity(){
-        _trace( 'Checker.validity' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.validity()' );
         return this.iStatusableValidity();
     }
 }

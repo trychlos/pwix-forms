@@ -21,9 +21,12 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
 import { TM } from 'meteor/pwix:typed-message';
 
 import { Base } from './base.class.js';
+
+const logger = Logger.get();
 
 export class Message extends mix( Base ).with(){
 
@@ -52,7 +55,7 @@ export class Message extends mix( Base ).with(){
      * @returns {Message} this instance
      */
     constructor( tm, id ){
-        _trace( 'Message.Message' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Message.Message()', tm, id );
         assert( tm instanceof TM.TypedMessage, 'tm must be a TypedMessage, got '+tm );
         assert( id && _.isString( id ), 'id must be a non-empty string identifier, got '+id );
         super( ...arguments );
@@ -68,7 +71,7 @@ export class Message extends mix( Base ).with(){
      * @returns {String} the ICheckable identifier
      */
     emitter(){
-        _trace( 'Message.emitter' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Message.emitter()' );
         return this.#id;
     }
 
@@ -78,7 +81,7 @@ export class Message extends mix( Base ).with(){
      * @returns {Integer} the epoch time at which the message has been pushed
      */
     epoch(){
-        _trace( 'Message.epoch' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Message.epoch()' );
         return this.#epoch;
     }
 
@@ -88,7 +91,7 @@ export class Message extends mix( Base ).with(){
      * @returns {TypedMessage} the TypedMessage
      */
     tm(){
-        _trace( 'Message.tm' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Message.tm()' );
         return this.#tm;
     }
 }

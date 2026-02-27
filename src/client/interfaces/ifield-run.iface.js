@@ -9,7 +9,7 @@ const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { Blaze } from 'meteor/blaze';
-import { TM } from 'meteor/pwix:typed-message';
+import { Logger } from 'meteor/pwix:logger';
 import { UIUtils } from 'meteor/pwix:ui-utils';
 
 import '../../common/js/index.js';
@@ -21,6 +21,8 @@ import { FieldStatus } from '../../common/definitions/field-status.def.js';
 import { FieldType } from '../../common/definitions/field-type.def.js'
 
 import { Checker } from '../classes/checker.class.js';
+
+const logger = Logger.get();
 
 export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -40,7 +42,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     //  checkRes: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
     async _checkAfter( opts, value, checkRes ){
-        _trace( 'IFieldRun._checkAfter' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkAfter()', opts, value, checkRes );
         checkRes = this.iCheckableResult( checkRes );
         // consolidate received TypedMessage's into a single validity and status for the field
         this._checkTMConsolidate( value, checkRes );
@@ -61,7 +63,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     // some initializations and clearings before any check of the field
     _checkBefore( opts ){
-        _trace( 'IFieldRun._checkBefore' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkBefore()', opts );
         // do not reset anything reactive to not flicker the display
         //  but still remove bootstrap classes (as no reactivity is based on that)
         const $node = this.iRunUINode();
@@ -77,8 +79,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  Do not display any status if the field is empty
      */
     _checkTMConsolidate( value, res ){
-        _trace( 'IFieldRun._checkConsolidate' );
-        //if( this.name() === 'identitiesEmailAddressesMinCount' ) console.debug( 'value', value, 'res', res );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkConsolidate()', value, res );
         let valid = true;
         let status = FieldStatus.C.NONE;
         if( res ){
@@ -97,8 +98,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     break
             }
         }
-        //console.debug( '_checkTMConsolidate', this.name(), value, res, status, valid );
-        //if( this.name() === 'identitiesEmailAddressesMinCount' ) console.debug( 'specStatus', this.iSpecStatus(), 'status', status, 'valid', valid );
         // do not change the field status if it has been defined as transparent
         if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
             this.iStatusableStatus( status );
@@ -111,12 +110,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @param {Checker} checker
      */
     async _initPrefixType( checker ){
-        _trace( 'IFieldRun._initPrefixType' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initPrefixType()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowType();
         const type = this.iSpecType();
         const $node = this.iRunUINode();
-        //console.debug( this.name(), 'display', display, 'type', type, FieldType.known( type ), $node );
         if( display === true && type && FieldType.known( type ) && $node ){
             const data = {
                 type: type
@@ -132,7 +130,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {Promise} which will resolve when the DIV is actually present in the DOM, or null
      */
     async _initRightSibling( checker ){
-        _trace( 'IFieldRun._initRightSibling' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initRightSibling()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const siblingClass = checker.confRightSiblingClass();
         const $node = this.iRunUINode();
@@ -145,15 +143,14 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             if( !$siblings.length ){
                 $node.after( '<div class="'+siblingClass+'"></div>' );
                 res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
-                    //console.debug( 'got waitedSelector', waitedSelector );
                 });
             }
         } else {
             if( !siblingClass ){
-                console.warn( 'no sibling class' );
+                logger.warn( 'IFieldRun.initRightSibling() no sibling class' );
             }
             if( !$node ){
-                console.warn( 'unable to get UI node for', this.name());
+                logger.warn( 'IFieldRun.initRightSibling() unable to get UI node for', this.name());
             }
         }
         return res;
@@ -164,7 +161,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @param {Checker} checker
      */
     async _initSuffixStatus( checker ){
-        _trace( 'IFieldRun._initSuffixStatus' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initSuffixStatus()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
         if( display === Forms.C.ShowStatus.INDICATOR || display === Forms.C.ShowStatus.TRANSPARENT ){
@@ -178,7 +175,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 const data = {
                     statusRv: this.iStatusableStatusRv()
                 };
-                //console.debug( this.name(), this.iStatusableStatus(), $parentNode, $sibling );
                 this.#views.push( Blaze.renderWithData( Template.FormsStatusIndicator, data, $parentNode[0], $sibling[0] ));
             }
         }
@@ -190,21 +186,20 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
      */
     async _initWrapParent( checker ){
-        _trace( 'IFieldRun._initWrapParent' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initWrapParent()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const parentClass = checker.confParentClass();
         const $node = this.iRunUINode();
         let res = null;
         if( parentClass && $node ){
-            //console.debug( 'parentClass', parentClass, '$node', $node );
             const $parent = $node.parent();
             assert( $parent && $parent.length, 'unexpected parent not found' );
             if( !$parent.hasClass( parentClass )){
-                //console.debug( 'initWrapParent', this.name());
+                //logger.debug( 'IFieldRun.initWrapParent', this.name());
                 $node.wrap( '<div class="'+parentClass+'"></div>' );
                 const waitedSelector = '.'+parentClass+' '+this.iSpecSelector();
                 res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
-                    //console.debug( 'got waitedSelector', waitedSelector );
+                    //logger.debug( 'got waitedSelector', waitedSelector );
                 });
             }
         }
@@ -215,7 +210,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {IFieldRun} the instance
      */
     constructor( name, args ){
-        _trace( 'IFieldRun.IFieldRun' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.IFieldRun()' );
         super( ...arguments );
         return this;
     }
@@ -228,7 +223,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {Promise} which resolve to the true|false validity status for this field
      */
     async iFieldRunCheck( opts={} ){
-        _trace( 'IFieldRun.iFieldRunCheck', this.name());
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunCheck()', this.name(), opts );
         let res = true;
         const checker = this.iRunChecker();
         if( checker.enabled()){
@@ -237,7 +232,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             this._checkBefore( opts );
             // if a check function has been defined, calls it (warning once if not exists)
             const checkFn = this.iSpecCheck();
-            //console.debug( this.name(), checkFn );
             if( checkFn ){
                 opts.id = checker.confId();
                 const value = this.iRunValueFrom();
@@ -262,11 +256,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @param {Checker} checker
      */
     async iFieldRunInit( checker ){
-        _trace( 'IFieldRun.iFieldRunInit' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunInit()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
-        //if( checker.name() === 'identity_address_row' ){
-        //    console.debug( this.name(), this.iCheckableId());
-        //}
         this.iRunChecker( checker );
         let promises = [];
         const self = this;
@@ -286,14 +277,14 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  - check the field (if the checker is enabled)
      */
     iFieldRunInputHandler(){
-        _trace( 'IFieldRun.iFieldRunInputHandler' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunInputHandler()' );
         this.iFieldRunCheck();
     }
 
     // getter/setter
     // the attached checker
     iRunChecker( checker ){
-        _trace( 'IFieldRun.iRunChecker' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunChecker()', checker );
         if( checker !== undefined ){
             assert( checker && checker instanceof Checker, 'checker must be an instance of Checker' );
             this.#checker = checker;
@@ -311,7 +302,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  NB: do not cache the result to handle dynamic UIs
      */
     iRunInputNode( attrs='' ){
-        _trace( 'IFieldRun.iRunInputNode' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunInputNode()', attrs );
         const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
         const checker = this.iRunChecker();
         const instance = checker.argInstance();
@@ -333,14 +324,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  NB: do not cache the result to handle dynamic UIs
      */
     iRunShowStatus(){
-        _trace( 'IFieldRun.iRunShowStatus' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunShowStatus()' );
         let display = this.iRunChecker().confDisplayStatus();
-        //console.debug( 'iRunShowStatus confDisplayStatus', this.name(), display );
         const overridable = Forms.configure().showStatusOverridable;
-        //console.debug( 'iRunShowStatus overridable', this.name(), overridable );
         if( overridable ){
             const status = this.iSpecStatus();
-            //console.debug( 'iRunShowStatus iSpecStatus', this.name(), status );
             if( status ){
                 display = status;
             }
@@ -354,13 +342,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  NB: do not cache the result to handle dynamic UIs
      */
     iRunShowType(){
-        _trace( 'IFieldRun.iRunShowType' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunShowType()' );
         let display = this.iRunChecker().confDisplayType();
         const overridable = Forms.configure().showTypeOverridable;
-        //console.debug( 'iRunShowType', this.name(), 'confDisplayType', display, 'overridable', overridable );
         if( overridable ){
             const status = this.iSpecType();
-            //console.debug( 'iRunShowType iSpecType', this.name(), status );
             if( status && FieldType.known( status )){
                 display = ( status !== FieldType.C.NONE );
             }
@@ -373,7 +359,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  May return null if the node doesn't yet exist in the DOM
      */
     iRunUINode(){
-        _trace( 'IFieldRun.iRunUINode' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunUINode()' );
         const checker = this.iRunChecker();
         const instance = checker.argInstance();
         const selector = this.iSpecSelector();
@@ -394,10 +380,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @returns {String|Boolean} the value for this field
      */
     iRunValueFrom(){
-        _trace( 'IFieldRun.iRunValueFrom' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueFrom()' );
         let $node = this.iRunInputNode();
         let value = null;
-        //console.debug( this.name(), $node );
         if( $node && $node.length ){
             const defn = this._defn();
             if( defn.formFrom ){
@@ -418,7 +403,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 } else if( tagName === 'DIV' && $node[0].isContentEditable ){
                     value = $node.text();
                 }
-                //console.debug( 'iRunValueFrom', this.name(), $node, value );
                 /*
                 // a small hack to handle 'true' and 'false' values from coreYesnoSelect
                 const $select = $node.closest( '.core-yesno-select' );
@@ -440,7 +424,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  - value: the value to be considered, defaulting to those returned by iSpecValueFrom()
      */
     iRunValueTo( item, opts={} ){
-        _trace( 'IFieldRun.iRunValueTo' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueTo()', item, opts );
         const defn = this._defn();
         const $node = this.iRunInputNode();
         if( $node ){
@@ -452,8 +436,6 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 defn.form_formTo( $node, item );
             } else {
                 const value = Object.keys( opts ).includes( 'value' ) ? opts.value : this.iSpecValueFrom( item );
-                //console.debug( 'item', item, 'field', this.name(), 'value', value );
-                //console.warn( 'iRunValueTo', this.name(), value );
                 $node.val( value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );

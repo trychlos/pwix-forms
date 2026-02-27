@@ -23,7 +23,11 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
+
 import '../../common/js/index.js';
+
+const logger = Logger.get();
 
 export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -40,7 +44,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {IFieldSpec} the instance
      */
     constructor( name, args ){
-        _trace( 'IFieldSpec.IFieldSpec' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.IFieldSpec()', name, args );
         super( ...arguments );
         return this;
     }
@@ -49,13 +53,13 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {Function|null} the check function, or null
      */
     iSpecCheck(){
-        _trace( 'IFieldSpec.iSpecCheck', this.name());
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecCheck()' );
         let res = null;
         const defn = this._defn();
         if( defn.form_check && _.isFunction( defn.form_check )){
             res = defn.form_check;
         } else if( defn.form_check !== false && Meteor.isDevelopment && !this.#warned ){
-            console.warn( '[DEV] no check function provided for \''+this.name()+'\'' );
+            logger.warn( 'IFieldSpec.iSpecCheck() no check function provided for \''+this.name()+'\'' );
             this.#warned = true;
         }
         return res;
@@ -66,7 +70,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      *  NB: the containing Checker must be instanciated with an 'id()' function when array-ed
      */
     iSpecIsArrayed(){
-        _trace( 'IFieldSpec.iSpecIsArrayed' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpeIsArrayed()' );
         const name = this.name();
         return name.match( /\.\$\./ ) !== null;
     }
@@ -75,7 +79,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {String} the js css selector, or null
      */
     iSpecSelector(){
-        _trace( 'IFieldSpec.iSpecSelector' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecSzelector()' );
         const defn = this._defn();
         return defn.js || null;
     }
@@ -86,11 +90,11 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {String} a value from Forms.C.ShowStatus, or null
      */
     iSpecStatus(){
-        _trace( 'IFieldSpec.iSpecStatus' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecStatus()' );
         const defn = this._defn();
         const status = defn.form_status || null;
         if( status && !Object.values( Forms.C.ShowStatus ).includes( status )){
-            console.warn( 'pwix:forms unexpected form_status', this.name(), status );
+            logger.warn( 'IFieldSpec.iSpecStatus() unexpected form_status', this.name(), status );
             status = null;
         }
         return status;
@@ -100,7 +104,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {String} the type of the field (mandatory/optional/none), or null
      */
     iSpecType(){
-        _trace( 'IFieldSpec.iSpecType' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecType()' );
         const defn = this._defn();
         return defn.form_type || null;
     }
@@ -117,7 +121,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      * @returns {Any} the value got from the item
      */
     iSpecValueFrom( item ){
-        _trace( 'IFieldSpec.iSpecValueFrom' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecValueFrom()' );
         const defn = this._defn();
         let value = null;
         if( defn.form_itemFrom ){
@@ -126,7 +130,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         } else {
             value = item[this.name()];
         }
-        //console.debug( 'iSpecValueFrom', this.name(), value );
         return value;
     }
 });

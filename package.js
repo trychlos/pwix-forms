@@ -1,6 +1,6 @@
 Package.describe({
     name: 'pwix:forms',
-    version: '1.5.1-rc.0',
+    version: '1.6.0-rc.0',
     summary: 'Meteor forms management',
     git: 'https://github.com/trychlos/pwix-forms.git',
     documentation: 'README.md'
@@ -28,6 +28,7 @@ function configure( api ){
     api.use( 'ecmascript' );
     api.use( 'less@4.0.0', 'client' );
     api.use( 'pwix:field@1.0.0-rc' );
+    api.use( 'pwix:logger@1.0.0-rc' );
     api.use( 'pwix:typed-message@1.2.0' );
     api.use( 'pwix:ui-bootstrap5@2.0.0' );
     api.use( 'pwix:ui-fontawesome6@1.0.0' );

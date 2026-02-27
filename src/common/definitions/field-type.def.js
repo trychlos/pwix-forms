@@ -4,7 +4,10 @@
 
 import _ from 'lodash';
 
+import { Logger } from 'meteor/pwix:logger';
 import { pwixI18n } from 'meteor/pwix:i18n';
+
+const logger = Logger.get();
 
 export const FieldType = {
     C: {
@@ -57,7 +60,7 @@ _.merge( FieldType, {
     // check that the type is known
     _byType( type ){
         if( !Object.keys( FieldType.K ).includes( type )){
-            console.warn( 'FieldType: unknown type', type );
+            logger.warn( 'FieldType.byType() unknown type', type );
             return null;
         }
         return FieldType.K[type];

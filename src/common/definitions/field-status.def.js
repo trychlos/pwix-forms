@@ -4,7 +4,10 @@
 
 import _ from 'lodash';
 
+import { Logger } from 'meteor/pwix:logger';
 import { pwixI18n } from 'meteor/pwix:i18n';
+
+const logger = Logger.get();
 
 export const FieldStatus = {
     C: {
@@ -47,7 +50,7 @@ _.merge( FieldStatus, {
     // check that the type is known
     _byType( type ){
         if( !Object.keys( FieldStatus.K ).includes( type )){
-            console.warn( 'FieldStatus: unknown status', type );
+            logger.warn( 'FieldStatus.byType() unknown status', type );
             return null;
         }
         return FieldStatus.K[type];
@@ -86,7 +89,7 @@ _.merge( FieldStatus, {
                 return i;
             }
         }
-        console.error( 'status not ordered', status );
+        logger.error( 'FieldStatus.index() status not ordered', status );
         return -1;
     },
 

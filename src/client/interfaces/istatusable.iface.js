@@ -12,12 +12,15 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { TM } from 'meteor/pwix:typed-message';
 
 import '../../common/js/index.js';
 
 import { FieldStatus } from '../../common/definitions/field-status.def.js';
+
+const logger = Logger.get();
 
 export const IStatusable = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -35,7 +38,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      * @returns {IStatusable} the instance
      */
     constructor( name, args ){
-        _trace( 'IStatusable.IStatusable' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.IStatusable()', name, args );
         super( ...arguments );
         return this;
     }
@@ -47,7 +50,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      *  - valid: whether the result is valid or not
      */
     iStatusableConsolidate( tms ){
-        _trace( 'IStatusable.iStatusableConsolidate' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableConsolidate()', tms );
         //let valid = true;
         //let status = FieldStatus.C.NONE;
         let valid = this.iStatusableValidity();
@@ -60,11 +63,10 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
                 if( tm instanceof TM.TypedMessage ){
                     level = tm.iTypedMessageLevel();
                     // cf. man syslog 3: the higher the level, the lower the severity
-                    //console.debug( level, TM.MessageLevel.C.ERROR, TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
                     tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
                     valid &&= tmValid;
                 } else {
-                    console.warn( 'expected ITypedMessage, got', tm );
+                    logger.warn( 'IStatusable.iStatusableConsolidate() expected ITypedMessage, got', tm );
                 }
                 // compute the status
                 if( !tmValid ){
@@ -84,15 +86,13 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      * @returns {FieldStatus}
      */
     iStatusableStatus( status ){
-        _trace( 'IStatusable.iStatusableStatus' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableStatus()', status );
         if( status !== undefined ){
             const index = FieldStatus.index( status );
             if( index >= 0 ){
                 this.#status.set( status );
-                //console.warn( 'status change', this.iCheckableId(), status );
-                //console.warn( 'status change', this.name(), status );
             } else {
-                console.warn( 'unknwon status', status );
+                logger.warn( 'IStatusable.iStatusableStatus() unknwon status', status );
             }
         }
         return this.#status.get();
@@ -104,7 +104,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      *  Use case: outside of the IField interfaces, when the caller wants just use the indicator.
      */
     iStatusableStatusRv(){
-        _trace( 'IStatusable.iStatusableStatusRv' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableStatusRv()' );
         return this.#status;
     }
 
@@ -116,11 +116,10 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      * @returns {Boolean}
      */
     iStatusableValidity( valid ){
-        _trace( 'IStatusable.iStatusableValidity' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableValidity()', valid );
         if( valid !== undefined ){
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );
-            //console.warn( 'validity change', this.iCheckableId(), this.name(), valid );
         }
         return this.#validity.get();
     }

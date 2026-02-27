@@ -15,7 +15,11 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
+
 import '../../common/js/index.js';
+
+const logger = Logger.get();
 
 export const IMessager = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -26,7 +30,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @returns {IMessager} the instance
      */
     constructor(){
-        _trace( 'IMessager.IMessager' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.IMessager()' );
         super( ...arguments );
         return this;
     }
@@ -37,7 +41,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @summary Ask to clear the message(s) displayed in the message zone
      */
     iMessagerClear(){
-        _trace( 'IMessager.iMessagerClear' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerClear()' );
         this._save();
         this._reset();
     }
@@ -46,7 +50,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @summary Ask to clear the message(s) displayed in the message zone
      */
     iMessagerDump(){
-        _trace( 'IMessager.iMessagerDump' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerDump()' );
         this._dump();
     }
 
@@ -54,7 +58,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @returns {TypedMessage} the first pushed TypedMessage in level order
      */
     iMessagerFirst(){
-        _trace( 'IMessager.iMessagerFirst' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerFirst()' );
         return this._first();
     }
 
@@ -62,7 +66,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @returns {TypedMessage} the last pushed TypedMessage in level order
      */
     iMessagerLast(){
-        _trace( 'IMessager.iMessagerLast' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerLast()' );
         return this._last();
     }
 
@@ -72,7 +76,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @param {String} id the ICheckable identifier
      */
     iMessagerPush( tms, id ){
-        _trace( 'IMessager.iMessagerPush', tms, id );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerPush()', tms, id );
         this._removeById( id );
         this._push( tms, id );
     }
@@ -82,7 +86,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @param {String|Array<String>} ids a list of identifiers
      */
     iMessagerRemove( ids ){
-        _trace( 'IMessager.iMessagerRemove', ids );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerRemove()', ids );
         this._removeById( ids )
     }
 });

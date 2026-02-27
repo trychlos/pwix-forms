@@ -18,8 +18,12 @@
  *  - classes: classes to be added to the displayed message whatever be its type, defaulting to nothing
  */
 
+import { Logger } from 'meteor/pwix:logger';
+
 import './FormsMessager.html';
 import './FormsMessager.less';
+
+const logger = Logger.get();
 
 Template.FormsMessager.onRendered( function(){
 
@@ -27,7 +31,7 @@ Template.FormsMessager.onRendered( function(){
     if( false ){
         this.autorun(() => {
             const messager = Template.currentData().messager;
-            console.debug( 'messager', messager );
+            logger.debug( 'FormsMessager.onRendered() messager', messager );
         });
     }
 

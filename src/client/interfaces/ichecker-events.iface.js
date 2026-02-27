@@ -8,6 +8,10 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
+
+const logger = Logger.get();
+
 export const ICheckerEvents = DeclareMixin(( superclass ) => class extends superclass {
 
     // private data
@@ -16,7 +20,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
 
     // returns the FormField relative to the element which is the source of this event, or null
     _fieldSpecFromEvent( event ){
-        _trace( 'ICheckerEvents._fieldSpecFromEvent' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._fieldSpecFromEvent()' );
         let found = null;
         const instance = this.argInstance();
         const cb = function( name, spec ){
@@ -35,26 +39,24 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
     // - event is a jQuery.Event
     _inputHandler( event ){
-        _trace( 'ICheckerEvents._inputHandler', event );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._inputHandler()', event );
         const spec = this._fieldSpecFromEvent( event );
         if( spec ){
             spec.iFieldRunInputHandler();
         } else {
-            //console.debug( 'not handled here' );
         }
     }
 
     // validity handler
     _validityHandler( event ){
-        _trace( 'ICheckerEvents._validityHandler' );
-        console.debug( 'validityHandler', event );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._validityHandler()', event );
     }
 
     /**
      * @returns {ICheckerEvents} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckerEvents.ICheckerEvents' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents.ICheckerEvents()', name, args );
         super( ...arguments );
         return this;
     }
@@ -63,7 +65,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
      * @summary Install an input handler on the topmost node
      */
     eventInstallInputHandler(){
-        _trace( 'ICheckerEvents.eventInstallInputHandler' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents.eventInstallInputHandler()' );
         const $node = this.rtTopmost();
         const self = this;
         $node.on( 'input', ( event ) => { self._inputHandler( event ); });
@@ -73,7 +75,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
      * @summary Install the validity handler on the topmost node
      */
     eventInstallValidityHandler(){
-        _trace( 'ICheckerEvents.eventInstallValidityHandler' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents.eventInstallValidityHandler()' );
         const $node = this.rtTopmost();
         const self = this;
         const validityEvent = self.confValidityEvent();

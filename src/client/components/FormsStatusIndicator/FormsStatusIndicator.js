@@ -14,6 +14,7 @@
 
 const assert = require( 'assert' ).strict; // up to nodejs v16.x
 
+import { Logger } from 'meteor/pwix:logger';
 import { ReactiveVar } from 'meteor/reactive-var';
 
 import { FieldStatus } from '../../../common/definitions/field-status.def.js';
@@ -21,9 +22,10 @@ import { FieldStatus } from '../../../common/definitions/field-status.def.js';
 import './FormsStatusIndicator.html';
 import './FormsStatusIndicator.less';
 
+const logger = Logger.get();
+
 Template.FormsStatusIndicator.onRendered( function(){
     const self = this;
-    //console.debug( this );
 
     self.autorun(() => {
         self.$( '.FormsStatusIndicator .fcsi-display' ).removeClass( 'visible' ).addClass( 'hidden' );
@@ -38,7 +40,7 @@ Template.FormsStatusIndicator.onRendered( function(){
     if( false ){
         self.autorun(() => {
             const status = Template.currentData().statusRv && Template.currentData().statusRv.get();
-            console.debug( 'status', status );
+            logger.debug( 'status', status );
         });
     }
 });

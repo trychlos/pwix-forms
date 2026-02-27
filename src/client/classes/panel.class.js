@@ -9,6 +9,7 @@ const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
 import { Field } from 'meteor/pwix:field';
+import { Logger } from 'meteor/pwix:logger';
 
 import { Base } from './base.class.js';
 import { FormField } from './form-field.class.js';
@@ -17,6 +18,8 @@ import { IEnumerable } from '../interfaces/ienumerable.iface.js';
 import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
 import { IFieldRun } from '../interfaces/ifield-run.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
+
+const logger = Logger.get();
 
 export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
 
@@ -83,7 +86,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
                     defn = _.merge( {}, spec.def(), value );
                     // warn once
                 } else if( !Object.keys( self.#warneds ).includes( key )){
-                    console.warn( 'unknown name', key, 'ignored' );
+                    logger.warn( 'Panel.Panel() unknown name \''+key+'\' ignored' );
                     self.#warneds[key] = true;
                 }
             }
@@ -95,7 +98,6 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
         // setup the new enumeration reference as a keyed object
         this.iEnumerableBase( this.#set );
 
-        //console.debug( this );
         return this;
     }
 
@@ -104,7 +106,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * @returns {FormField} the definition for this named field, or null
      */
     byName( name ){
-        _trace( 'Panel.byName' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.byName()', name );
         let spec = null;
         const cb = function( fieldName, fieldSpec, arg ){
             assert( fieldSpec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+fieldSpec );
@@ -122,7 +124,7 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      * @returns {Object} an object indexed by field names with field values
      */
     objectData( args=null ){
-        _trace( 'Panel.objectData' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.objectData()', args );
         let result = {};
         const self = this;
         const _iterate = function( name, spec, arg ){

@@ -11,12 +11,15 @@ const assert = require( 'assert' ).strict; // up to nodejs v16.x
 import mix from '@vestergaard-company/js-mixin';
 
 import { Field } from 'meteor/pwix:field';
+import { Logger } from 'meteor/pwix:logger';
 import { Tracker } from 'meteor/tracker';
 
 import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { IFieldRun } from '../interfaces/ifield-run.iface.js';
 import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
 import { IStatusable } from '../interfaces/istatusable.iface.js';
+
+const logger = Logger.get();
 
 export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICheckable, IStatusable ){
 
@@ -48,11 +51,10 @@ export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICh
         // track field status and validity
         if( false ){
             Tracker.autorun(() => {
-                console.debug( this.name(), this.iStatusableStatus(), this.iStatusableValidity());
+                logger.debug( 'FormField.FormField()', this.name(), this.iStatusableStatus(), this.iStatusableValidity());
             });
         }
 
-        //console.debug( this );
         return this;
     }
 }

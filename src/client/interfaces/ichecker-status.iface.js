@@ -10,7 +10,11 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
+
 import { FieldStatus } from '../../common/definitions/field-status.def.js'
+
+const logger = Logger.get();
 
 export const ICheckerStatus = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -23,7 +27,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  Update the relevant Checker data
      */
     _consolidateStatusCheckersUp(){
-        _trace( 'ICheckerStatus._consolidateStatusCheckersUp' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus._consolidateStatusCheckersUp()' );
         const parent = this.confParent();
         if( parent ){
             let valid = true;
@@ -32,7 +36,6 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 valid &&= child.iStatusableValidity();
                 statuses.push( child.iStatusableStatus());
             });
-            //console.debug( 'pushing', valid );
             parent.iStatusableValidity( valid );
             parent.iStatusableStatus( FieldStatus.worst( statuses ));
             parent._consolidateStatusCheckersUp();
@@ -46,7 +49,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  cf. Checker.check for a description of the known options
      */
     _consolidateStatusFields( opts ){
-        _trace( 'ICheckerStatus._consolidateStatusFields' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus._consolidateStatusFields()', opts );
         if( opts.ignoreFields !== true ){
             let valid = true;
             let statuses = [ FieldStatus.C.NONE ];
@@ -65,7 +68,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      * @returns {ICheckerStatus} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckerStatus.ICheckerStatus' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.ICheckerStatus()', name, args );
         super( ...arguments );
         return this;
     }
@@ -78,10 +81,9 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      * @returns {Boolean} the true|false validity flag of this checker
      */
     statusConsolidate( opts ){
-        _trace( 'ICheckerStatus.statusConsolidate' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.statusConsolidate()', opts );
         this._consolidateStatusFields( opts );
         this._consolidateStatusCheckersUp();
-        //console.debug( 'setting checker status, validity to', this.iCheckableId(), this.iStatusableStatus(), this.iStatusableValidity());
         return this.iStatusableValidity();
     }
 
@@ -89,11 +91,10 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      * @summary Setup an autorun to update the OK button
      */
     statusInstallOkAutorun(){
-        _trace( 'ICheckerStatus.statusInstallOkAutorun' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.statusInstallOkAutorun()' );
         const self = this;
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
-            //console.debug( 'running ok autorun', self.iCheckableId(), self.name(), valid );
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
                 $ok.prop( 'disabled', !valid );

@@ -8,7 +8,11 @@ import _ from 'lodash';
 const assert = require( 'assert' ).strict;
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { Logger } from 'meteor/pwix:logger';
+
 import { Checker } from '../classes/checker.class';
+
+const logger = Logger.get();
 
 export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends superclass {
 
@@ -29,7 +33,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @returns {ICheckerHierarchy} the instance
      */
     constructor( name, args ){
-        _trace( 'ICheckerHierarchy.ICheckerHierarchy' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.ICheckerHierarchy()' );
         super( ...arguments );
         return this;
     }
@@ -38,7 +42,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @summary Register against the parent (if any)
      */
     hierarchyRegister(){
-        _trace( 'ICheckerHierarchy.hierarchyRegisterParent' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRegister()' );
         const parent = this.confParent();
         if( parent ){
             parent.hierarchyRegisterChild( this );
@@ -50,7 +54,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @param {Checker} child
      */
     hierarchyRegisterChild( child ){
-        _trace( 'ICheckerHierarchy.hierarchyRegisterChild', child );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRegisterChild()', child );
         assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
         this.#children.push( child );
     }
@@ -60,7 +64,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @param {Checker} parent
      */
     hierarchyRemove( parent ){
-        _trace( 'ICheckerHierarchy.hierarchyRemove' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRemove()', parent );
         assert( parent && parent instanceof Checker, 'expects an instance of Checker, got '+parent );
         parent.hierarchyRemoveChild( this );
     }
@@ -69,7 +73,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @summary Unregister against the parent (if any)
      */
     hierarchyRemoveChild( child ){
-        _trace( 'ICheckerHierarchy.hierarchyRemoveChild' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRemoveChild()', child );
         assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
         const removedId = child.confId();
         const children = this.rtChildren();
@@ -83,7 +87,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
         if( found >= 0 ){
             children.splice( found, 1 );
         } else {
-            console.warn( 'hierarchyRemoveChild: id not found', removedId );
+            logger.warn( 'ICheckerHierarchy.hierarchyRemoveChild() id not found', removedId );
         }
     }
 
@@ -93,12 +97,12 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @param {Any} args to pass to the function
      */
     hierarchyUp( fn ){
-        _trace( 'ICheckerHierarchy.hierarchyUp' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyUp()' );
         if( this.enabled()){
             let args = [ ...arguments ];
             args.shift();
             if( false && fn === '_messagerPush' && args.length ){
-                console.debug( 'hierarchyUp', this.iCheckableId(), fn, this.confName(), args );
+                logger.debug( 'ICheckerHierarchy.hierarchyUp()', this.iCheckableId(), fn, this.confName(), args );
             }
             // apply the function to this checker
             if( this[fn] ){
@@ -110,7 +114,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
                 parent.hierarchyUp( ...arguments );
             }
         } else {
-            console.warn( 'pwix:forms stopping the up propagation on disabled', this.confName());
+            logger.warn( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
         }
     }
 
@@ -118,7 +122,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @returns <Array> of Checker's children, maybe empty
      */
     rtChildren(){
-        _trace( 'ICheckerHierarchy.rtChildren' );
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.rtChildren()' );
         return this.#children;
     }
 });
