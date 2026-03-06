@@ -12,7 +12,7 @@
  *  - title: if set, a text to replace the default title
  */
 
-const assert = require( 'assert' ).strict; // up to nodejs v16.x
+import { strict as assert } from 'node:assert'; // up to nodejs v16.x
 
 import { Logger } from 'meteor/pwix:logger';
 import { ReactiveVar } from 'meteor/reactive-var';

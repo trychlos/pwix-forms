@@ -8,6 +8,7 @@
 
     - configure() now warns for unmanaged keys
     - Use pwix:logger universal logger, thus bumping minor candidate version number
+    - Use assert ESM module from node instead of CJS version
 
 ### 1.5.0
 
