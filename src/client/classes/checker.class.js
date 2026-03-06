@@ -104,7 +104,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
    };
     #conf = {};
 
-    // an array of crossCheckFn for this checker
+    // an array of crossCheckRegisterFn for this checker
     #crossCheckArray = null;
 
     // runtime data
@@ -439,7 +439,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string, got '+args.validityEvent );
             assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string, got '+args.parentClass );
             assert( !Object.keys( args ).includes( 'enabled' ) || _.isBoolean( args.enabled ), 'when set, enabled must be a true|false Boolean, got '+args.enabled );
-            assert( !args.crossCheckFn || _.isFunction( args.crossCheckFn ) || _.isArray( args.crossCheckFn ), 'when set, crossCheckFn must be a function or an array of functions, got '+args.crossCheckFn );
+            assert( !args.crossCheckRegisterFn || _.isFunction( args.crossCheckRegisterFn ) || _.isArray( args.crossCheckRegisterFn ), 'when set, crossCheckRegisterFn must be a function or an array of functions, got '+args.crossCheckRegisterFn );
         }
 
         super( ...arguments );
@@ -452,14 +452,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // build the configuration
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
-        // crossCheckFn is pushed to an array (the crossCheckFn() setter is able to push other functions if this same array)
-        if( args.crossCheckFn ){
-            if( _.isFunction( args.crossCheckFn )){
-                this.#crossCheckArray = [{ fn: args.crossCheckFn, args: this.confData() }];
+        // crossCheckRegisterFn is pushed to an array (the crossCheckRegisterFn() setter is able to push other functions if this same array)
+        if( args.crossCheckRegisterFn ){
+            if( _.isFunction( args.crossCheckRegisterFn )){
+                this.#crossCheckArray = [{ fn: args.crossCheckRegisterFn, args: this.confData() }];
             } else {
-                assert( _.isArray( args.crossCheckFn ), 'when set, crossCheckFn must be a function or an array of functions, got '+args.crossCheckFn );
+                assert( _.isArray( args.crossCheckRegisterFn ), 'when set, crossCheckRegisterFn must be a function or an array of functions, got '+args.crossCheckRegisterFn );
                 this.#crossCheckArray = [];
-                args.crossCheckFn.forEach(( it ) => {
+                args.crossCheckRegisterFn.forEach(( it ) => {
                     this.#crossCheckArray.push({ fn: it, args: this.confData() });
                 });
             }
@@ -531,12 +531,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             // check the children if any
             const children = this.rtChildren();
             if( children && children.length ){
-                children.forEach(( child ) => {
+                for await( const child of children ){
                     promises.push( child.check( opts ).then(( v ) => {
                         valid &&= v;
                         return valid;
                     }));
-                });
+                }
             }
             // check the fields of this one
             // crossed checks are only called at last if the fields are all valid
@@ -600,12 +600,12 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * Setter
-     * @param {Function} fn a crossCheckFn function
+     * @param {Function} fn a crossCheckRegisterFn function
      * @param {Any} args the arguments to be called
-     * @summary Add a crossCheckFn function to this checker
+     * @summary Add a crossCheckRegisterFn function to this checker
      */
-    async crossCheckFn( fn, args ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.crossCheckFn()', fn, args );
+    crossCheckRegisterFn( fn, args ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.crossCheckRegisterFn()', fn, args );
         this.#crossCheckArray = this.#crossCheckArray || [];
         this.#crossCheckArray.push({ fn: fn, args: args });
     }

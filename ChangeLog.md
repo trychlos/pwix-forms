@@ -9,6 +9,7 @@
     - configure() now warns for unmanaged keys
     - Use pwix:logger universal logger, thus bumping minor candidate version number
     - Use assert ESM module from node instead of CJS version
+    - Review async functions
 
 ### 1.5.0
 
@@ -30,7 +31,7 @@
     Release date: 2024-11-19
 
     - Introduce Forms.FieldType.C.TRANSPARENT so that NONE and TRANSPARENT are both possible and different semantics, thus bumping minor candidate version number
-    - Extend crossCheckFn instanciation parameter to also accept an array of functions
+    - Extend crossCheckRegisterFn instanciation parameter to also accept an array of functions
     - Check functions now receive the Checker instance as an option member
     - Define new Checker.panel() and Panel.objectData() methods
     - Fix the crossChecks behaviours
@@ -68,7 +69,7 @@
     - Fix configuration overrides
     - Fix null data context in FormsStatusIndicator component
     - Extend the FormsStatusIndicator component to be able to act as a button
-    - Define 'crossCheckFn' parameter to Checker instanciation
+    - Define 'crossCheckRegisterFn' parameter to Checker instanciation
 
 ### 1.2.0
 

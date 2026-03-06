@@ -41,7 +41,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     // consolidate the result of the defined check function
     //  checkRes: the result of the checkFn function, is null, or a TypedMessage, or an array of TypedMessage's
     //  cf. Checker.check for a description of known options
-    async _checkAfter( opts, value, checkRes ){
+    _checkAfter( opts, value, checkRes ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkAfter()', opts, value, checkRes );
         checkRes = this.iCheckableResult( checkRes );
         // consolidate received TypedMessage's into a single validity and status for the field
@@ -109,7 +109,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a fieldtype indicator before the field if it is defined
      * @param {Checker} checker
      */
-    async _initPrefixType( checker ){
+    _initPrefixType( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initPrefixType()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowType();
@@ -127,7 +127,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /*
      * @summary Insert an empty DIV in the DOM to prepare future potential status indicator insertion
      * @param {Checker} checker
-     * @returns {Promise} which will resolve when the DIV is actually present in the DOM, or null
+     * @returns {Node} the DIV when actually present in the DOM, or null
      */
     async _initRightSibling( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initRightSibling()', checker );
@@ -142,8 +142,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             const $siblings = $parent.find( waitedSelector );
             if( !$siblings.length ){
                 $node.after( '<div class="'+siblingClass+'"></div>' );
-                res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
-                });
+                res = await UIUtils.DOM.waitFor( waitedSelector );
             }
         } else {
             if( !siblingClass ){
@@ -160,7 +159,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a FieldStatus indicator after the field if it is defined
      * @param {Checker} checker
      */
-    async _initSuffixStatus( checker ){
+    _initSuffixStatus( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initSuffixStatus()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
@@ -183,7 +182,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     /*
      * @summary Insert a parent in the DOM to prepare future potential indicators insertion
      * @param {Checker} checker
-     * @returns {Promise} which will resolve when the parent is actually present in the DOM, or null
+     * @returns {Node} the parent when actually present in the DOM, or null
      */
     async _initWrapParent( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initWrapParent()', checker );
@@ -198,9 +197,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 //logger.debug( 'IFieldRun.initWrapParent', this.name());
                 $node.wrap( '<div class="'+parentClass+'"></div>' );
                 const waitedSelector = '.'+parentClass+' '+this.iSpecSelector();
-                res = UIUtils.DOM.waitFor( waitedSelector ).then(() => {
-                    //logger.debug( 'got waitedSelector', waitedSelector );
-                });
+                res = await UIUtils.DOM.waitFor( waitedSelector );
             }
         }
         return res;
@@ -226,29 +223,32 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunCheck()', this.name(), opts );
         let res = true;
         const checker = this.iRunChecker();
-        if( checker.enabled()){
-            // some initializations and clearings before any check of this field
-            opts.checker = checker;
-            this._checkBefore( opts );
-            // if a check function has been defined, calls it (warning once if not exists)
-            const checkFn = this.iSpecCheck();
-            if( checkFn ){
-                opts.id = checker.confId();
-                const value = this.iRunValueFrom();
-                const self = this;
-                res = checkFn( value, checker.confData(), opts )
-                    .then( async ( fnres ) => {
-                        return self._checkAfter( opts, value, fnres );
-                    })
-                    .then( async () => {
-                        return self.iCheckableResult() || opts.crossCheck === false ? null : await checker.crossCheck( opts );
-                    })
-                    .then(() => {
-                        return self.iStatusableValidity();
-                    });
+        return Promise.resolve( res ).then(() => {
+            if( checker.enabled()){
+                // some initializations and clearings before any check of this field
+                opts.checker = checker;
+                this._checkBefore( opts );
+                // if a check function has been defined, calls it (warning once if not exists)
+                const checkFn = this.iSpecCheck();
+                if( checkFn ){
+                    opts.id = checker.confId();
+                    const value = this.iRunValueFrom();
+                    const self = this;
+                    return( checkFn( value, checker.confData(), opts )
+                        .then( async ( fnres ) => {
+                            return self._checkAfter( opts, value, fnres );
+                        })
+                        .then( async () => {
+                            return self.iCheckableResult() || opts.crossCheck === false ? null : await checker.crossCheck( opts );
+                        })
+                        .then(() => {
+                            return self.iStatusableValidity();
+                        }));
+                }
+            } else {
+                return res;
             }
-        }
-        return res;
+        });
     }
 
     /**
@@ -382,9 +382,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueFrom()' );
         let $node = this.iRunInputNode();
+        //if( this.name() === 'effectEnd' ) logger.debug( this, $node );
         let value = null;
         if( $node && $node.length ){
             const defn = this._defn();
+            //if( this.name() === 'effectEnd' ) logger.debug( this.name(), 'defn:', defn );
             if( defn.formFrom ){
                 assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
                 value = defn.formFrom( $node );
@@ -395,6 +397,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 value = $node.val();
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
+                //if( this.name() === 'effectEnd' ) logger.debug( this.name(), 'value', value, 'tagName', tagName, 'eltType', eltType, 'isContentEditable', $node[0].isContentEditable );
                 if( tagName === 'INPUT' && eltType === 'checkbox' ){
                     value = $node.prop( 'checked' );
                 } else if( tagName === 'INPUT' && eltType === 'radio' ){
@@ -402,6 +405,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     value = $node.val();
                 } else if( tagName === 'DIV' && $node[0].isContentEditable ){
                     value = $node.text();
+                    //if( this.name() === 'effectEnd' ) logger.debug( this.name(), value );
                 }
                 /*
                 // a small hack to handle 'true' and 'false' values from coreYesnoSelect
@@ -414,6 +418,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 */
             }
         }
+        //if( this.name() === 'effectEnd' ) logger.debug( 'returning', value );
         return value;
     }
 
