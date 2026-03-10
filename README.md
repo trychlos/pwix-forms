@@ -170,18 +170,29 @@ Instanciation arguments:
     - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
     - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
     - `crossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called after each individual field check when this later returns `null` (aka not any message)
+    - `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update
 
 Only available on the client.
 
 **`crossCheckRegisterFn` note:**
 
-The Checker behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
+The `Checker` behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
 
-When installed at checker instanciation, the `crossCheckRegisterFn` function is called with the configured `data`.
+When installed at checker instanciation, the `crossCheckFn()` registered functions are called with the configured `data`.
 
-The Checker has also a `Checker.crossCheckRegisterFn()` method which let any caller to add a cross check function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
+The Checker has also a `Checker.crossCheckRegisterFn()` method which let any caller add a cross check function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
 
-`crosscheckFn` protoype is: `async crossCheckRegisterFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`.
+Cross check functions protoype is: `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`. Inside of the functions, `this` is the calling `Checker`.
+
+**`onUpdateRegisterFn` note:**
+
+When installed at checker instanciation, the `onUpdateFn()` registered functions are called with the configured `data`.
+
+The Checker has also a `Checker.onUpdateRegisterFn()` method which let any caller add an 'onUpdate() function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
+
+'onUpdate()' functions protoype is: `async onUpdateFn( data<Any>, opts<Object> )`. Inside of the functions, `this` is the calling `Checker`.
+
+Contrarily to 'crossCheckFn()' functions, the 'onUpdate()' ones are called on every field update whatever be the current status or validity of the checker(s), and before the 'crossCheckFn()' if apply. They are not expected to return anything, but are only action functions.
 
 ##### `Forms.Messager`
 

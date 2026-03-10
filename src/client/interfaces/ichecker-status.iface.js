@@ -93,14 +93,17 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
     statusInstallOkAutorun(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.statusInstallOkAutorun()' );
         const self = this;
+        //if( this instanceof Forms.Checker ) logger.debug( 'statusInstallOkAutorun()', this );
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
+                //logger.debug( 'calling $ok autorun', self, valid );
                 $ok.prop( 'disabled', !valid );
             }
             const okFn = self.confOkFn()
             if( okFn ){
+                //logger.debug( 'calling okFn autorun', self, valid );
                 okFn( valid );
             }
         });

@@ -10,6 +10,7 @@
     - Use pwix:logger universal logger, thus bumping minor candidate version number
     - Use assert ESM module from node instead of CJS version
     - Review async functions
+    - Define new onUpdateRegisterFn() to be called on each field update at Checker level
 
 ### 1.5.0
 

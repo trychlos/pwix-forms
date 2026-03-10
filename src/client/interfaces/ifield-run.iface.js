@@ -57,8 +57,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         // push all returned TypedMessage's up to the hierarchy - stopping if a checker is not enabled
         const checker = this.iRunChecker();
         checker.messagerPush( checkRes, this.iCheckableId());
-        // and consolidate the status at the Checker level
+        // consolidate the status at the Checker level
         checker.statusConsolidate( opts );
+        // run onUpdate() hooks
+        checker.onUpdate( opts );
     }
 
     // some initializations and clearings before any check of the field
@@ -239,7 +241,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                             return self._checkAfter( opts, value, fnres );
                         })
                         .then( async () => {
-                            return self.iCheckableResult() || opts.crossCheck === false ? null : await checker.crossCheck( opts );
+                            return self.iCheckableResult() || ( opts.crossCheck === false ? null : await checker.crossCheck( opts ));
                         })
                         .then(() => {
                             return self.iStatusableValidity();

@@ -108,15 +108,16 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
         return this.#status;
     }
 
-    // getter/setter
-    // the true|false validity of the field
+    // 
     /**
      * Getter/Setter
      * @param {Boolean} valid
-     * @returns {Boolean}
+     * @returns {Boolean} the true|false validity of the field or the checker
+     *  A reactive data source
      */
     iStatusableValidity( valid ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableValidity()', valid );
+        //if( this instanceof Forms.Checker ) logger.debug( 'iStatusableValidity()', this, valid );
         if( valid !== undefined ){
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );

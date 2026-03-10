@@ -104,8 +104,11 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
    };
     #conf = {};
 
-    // an array of crossCheckRegisterFn for this checker
+    // an array of crossCheckFn() functions for this checker
     #crossCheckArray = null;
+
+    // an array of onUpdateFn() functions for this checker
+    #onUpdateArray = null;
 
     // runtime data
 
@@ -114,7 +117,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // private methods
 
-    // Run the crossCheck function(s) (if any)
+    // Run the crossCheck() function(s) (if any)
     async _crossCheck( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._crossCheck()', opts );
         const array = this.confCrossCheckArray();
@@ -122,8 +125,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         if( array ){
             let msgs = [];
             this.messagerRemove( this.iCheckableId());
-            for await ( const o of array ){
-                const res = await o.fn( o.args, opts );
+            for( const o of array ){
+                const res = await o.fn.bind( self )( o.args, opts );
                 if( res ){
                     msgs = msgs.concat( res );
                     self.messagerPush( res );
@@ -238,6 +241,18 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         }
     }
 
+    // Run the onUpdateFn() function(s) (if any)
+    async _onUpdate( opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._onUpdate()', opts );
+        const array = this.confOnUpdateArray();
+        const self = this;
+        if( array ){
+            for( const o of array ){
+                await o.fn.bind( self )( o.args, opts );
+            };
+        }
+    }
+
     // protected methods
 
     // returns the Blaze.TemplateInstance defined at instanciation time
@@ -323,6 +338,11 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         return name;
     }
 
+    // returns the function(s) to be called on a panel update, may be null
+    confOnUpdateArray(){
+        return this.#onUpdateArray || null;
+    }
+
     // returns the $ok jQuery object or null
     conf$Ok(){
         const $obj = this.#conf.$ok || null;
@@ -393,7 +413,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @locus Client
      * @summary Instanciates a new Checker instance
      * @param {Blaze.TemplateInstance} instance the (mandatory) bound Blaze template instance
@@ -452,15 +472,28 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         // build the configuration
         this.#conf = _.merge( this.#conf, this.#defaultConf, args );
 
-        // crossCheckRegisterFn is pushed to an array (the crossCheckRegisterFn() setter is able to push other functions if this same array)
+        // crossCheckRegisterFn() pushes to an array (the crossCheckRegisterFn() setter is able to push other functions if this same array)
         if( args.crossCheckRegisterFn ){
             if( _.isFunction( args.crossCheckRegisterFn )){
                 this.#crossCheckArray = [{ fn: args.crossCheckRegisterFn, args: this.confData() }];
             } else {
                 assert( _.isArray( args.crossCheckRegisterFn ), 'when set, crossCheckRegisterFn must be a function or an array of functions, got '+args.crossCheckRegisterFn );
-                this.#crossCheckArray = [];
+                this.#crossCheckArray = this.#crossCheckArray || [];
                 args.crossCheckRegisterFn.forEach(( it ) => {
                     this.#crossCheckArray.push({ fn: it, args: this.confData() });
+                });
+            }
+        }
+
+        // onUpdateRegisterFn() pushes to an array (the onUpdateRegisterFn() setter is able to push other functions if this same array)
+        if( args.onUpdateRegisterFn ){
+            if( _.isFunction( args.onUpdateRegisterFn )){
+                this.#onUpdateArray = [{ fn: args.onUpdateRegisterFn, args: this.confData() }];
+            } else {
+                assert( _.isArray( args.onUpdateRegisterFn ), 'when set, onUpdateRegisterFn must be a function or an array of functions, got '+args.onUpdateRegisterFn );
+                this.#onUpdateArray = this.#onUpdateArray || [];
+                args.onUpdateRegisterFn.forEach(( it ) => {
+                    this.#onUpdateArray.push({ fn: it, args: this.confData() });
                 });
             }
         }
@@ -508,9 +541,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             });
         }
 
-        //if( this.confName() === 'identity_address_row' ){
-        //    console.debug( 'Checker', this.confName(), this.iCheckableId(), args.parent, args.parent ? args.parent.confName() : 'none', args.parent ? args.parent.iCheckableId() : 'none' );
-        //}
+        //if( this.confName() === 'TenantEditPanel' ) logger.debug( this );
         return this;
     }
 
@@ -531,7 +562,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             // check the children if any
             const children = this.rtChildren();
             if( children && children.length ){
-                for await( const child of children ){
+                for( const child of children ){
                     promises.push( child.check( opts ).then(( v ) => {
                         valid &&= v;
                         return valid;
@@ -541,7 +572,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             // check the fields of this one
             // crossed checks are only called at last if the fields are all valid
             opts.crossCheck = false;
-            const cb = function( name, spec ){
+            const cb = async function( name, spec ){
                 promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
                     valid &&= v;
                     return valid;
@@ -590,7 +621,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
-     * @summary Run the crossCheck function (if any)
+     * @summary Run the crossChecks function(s) (if any)
      *  Note that this function will not change any field status, but is only capable of pushing new error messages
      */
     async crossCheck( opts={} ){
@@ -600,8 +631,8 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     /**
      * Setter
-     * @param {Function} fn a crossCheckRegisterFn function
-     * @param {Any} args the arguments to be called
+     * @param {Function} fn a crossCheckFn() function
+     * @param {Any} args the arguments to be passed to the called 'fn' function, defaulting to 'data'
      * @summary Add a crossCheckRegisterFn function to this checker
      */
     crossCheckRegisterFn( fn, args ){
@@ -725,6 +756,27 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     name(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.name()' );
         return this.confName();
+    }
+
+    /**
+     * @summary Run the onUpdate() function(s) (if any)
+     *  Note that this function will not change any field status, but is only capable of pushing new error messages
+     */
+    async onUpdate( opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.onUpdate()', opts );
+        this.hierarchyUp( '_onUpdate', opts );
+    }
+
+    /**
+     * Setter
+     * @param {Function} fn a 'onUpdateFn()' function
+     * @param {Any} args the arguments to be passed to the called 'fn' function, defaulting to 'data'
+     * @summary Add a 'onUpdateFn' function to this checker
+     */
+    onUpdateRegisterFn( fn, args ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.onUpdateRegisterFn()', fn, args );
+        this.#onUpdateArray = this.#onUpdateArray || [];
+        this.#onUpdateArray.push({ fn: fn, args: args });
     }
 
     /**
