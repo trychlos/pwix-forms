@@ -117,11 +117,11 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
      */
     iStatusableValidity( valid ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.iStatusableValidity()', valid );
-        //if( this instanceof Forms.Checker ) logger.debug( 'iStatusableValidity()', this, valid );
         if( valid !== undefined ){
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );
         }
+        if( this instanceof Forms.Checker && this.confName() === 'TenantEditPanel' ) logger.debug( 'iStatusableValidity()', this, valid );
         return this.#validity.get();
     }
 });

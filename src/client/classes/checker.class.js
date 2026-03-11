@@ -563,20 +563,16 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             const children = this.rtChildren();
             if( children && children.length ){
                 for( const child of children ){
-                    promises.push( child.check( opts ).then(( v ) => {
-                        valid &&= v;
-                        return valid;
-                    }));
+                    const v = await child.check( opts );
+                    valid &&= v;
                 }
             }
             // check the fields of this one
             // crossed checks are only called at last if the fields are all valid
             opts.crossCheck = false;
             const cb = async function( name, spec ){
-                promises.push( spec.iFieldRunCheck( opts ).then(( v ) => {
-                    valid &&= v;
-                    return valid;
-                }));
+                const v = await spec.iFieldRunCheck( opts );
+                valid &&= v;
                 return true;
             };
             this.fieldsIterate( cb );
@@ -676,22 +672,24 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     /**
      * @summary Iterate on each field specification, calling the provided 'cb' callback for each one
      *  the recursive iteration stops as soon as the 'cb' doesn't return true
-     *  in other words, iterate while 'cb' returns true (same than 'every' instruction)
+     *  in other words, iterate until end of iterator or 'cb' returns a falsy value
+     * 
      * @param {Function} cb callback
-     *  cb( fieldName<String>, fieldSpec<IFieldSpec>, args<Any>) : Boolean
+     *  async cb( fieldName<String>, fieldSpec<IFieldSpec>, args<Any>) : Boolean
      *  NB: inside of the 'cb' callback, 'this' is this Checker instance
+     * 
      * @param {Any} args to be passed to the callback
      */
-    fieldsIterate( cb, args=null ){
+    async fieldsIterate( cb, args=null ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.fieldsIterate()', cb, args );
-        const self = this;
-        const _iterate = function( name, spec, arg ){
-            assert( spec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+spec );
-            return cb.bind( self )( name, spec, arg );
-        };
         const panel = this.confPanel();
         if( panel ){
-            panel.iEnumerateKeys( _iterate, args );
+            for( const it of panel.enumerable()){
+                const res = await cb( it.name, it.spec, args );
+                if( !res ){
+                    break;
+                }
+            }
         }
     }
 

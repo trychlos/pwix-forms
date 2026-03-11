@@ -96,6 +96,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         //if( this instanceof Forms.Checker ) logger.debug( 'statusInstallOkAutorun()', this );
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
+            if( this.confName() === 'TenantEditPanel' ) logger.debug( 'statusInstallOkAutorun()', this, valid );
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
                 //logger.debug( 'calling $ok autorun', self, valid );

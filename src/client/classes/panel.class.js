@@ -14,14 +14,9 @@ import { Logger } from 'meteor/pwix:logger';
 import { Base } from './base.class.js';
 import { FormField } from './form-field.class.js';
 
-import { IEnumerable } from '../interfaces/ienumerable.iface.js';
-import { IInstanciationArgs } from '../interfaces/iinstanciation-args.iface.js';
-import { IFieldRun } from '../interfaces/ifield-run.iface.js';
-import { IFieldSpec } from '../interfaces/ifield-spec.iface.js';
-
 const logger = Logger.get();
 
-export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
+export class Panel extends mix( Base ).with(){
 
     // static data
 
@@ -30,31 +25,14 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
     // private data
 
     // the FormField's set
-    #set = null
+    #set = {};
+
+    // warn only once per field
     #warneds = {};
 
     // runtime data
 
     // private methods
-
-    /*
-     * @locus Client
-     * @summary Add to each field specification the informations provided in the FieldsSet
-     * @param {FormField.Set} set the FormField.Set defined for this collection
-     * @returns {Panel} this instance
-     */
-    _fromSet( set ){
-        const self = this;
-        const cb = function( name, spec ){
-            const field = set.byName( name );
-            if( field ){
-                spec._defn( field.toForm());
-            }
-            return true;
-        }
-        this.iEnumerateKeys( cb );
-        return this;
-    }
 
     // protected methods
 
@@ -68,16 +46,23 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      *  This is a keyed object, where keys are the field names, and values the field specifications for this panel
      * @param {Field.Set} set an optional previously defined Field.Set object which is able to provide default values
      * @returns {Panel} this instance
+     *  NB: we keep none of the provided instanciation args, relying on them to build the Forms.FormField set of data we need
      */
     constructor( arg, set ){
-        assert( arg && _.isObject( arg ), 'expect a plain javascript object' );
-        assert( !set || set instanceof Field.Set, 'expect a Field.Set instance' );
+        if( !arg || !_.isObject( arg )){
+            logger.error( 'Panel() expects \'arg\' be a plain Javascript Object, got', arg, 'throwing...' );
+            throw new Error( 'bad argument: arg' );
+        }
+        if( set && !( set instanceof Field.Set )){
+            logger.error( 'Panel() expects \'set\' be a Field.Set instance when set, got', set, 'throwing...' );
+            throw new Error( 'bad argument: set' );
+        }
 
         super( ...arguments );
         const self = this;
 
         // instanciate a FormField object for each field description
-        this.#set = {};
+        //  cannot be async because is is called from the constructor
         const cb = function( key, value ){
             let defn = value;
             if( set ){
@@ -93,10 +78,9 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
             self.#set[key] = new FormField( defn );
             return true;
         };
-        this.iEnumerateKeys( cb );
-
-        // setup the new enumeration reference as a keyed object
-        this.iEnumerableBase( this.#set );
+        for( const it of this.enumerable( arg )){
+            const res = cb( it.name, it.spec );
+        }
 
         return this;
     }
@@ -107,33 +91,49 @@ export class Panel extends mix( Base ).with( IEnumerable, IInstanciationArgs ){
      */
     byName( name ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.byName()', name );
-        let spec = null;
-        const cb = function( fieldName, fieldSpec, arg ){
-            assert( fieldSpec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+fieldSpec );
-            assert( fieldSpec instanceof IFieldRun, 'expects an instance of IFieldRun, got '+fieldSpec );
-            if( name === fieldName ){
-                spec = fieldSpec;
-            }
-            return spec === null;
-        };
-        this.iEnumerateKeys( cb );
-        return spec;
+        if( !name || !_.isString( name )){
+            logger.error( 'byName() expects \'name`\' be a non-empty string, got', name, 'throwing...' );
+            throw new Error( 'Bad argument: name' );
+        }
+        return this.#set[name] || null;
     }
+
+    /**
+     * @param {Object} arg the instanciation arg (a list of object keyed by field names)
+     *  Only used at instanciation time when building the Forms.FormField set of data
+     * 
+     * @returns {Array} an array of { name: <String>, spec: <Forms.FormField> } sync iterable objects which are the fields specifications of this panel
+     * 
+     *  This method is first called at Panel instanciation time, when '#set' is still null. It so returns the 'args' field specification { key, value } pairs.
+     *  As soon as the '#set' is set, then it is used as a new reference.
+     *  As this method is sync, it can be called in for( ...  of ... ) loops (for await is not needed)
+     */
+    enumerable( arg ){
+        const base = arg || this.#set;
+        assert( base && _.isObject( base ), 'expect base be a plain javascript object' );
+        let res = [];
+        Object.keys( base ).forEach(( it ) => {
+            res.push({ name: it, spec: base[it] });
+        });
+        return res;
+    }
+
 
     /**
      * @returns {Object} an object indexed by field names with field values
      */
-    objectData( args=null ){
+    async objectData( args=null ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.objectData()', args );
-        let result = {};
+        let res = {};
         const self = this;
-        const _iterate = function( name, spec, arg ){
-            assert( spec instanceof IFieldSpec, 'expects an instance of IFieldSpec, got '+spec );
-            assert( spec instanceof IFieldRun, 'expects an instance of IFieldRun, got '+spec );
-            result[name] = spec.iRunValueFrom();
+        const _iterate = async function( name, spec, arg ){
+            assert( spec instanceof FormField, 'expects an instance of FormField, got '+spec );
+            res[name] = await spec.iRunValueFrom();
             return true;
         };
-        this.iEnumerateKeys( _iterate, args );
-        return result;
+        for( const it of this.enumerable()){
+            await _iterate( it.name, it.spec, args );
+        }
+        return res;
     }
 }

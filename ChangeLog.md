@@ -11,6 +11,7 @@
     - Use assert ESM module from node instead of CJS version
     - Review async functions
     - Define new onUpdateRegisterFn() to be called on each field update at Checker level
+    - Remove IInstanciationArgs and IEnumerable interfaces, consolidating them in Panel class
 
 ### 1.5.0
 
