@@ -1,5 +1,5 @@
 /*
- * pwix:forms/src/client/classes/panel-spec.class.js
+ * pwix:forms/src/client/classes/panel.class.js
  *
  * Gathers a keyed set of fields specifications for a form panel.
  */
@@ -39,7 +39,7 @@ export class Panel extends mix( Base ).with(){
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @locus Client
      * @summary Instanciates a new Panel instance
      * @param {Object} arg a panel specification as provided by the application
@@ -62,24 +62,20 @@ export class Panel extends mix( Base ).with(){
         const self = this;
 
         // instanciate a FormField object for each field description
-        //  cannot be async because is is called from the constructor
-        const cb = function( key, value ){
-            let defn = value;
+        for( const name of Object.keys( arg )){
+            //const res = cb( it.name, it.spec );
+            let defn = arg[name];
             if( set ){
-                const spec = set.byName( key );
+                const spec = set.byName( name );
                 if( spec ){
-                    defn = _.merge( {}, spec.def(), value );
+                    defn = _.merge( {}, spec.def(), defn );
                     // warn once
-                } else if( !Object.keys( self.#warneds ).includes( key )){
-                    logger.warn( 'Panel.Panel() unknown name \''+key+'\' ignored' );
-                    self.#warneds[key] = true;
+                } else if( !Object.keys( self.#warneds ).includes( name )){
+                    logger.warn( 'Panel.Panel() unknown name \''+name+'\' ignored' );
+                    self.#warneds[name] = true;
                 }
             }
-            self.#set[key] = new FormField( defn );
-            return true;
-        };
-        for( const it of this.enumerable( arg )){
-            const res = cb( it.name, it.spec );
+            self.#set[name] = new FormField( defn );
         }
 
         return this;
@@ -118,6 +114,32 @@ export class Panel extends mix( Base ).with(){
         return res;
     }
 
+    /**
+     * @returns {Object} with data from the form
+     */
+    async getForm(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.getForm()' );
+        let res = {};
+        for( const it of this.enumerable()){
+            res[it.name] = await it.spec.iRunValueFrom();
+        }
+        return res;
+    }
+
+    /**
+     * @summary Initialize the panel when the Checker is initialized
+     */
+    async init( checker ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.init()', checker );
+        // initialize each field: UI, DOM, event handler
+        for( const it of this.enumerable()){
+            await it.spec.iFieldRunInit( checker );
+        }
+        const values = checker.confSetForm();
+        if( values ){
+            await this.setForm( values );
+        }
+    }
 
     /**
      * @returns {Object} an object indexed by field names with field values
@@ -125,15 +147,22 @@ export class Panel extends mix( Base ).with(){
     async objectData( args=null ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.objectData()', args );
         let res = {};
-        const self = this;
-        const _iterate = async function( name, spec, arg ){
-            assert( spec instanceof FormField, 'expects an instance of FormField, got '+spec );
-            res[name] = await spec.iRunValueFrom();
-            return true;
-        };
         for( const it of this.enumerable()){
-            await _iterate( it.name, it.spec, args );
+            assert( it.spec instanceof FormField, 'expects an instance of FormField, got '+it.spec );
+            res[it.name] = await it.spec.iRunValueFrom();
         }
         return res;
+    }
+
+    /**
+     * @summary initialize the panel with the given data
+     * @param {Object} item the values to be installed in the form
+     * @param {Object} opts an optional options object
+     */
+    async setForm( item, opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Panel.setForm()', item, opts );
+        for( const it of this.enumerable()){
+            await it.spec.iRunValueTo( item, opts );
+        }
     }
 }

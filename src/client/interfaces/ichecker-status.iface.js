@@ -26,7 +26,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      * @summary Consolidate the validity/status of each checker to their parent (down-to-up)
      *  Update the relevant Checker data
      */
-    _consolidateStatusCheckersUp(){
+    async _consolidateStatusCheckersUp(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus._consolidateStatusCheckersUp()' );
         const parent = this.confParent();
         if( parent ){
@@ -38,7 +38,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
             });
             parent.iStatusableValidity( valid );
             parent.iStatusableStatus( FieldStatus.worst( statuses ));
-            parent._consolidateStatusCheckersUp();
+            await parent._consolidateStatusCheckersUp();
         }
     }
 
@@ -48,7 +48,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      * @param {Any} opts an optional behaviour options
      *  cf. Checker.check for a description of the known options
      */
-    _consolidateStatusFields( opts ){
+    async _consolidateStatusFields( opts ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus._consolidateStatusFields()', opts );
         if( opts.ignoreFields !== true ){
             let valid = true;
@@ -58,7 +58,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
                 statuses.push( spec.iStatusableStatus());
                 return valid;
             };
-            this.fieldsIterate( cb );
+            await this.fieldsIterate( cb );
             this.iStatusableValidity( valid );
             this.iStatusableStatus( FieldStatus.worst( statuses ));
         }
@@ -80,10 +80,10 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
      *  cf. Checker.check for a description of the known options
      * @returns {Boolean} the true|false validity flag of this checker
      */
-    statusConsolidate( opts ){
+    async statusConsolidate( opts ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.statusConsolidate()', opts );
-        this._consolidateStatusFields( opts );
-        this._consolidateStatusCheckersUp();
+        await this._consolidateStatusFields( opts );
+        await this._consolidateStatusCheckersUp();
         return this.iStatusableValidity();
     }
 
@@ -96,7 +96,7 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
         //if( this instanceof Forms.Checker ) logger.debug( 'statusInstallOkAutorun()', this );
         this.argInstance().autorun(() => {
             const valid = self.iStatusableValidity();
-            if( this.confName() === 'TenantEditPanel' ) logger.debug( 'statusInstallOkAutorun()', this, valid );
+            //if( this.confName() === 'TenantEditPanel' ) logger.debug( 'statusInstallOkAutorun()', this, valid );
             const $ok = self.conf$Ok()
             if( $ok && $ok.length ){
                 //logger.debug( 'calling $ok autorun', self, valid );

@@ -3,7 +3,7 @@
  *
  * Checker aims to industrialize and homogeneize the management of any of our input forms:
  * - let the application provides its check per fields
- * - provides indicators to show to the user the mandatory character f the fields and its check status
+ * - provides indicators to show to the user the mandatory character of the fields and their check status
  * - manage a TypedMessage's error message stack.
  *
  * Checker is bound to a Blaze.TemplateInstance. When your form is built with several Blaze components,
@@ -25,23 +25,6 @@
  *  - or an array of TypedMessage's.
  *  Checker considers that TypedMessage of 'ERROR' type are blocking and errors. All other messages let the dialog/page to be saved.
  *
- * Instanciation:
- *  The Checker must be instanciated as a ReactiveVar content inside of an autorun() from onRendered():
- *  ```
- *      Template.my_app_template.onCreated( function(){
- *          const self = this;
- *          self.checker = new ReactiveVar( null );
- *      });
- *      Template.my_app_template.onRendered( function(){
- *          const self = this;
- *          self.autorun(() => {
- *              self.checker.set( new Forms.Checker({
- *                  ...args
- *              }));
- *          });
- *      });
- *  ```
- *
  * Validity consolidation:
  *  All underlying components/pane/panels/Forms.Checker's may advertise their own validity status through:
  *  - a 'form-validity' event, holding data as { emitter, ok, ... }
@@ -59,6 +42,7 @@ import mix from '@vestergaard-company/js-mixin';
 import { Logger } from 'meteor/pwix:logger';
 
 import { Base } from './base.class.js';
+import { FnArray } from './fn-array.class.js';
 import { Panel } from './panel.class.js';
 
 import { FieldStatus } from '../../common/definitions/field-status.def.js';
@@ -83,6 +67,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // instanciation parameters
     #instance = null;
+    #initialized = false;
     #args = null;
 
     // configuration
@@ -141,7 +126,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     // recursive explain
-    _explainRec( title, prefix ){
+    async _explainRec( title, prefix ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._explainRec()', title, prefix );
         logger.log( prefix+title, this.confName(), this.iCheckableId(), this.status(), this.validity());
         logger.log( prefix+'- parent' );
@@ -169,7 +154,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             count += 1;
             return true;
         };
-        this.fieldsIterate( cb );
+        await this.fieldsIterate( cb );
         if( !count ){
             logger.log( prefix+'  (none)' );
         }
@@ -214,7 +199,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // remove all messages emitted by this Checker and its fields
     //  and recurse on the children
-    _messagerRemove(){
+    async _messagerRemove(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._messagerRemove()' );
         // cleanup the messages stack from this checker
         let checkables = [];
@@ -222,13 +207,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             checkables.push( spec.iCheckableId());
             return true;
         };
-        this.fieldsIterate( cb );
+        await this.fieldsIterate( cb );
         checkables.push( this.iCheckableId());
         this.hierarchyUp( '_messagerRemoveById', checkables );
         // iterate on all children
-        this.rtChildren().forEach(( child ) => {
-            child._messagerRemove();
-        });
+        for( const child of this.rtChildren()){
+            await child._messagerRemove();
+        }
     }
 
     // remove the messages send from this checker
@@ -421,29 +406,10 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - provides a '$' jQuery operator which is tied to this template instance
      *  - provides the DOM element which will act as a global event receiver
      *  - provides the topmost DOM element to let us find all managed fields
-     * @param {Object} args an optional arguments object with following keys:
-     *  - name: an optional instance name
-     *  - parent: an optional parent Checker instance
-     *  - messager: an optional IMessager implementation
-     *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
-     *    > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
-     *  - panel: an optional Panel instance which defines the managed fields
-     *  - data: an optional data opaque object to be passed to check functions as additional argument
-     *  - id: when the panel is array-ed, the row identifier
-     *    will be passed as an option to field-defined check function
-     *  - $ok: an optional jQuery object which defines the OK button (to enable/disable it)
-     *  - okFn( valid<Boolean> ): an optional function to be called when OK button must be enabled/disabled
-     *  - fieldTypeShow: whether to display a field type indicator on the left of each field,
-     *    this value overrides the configured default value
-     *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-     *  - fieldStatusShow: whether and how to display the result indicator on the right of the field
-     *    only considered if the corresponding package configured value is overridable
-     *  - setForm: if set, the item to be used to fill-in the form at startup, defaulting to none
-     *  - validityEvent: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
-     *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
-     *  - rightSiblingClass: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+     * @param {Object} 
      * @returns {Checker} this Checker instance
      */
+    /*
     constructor( instance, args={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.Checker()', instance, args );
         assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is mandatory, must be a Blaze.TemplateInstance instance');
@@ -505,13 +471,15 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         this.hierarchyRegister();
         this.statusInstallOkAutorun();
 
-        // initialize field-level data
-        const cb = function( name, spec ){
-            //console.debug( 'iFieldRunInit', this, name, spec );
-            spec.iFieldRunInit( this );
-            return true;
+        // initialize field-level data if any
+        const panel = this.confPanel();
+        let promises = [];
+        if( panel ){
+            for( const it of panel.enumerable()){
+                promises.push( it.spec.iFieldRunInit( this ));
+            }
         }
-        this.fieldsIterate( cb );
+        Promise.allSettled( promises );
 
         // onDestroyed
         if( false ){
@@ -523,9 +491,11 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
         // if we have something to do to fill in the form ?
         const filling = this.confSetForm();
+        promises = [];
         if( filling ){
-            this.setForm( filling );
+            promises.push( this.setForm( filling ));
         }
+        Promise.allSettled( promises );
 
         // run an initial check with default values (but do not update the provided data if any)
         if( args.enabled !== false ){
@@ -544,6 +514,36 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         //if( this.confName() === 'TenantEditPanel' ) logger.debug( this );
         return this;
     }
+        */
+
+    /**
+     * @constructor
+     * @locus Client
+     * @summary Instanciates a new Checker instance
+     *  The new Checker MUST be initialized before being used.
+     * 
+     * @param {Blaze.TemplateInstance} instance the (mandatory) bound Blaze template instance
+     *  - let us defines autorun() functions
+     *  - provides a '$' jQuery operator which is tied to this template instance
+     *  - provides the DOM element which will act as a global event receiver
+     *  - provides the topmost DOM element to let us find all managed fields
+     * 
+     * @returns {Checker} this Checker instance
+     */
+    constructor( instance ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.Checker()', instance );
+        if( !instance || !( instance instanceof Blaze.TemplateInstance )){
+            logger.error( 'Checker() expects \'instance\' be an instance of Blaze.TemplateInstance, got', instance, 'throwing...' );
+            throw new Error( 'Bad argument: instance' );
+        }
+
+        super( ...arguments );
+        const self = this;
+
+        // keep the provided instance
+        this.#instance = instance;
+        return this;
+    }
 
     /**
      * @summary Check a panel and recursively all its children (but not besides nor up), and all rows of an array-ed panel, and update its status
@@ -552,20 +552,17 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - id: the identifier of the checker or null, added by IFieldRun.iFieldRunCheck() function
      *  - ignoreFields: whether fields must be considered when consolidating the status, defaulting to false
      *    use case: when the checker actually manages an external component and the defined fields have to be ignored
+     *  - crossCheck: whether to run cross checks after all fields checks if no error has been detected yet, defaulting to true
      * @returns {Promise} which eventually resolves to the validity boolean flag of the checker
      */
     async check( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.check()', opts );
+        let valid = true;
         if( this.enabled()){
-            let valid = true;
-            let promises = [];
             // check the children if any
-            const children = this.rtChildren();
-            if( children && children.length ){
-                for( const child of children ){
-                    const v = await child.check( opts );
-                    valid &&= v;
-                }
+            for( const child of this.rtChildren()){
+                const v = await child.check( opts );
+                valid &&= v;
             }
             // check the fields of this one
             // crossed checks are only called at last if the fields are all valid
@@ -575,18 +572,13 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
                 valid &&= v;
                 return true;
             };
-            this.fieldsIterate( cb );
-            return Promise.allSettled( promises )
-                .then(() => {
-                    delete opts.crossCheck;
-                    if( valid ){
-                        this.crossCheck( opts );
-                    }
-                })
-                .then(() => {
-                    return valid;
-                });
+            await this.fieldsIterate( cb );
+            delete opts.crossCheck;
+            if( valid ){
+                this.crossCheck( opts );
+            }
         }
+        return valid;
     }
 
     /**
@@ -603,16 +595,16 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {Object} opts an optional options object with following keys:
      *  - propagateDown: whether to also recursively clear all children, defaulting to false
      */
-    clearPanel( opts={} ){
+    async clearPanel( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.clearPanel()', opts );
-        const clearField = function( name, field ){
+        const _clearField = function( name, field ){
             field.iRunValueTo({}, { value: null });
         };
-        this.fieldsIterate( clearField );
+        await this.fieldsIterate( _clearField );
         if( opts.propagateDown === true ){
-            this.rtChildren().forEach(( it ) => {
-                it.clearPanel( opts );
-            });
+            for( const it of this.rtChildren()){
+                await it.clearPanel( opts );
+            }
         }
     }
 
@@ -640,14 +632,14 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     /**
      * Getter/Setter
      * @param {Boolean} enabled
-     * @returns {Boolean} whether checks are enabled
+     * @returns {Boolean} whether this checker is enabled, defaulting to true after initialization
      */
     enabled( enabled ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.enabled()', enabled );
         if( enabled === true || enabled === false ){
             this.#conf.enabled = enabled;
         }
-        return this.confEnabled();
+        return this.#initialized && this.confEnabled();
     }
 
     /**
@@ -664,9 +656,9 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     /**
      * @summary Try to explain the current status and validity
      */
-    explain(){
+    async explain(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.explain()' );
-        this._explainRec( 'This checker', '' );
+        await this._explainRec( 'This checker', '' );
     }
 
     /**
@@ -685,7 +677,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
         const panel = this.confPanel();
         if( panel ){
             for( const it of panel.enumerable()){
-                const res = await cb( it.name, it.spec, args );
+                const res = await cb.call( this, it.name, it.spec, args );
                 if( !res ){
                     break;
                 }
@@ -694,16 +686,131 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
     }
 
     /**
-     * @returns {Object} with data from the form
+     * @param {Object} args an optional initialization object with following keys:
+     *  - name: an optional instance name
+     *  - parent: an optional parent Checker instance
+     *  - messager: an optional IMessager implementation
+     *    > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
+     *    > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
+     * 
+     *  - $ok: an optional jQuery object which will be automatically enabled/disabled depending of validity status (e.g. an OK button)
+     *  - okFn( valid<Boolean> ): an optional function which will be called on validity status changes
+     * 
+     *  - panel: an optional Panel instance which defines the managed fields
+     *  - data: an optional data opaque object to be passed to field-defined check functions as additional argument
+     *  - id: when the panel is array-ed, the row identifier
+     *    will be passed as an 'id' option to field-defined check functions
+     *  - fieldTypeShow: whether to display a field type indicator on the left of each field,
+     *    this value overrides the configured default value
+     *    it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+     *  - fieldStatusShow: whether and how to display the result indicator on the right of the field
+     *    only considered if the corresponding package configured value is overridable
+     *  - setForm: if set, the item to be used to fill-in the form at startup, defaulting to none
+     *  - validityEvent: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
+     *  - parentClass: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+     *  - rightSiblingClass: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
      */
-    getForm(){
-        let res = {};
-        const cb = function( name, spec ){
-            res[name] = spec.iRunValueFrom();
-            return true;
-        };
-        this.fieldsIterate( cb );
-        return res;
+    async init( args={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.init()' );
+        if( Object.keys( args ).includes( 'name' ) && ( !args.name || !_.isString( args.name ))){
+            logger.error( 'init() expects \'name\' be a non-empty string when set, got', args.name, 'throwing...' );
+            throw new Error( 'Bad argument: name' );
+        }
+        if( Object.keys( args ).includes( 'parent' ) && ( !args.parent || !( args.parent instanceof Forms.Checker ))){
+            logger.error( 'init() expects \'parent\' be an instance of Forms.Checker when set, got', args.parent, 'throwing...' );
+            throw new Error( 'Bad argument: parent' );
+        }
+        if( Object.keys( args ).includes( 'messager' ) && ( !args.messager || !( args.messager instanceof Forms.IMessager ))){
+            logger.error( 'init() expects \'messager\' be an instance of Forms.IMessager when set, got', args.messager, 'throwing...' );
+            throw new Error( 'Bad argument: messager' );
+        }
+        if( this.#initialized ){
+            logger.error( 'init() expects be run only once, throwing...' );
+            throw new Error( 'Runtime: already initialized' );
+        }
+        /*
+            assert( !args.name || _.isString( args.name ), 'when set, name must be a string, got '+args.name );
+            assert( !args.parent || , 'when set, parent must be a Checker instance, got '+args.parent );
+            assert( !args.messager || args.messager instanceof IMessager, 'when set, messager must be a IMessager instance, got '+args.messager );
+            assert( !args.panel || args.panel instanceof Panel, 'when set, panel must be a Panel instance, got '+args.panel );
+            assert( !args.id || _.isString( args.id ), 'when set, id must be a non-empty string, got '+args.id );
+            assert( !args.$ok || ( args.$ok instanceof jQuery && args.$ok.length ), 'when set, $ok must be a jQuery object, got '+args.$ok );
+            assert( !args.okFn || _.isFunction( args.okFn ), 'when set, okFn must be a function, got '+args.okFn );
+            assert( !args.validityEvent || _.isString( args.validityEvent ), 'when set, validityEvent must be a non-empty string, got '+args.validityEvent );
+            assert( !args.parentClass || _.isString( args.parentClass ), 'when set, parentClass must be a non-empty string, got '+args.parentClass );
+            assert( !Object.keys( args ).includes( 'enabled' ) || _.isBoolean( args.enabled ), 'when set, enabled must be a true|false Boolean, got '+args.enabled );
+            assert( !args.crossCheckRegisterFn || _.isFunction( args.crossCheckRegisterFn ) || _.isArray( args.crossCheckRegisterFn ), 'when set, crossCheckRegisterFn must be a function or an array of functions, got '+args.crossCheckRegisterFn );
+        */
+
+        this.#args = args;
+
+        // build the configuration
+        this.#conf = _.merge( this.#conf, this.#defaultConf, args );
+
+        // crossCheckRegisterFn() pushes to an array (the crossCheckRegisterFn() setter is able to push other functions if this same array)
+        if( args.crossCheckRegisterFn ){
+            if( _.isFunction( args.crossCheckRegisterFn )){
+                this.#crossCheckArray = [{ fn: args.crossCheckRegisterFn, args: this.confData() }];
+            } else {
+                assert( _.isArray( args.crossCheckRegisterFn ), 'when set, crossCheckRegisterFn must be a function or an array of functions, got '+args.crossCheckRegisterFn );
+                this.#crossCheckArray = this.#crossCheckArray || [];
+                args.crossCheckRegisterFn.forEach(( it ) => {
+                    this.#crossCheckArray.push({ fn: it, args: this.confData() });
+                });
+            }
+        }
+
+        // onUpdateRegisterFn() pushes to an array (the onUpdateRegisterFn() setter is able to push other functions if this same array)
+        if( args.onUpdateRegisterFn ){
+            if( _.isFunction( args.onUpdateRegisterFn )){
+                this.#onUpdateArray = [{ fn: args.onUpdateRegisterFn, args: this.confData() }];
+            } else {
+                assert( _.isArray( args.onUpdateRegisterFn ), 'when set, onUpdateRegisterFn must be a function or an array of functions, got '+args.onUpdateRegisterFn );
+                this.#onUpdateArray = this.#onUpdateArray || [];
+                args.onUpdateRegisterFn.forEach(( it ) => {
+                    this.#onUpdateArray.push({ fn: it, args: this.confData() });
+                });
+            }
+        }
+
+        // initialize checker-level runtime data
+        // have to wait for having returned from super() and have built the configuration
+        this.eventInstallInputHandler();
+        this.eventInstallValidityHandler();
+        this.hierarchyRegister();
+        this.statusInstallOkAutorun();
+
+        // if we have a panel, then initialize it
+        // initialize field-level data if any + install values into the form if provided
+        const panel = this.confPanel();
+        if( panel ){
+            await panel.init( this );
+        }
+
+        // onDestroyed
+        if( false ){
+            const confId = this.confId();
+            this.argInstance().view.onViewDestroyed( function(){
+                //console.debug( 'onViewDestroyed', confId );
+            });
+        }
+
+        // run an initial check with default values (but do not update the provided data if any)
+        if( args.enabled !== false ){
+            await this.check({ update: false });
+        }
+
+        // track checker status and validity
+        if( false ){
+            this.argInstance().autorun(() => {
+                const status = this.iStatusableStatus();
+                const validity = this.iStatusableValidity()
+                //console.debug( 'Checker (autorun)', this.iCheckableId(), status, validity );
+            });
+        }
+
+        this.#initialized = true;
+        return this;
     }
 
     /**
@@ -791,33 +898,16 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      *  - remove the messages published from this Checker and its dependants
      *  - remove all this subtree from the hierarchy tree
      */
-    removeMe(){
+    async removeMe(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.removeMe()' );
         // cleanup the messages stack from this checker
-        this._messagerRemove();
+        await this._messagerRemove();
         // detach from the hierarchy tree
         const parent = this.confParent();
         if( parent ){
-            this.hierarchyRemove( parent );
-            this.statusConsolidate( parent );
+            await this.hierarchyRemove( parent );
+            await this.statusConsolidate( parent );
         }
-    }
-
-    /**
-     * @summary initialize the form with the given data
-     * @param {Object} item
-     * @param {Object} opts an optional options object
-     * @returns {Checker} this instance
-     */
-    setForm( item, opts={} ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.setForm()', item, opts );
-        const self = this;
-        const cb = function( name, field ){
-            field.iRunValueTo( item, opts );
-            return true;
-        };
-        this.fieldsIterate( cb );
-        return this;
     }
 
     /**
@@ -845,7 +935,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
      * @param {Array<String>} fields the array of field names to be consolidated
      * @returns {FieldStatus} the current (consolidated) check status of the fields
      */
-    statusByFields( fields ){
+    async statusByFields( fields ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.statusByFields()', fields );
         let statuses = [ FieldStatus.C.NONE ];
         const cb = function( name, field ){
@@ -854,7 +944,7 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             }
             return true;
         };
-        this.fieldsIterate( cb );
+        await this.fieldsIterate( cb );
         return FieldStatus.worst( statuses );
     }
 

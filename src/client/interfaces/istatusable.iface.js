@@ -121,7 +121,7 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );
         }
-        if( this instanceof Forms.Checker && this.confName() === 'TenantEditPanel' ) logger.debug( 'iStatusableValidity()', this, valid );
+        //if( this instanceof Forms.Checker && this.confName() === 'TenantEditPanel' ) logger.debug( 'iStatusableValidity()', this, valid );
         return this.#validity.get();
     }
 });

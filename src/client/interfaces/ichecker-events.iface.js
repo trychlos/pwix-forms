@@ -19,7 +19,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     // private methods
 
     // returns the FormField relative to the element which is the source of this event, or null
-    _fieldSpecFromEvent( event ){
+    async _fieldSpecFromEvent( event ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._fieldSpecFromEvent()' );
         let found = null;
         const instance = this.argInstance();
@@ -30,7 +30,7 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
             }
             return found === null;
         }
-        this.fieldsIterate( cb );
+        await this.fieldsIterate( cb );
         return found;
     }
 
@@ -38,12 +38,11 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/input_event
     // The input event fires when the value of an <input>, <select>, or <textarea> element has been changed as a direct result of a user action (such as typing in a textbox or checking a checkbox).
     // - event is a jQuery.Event
-    _inputHandler( event ){
+    async _inputHandler( event ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._inputHandler()', event );
-        const spec = this._fieldSpecFromEvent( event );
+        const spec = await this._fieldSpecFromEvent( event );
         if( spec ){
-            spec.iFieldRunInputHandler();
-        } else {
+            await spec.iFieldRunInputHandler();
         }
     }
 

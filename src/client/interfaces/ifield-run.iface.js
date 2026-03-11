@@ -111,7 +111,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a fieldtype indicator before the field if it is defined
      * @param {Checker} checker
      */
-    _initPrefixType( checker ){
+    async _initPrefixType( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initPrefixType()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowType();
@@ -161,7 +161,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @summary Add a FieldStatus indicator after the field if it is defined
      * @param {Checker} checker
      */
-    _initSuffixStatus( checker ){
+    async _initSuffixStatus( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initSuffixStatus()', checker );
         assert( checker && checker instanceof Checker, 'expects an instance of Checker, got '+checker );
         const display = this.iRunShowStatus();
@@ -218,7 +218,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @locus Anywhere
      * @summary Check the field
      * @param {Any} opts an optional behaviour options
-     *  cf. Checker.check for a description of the known options
+     *  cf. Checker.check() for a description of the known options
      * @returns {Promise} which resolve to the true|false validity status for this field
      */
     async iFieldRunCheck( opts={} ){
@@ -263,27 +263,27 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         this.iRunChecker( checker );
         let promises = [];
         const self = this;
-        this._initWrapParent( checker ).then(() => {
-            if( self.iRunShowType() === true ){
-                promises.push( self._initPrefixType( checker ));
-            }
-            if( self.iRunShowStatus() !== Forms.C.ShowStatus.NONE ){
-                promises.push( this._initRightSibling( checker ).then(() => { return self._initSuffixStatus( checker ) }));
-            }
-        });
-        Promise.allSettled( promises );
+        await this._initWrapParent( checker );
+        if( self.iRunShowType() === true ){
+            await this._initPrefixType( checker );
+        }
+        if( self.iRunShowStatus() !== Forms.C.ShowStatus.NONE ){
+            await this._initRightSibling( checker );
+            await this._initSuffixStatus( checker );
+        }
     }
 
     /**
      * @summary Input handler
      *  - check the field (if the checker is enabled)
      */
-    iFieldRunInputHandler(){
+    async iFieldRunInputHandler(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunInputHandler()' );
-        this.iFieldRunCheck();
+        await this.iFieldRunCheck();
     }
 
     // getter/setter
+    // Getter is called from iFieldRunInit() at Checker instanciation time
     // the attached checker
     iRunChecker( checker ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunChecker()', checker );

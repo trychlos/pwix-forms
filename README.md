@@ -10,7 +10,7 @@ Ideally this would be an extension of `aldeed:autoform`, but this later is not y
 
 At the root of all, we have individual fields.
 
-Each field must be checked both on client side, and on server side. Check functions are mutualized, and so are all aysnc.
+Each field must be checked both on client side, and on server side. Check functions are thought to be mutualized, and so are most probably aysnc.
 
 Fields must be checked each against others at the level of the display unit (what the user actually sees). For example, in a tabbed page, each tab should be created and organized following a business logical, and so should the checks (and the error messages).
 
@@ -36,20 +36,34 @@ This Meteor package is installable with the usual command:
 ```js
     import { Forms } from 'meteor/pwix:forms';
 
-    const panel = new Forms.Panel({
-        username: {
-            js: '.js-username'
-        },
-        loginAllowed: {
-            js: '.js-login-allowed'
-        }
+    Template.my_app_template.onCreated( function(){
+        const self = this;
+        self.checker = new ReactiveVar( null );
+        self.panel = new Forms.Panel({
+            username: {
+                js: '.js-username'
+            },
+            loginAllowed: {
+                js: '.js-login-allowed'
+            }
+        });
     });
 
-    const checker = new Forms.Checker( self, {
-        panel: panel.iPanelPlus( fieldsSet ),
-        data: {
-            item: Template.currentData().item
-        }
+    Template.my_app_template.onCreated( function(){
+        const self = this;
+        this.autorun( async () => {
+            let checker = self.checker.get();
+            if( !checker ){
+                checker = new Form.Checker( self );
+                await checker.init({
+                    panel: self.panel,
+                    data: {
+                        item: Template.currentData().item
+                    }
+                });
+                self.checker.set( checker );
+            }
+        });
     });
 ```
 
@@ -58,6 +72,104 @@ This Meteor package is installable with the usual command:
 ### `Forms`
 
 The exported `Forms` global object provides following items:
+
+#### Classes
+
+##### `Forms.Checker`
+
+This is the class which manages all the checks to be done in a panel, publishing relevant messages if any.
+
+It should be instanciated as a ReactiveVar when the DOM is rendered.
+
+Only available on the client.
+
+###### `Forms.Checker.Checker( <Blaze.TemplateInstance> ): <Forms.Checker>`:
+
+Instanciation takes a single argument which is the current Blaze.TemplateInstance instance:
+
+- let us defines autorun() functions
+- provides a '$' jQuery operator which is tied to this template instance
+- provides the DOM element which will act as a global event receiver
+- provides the topmost DOM element to let us find all managed fields.
+
+###### `async Forms.Checker.init( <Object> ): <Forms.Checker>`:
+
+Before to be useful for anything, the Forms.Checker MUST be initialized, even with no or an empty object argument.
+
+The argument object is optional, and may contain following keys:
+
+- at the checker level:
+
+    - `name`: an optional instance name
+    - `parent`: an optional parent Checker instance
+    - `messager`: an optional [`Forms.IMessager`](#forms-imessager) implementation
+        > this is a caller's design decision to have a message zone per panel, or globalized at a higher level;
+        in this later case, caller doesn't need to address the globalized messager at any lower panel level: it is enough there to identify the parent Checker (if any).
+    - `validityEvent`: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
+    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
+
+- at the panel level if one is defined:
+
+- `panel`: an optional Panel instance which defines the managed fields
+- `data`: an optional data opaque object to be passed to field-defined check functions as additional argument
+- `id`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
+
+- `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
+- `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
+- `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+- `fieldStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
+- `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
+- `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+- `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+
+- `crossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called after each individual field check when this later returns `null` (aka not any message)
+- `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update
+
+**`crossCheckRegisterFn` note:**
+
+The `Checker` behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
+
+When installed at checker instanciation, the `crossCheckFn()` registered functions are called with the configured `data`.
+
+The Checker has also a `Checker.crossCheckRegisterFn()` method which let any caller add a cross check function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
+
+Cross check functions protoype is: `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`. Inside of the functions, `this` is the calling `Checker`.
+
+**`onUpdateRegisterFn` note:**
+
+When installed at checker instanciation, the `onUpdateFn()` registered functions are called with the configured `data`.
+
+The Checker has also a `Checker.onUpdateRegisterFn()` method which let any caller add an 'onUpdate() function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
+
+'onUpdate()' functions protoype is: `async onUpdateFn( data<Any>, opts<Object> )`. Inside of the functions, `this` is the calling `Checker`.
+
+Contrarily to 'crossCheckFn()' functions, the 'onUpdate()' ones are called on every field update whatever be the current status or validity of the checker(s), and before the 'crossCheckFn()' if apply. They are not expected to return anything, but are only action functions.
+
+##### `Forms.Messager`
+
+Display the messages resulting from the done checks, as a stack ordered by level order first, and push time order then.
+
+##### `Forms.Panel`
+
+Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `Field.Set` object.
+
+Usage:
+
+```js
+    import { Field } from 'meteor/pwix:field';
+    import { Forms } from 'meteor/pwix:forms';
+
+const panel = new Forms.Panel({
+        username: {
+            js: '.js-username'
+        },
+        loginAllowed: {
+            js: '.js-login-allowed'
+        }
+    }, myCollection.fieldsSet );
+```
+
+Only available on the client.
 
 #### Functions
 
@@ -110,115 +222,6 @@ Push a new message to the messages stack.
 - `Forms.IMessager.iMessagerRemove( ids<Array> )`
 
 Remove from the messages stack those published by the provided `ICheckable` identifiers.
-
-#### Classes
-
-##### `Forms.Checker`
-
-This is the class which manages all the checks to be done in a panel, publishing relevant messages if any.
-
-It should be instanciated as a ReactiveVar when the DOM is rendered.
-
-Example:
-
-```js
-    Template.myPanel.onRendered( function(){
-        const self = this;
-        // initialize the Checker for this panel as soon as we get the parent Checker
-        self.autorun(() => {
-            const parentChecker = Template.currentData().checker.get();
-            const checker = self.APP.checker.get();
-            if( parentChecker && !checker ){
-                self.APP.checker.set( new Forms.Checker( self, {
-                    parent: parentChecker,
-                    panel: self.APP.panel,
-                    data: {
-                        item: Template.currentData().item
-                    }
-                }));
-            }
-        });
-    });
-```
-
-Instanciation arguments:
-
-- `self`:
-
-    - let us defines autorun() functions
-    - provides a '$' jQuery operator which is tied to this template instance
-    - provides the DOM element which will act as a global event receiver
-    - provides the topmost DOM element to let us find all managed fields
-
-- an optional arguments object with following keys:
-
-    - `name`: an optional instance name
-    - `parent`: an optional parent Checker instance
-    - `messager`: an optional IMessager implementation
-      > this is a caller's design decision to have a message zone per panel, or globalized at a higher level
-      > caller doesn't need to address a globalized messager at any lower panel: it is enough to identify the parent Checker (if any)
-    - `panel`: an optional Panel instance which defines the managed fields
-    - `data`: an optional data opaque object to be passed to check functions as additional argument
-    - `id`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check function
-    - `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
-    - `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
-    - `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-    - `fieldStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
-    - `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
-    - `validityEvent`: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
-    - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
-    - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
-    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
-    - `crossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called after each individual field check when this later returns `null` (aka not any message)
-    - `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update
-
-Only available on the client.
-
-**`crossCheckRegisterFn` note:**
-
-The `Checker` behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
-
-When installed at checker instanciation, the `crossCheckFn()` registered functions are called with the configured `data`.
-
-The Checker has also a `Checker.crossCheckRegisterFn()` method which let any caller add a cross check function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
-
-Cross check functions protoype is: `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`. Inside of the functions, `this` is the calling `Checker`.
-
-**`onUpdateRegisterFn` note:**
-
-When installed at checker instanciation, the `onUpdateFn()` registered functions are called with the configured `data`.
-
-The Checker has also a `Checker.onUpdateRegisterFn()` method which let any caller add an 'onUpdate() function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
-
-'onUpdate()' functions protoype is: `async onUpdateFn( data<Any>, opts<Object> )`. Inside of the functions, `this` is the calling `Checker`.
-
-Contrarily to 'crossCheckFn()' functions, the 'onUpdate()' ones are called on every field update whatever be the current status or validity of the checker(s), and before the 'crossCheckFn()' if apply. They are not expected to return anything, but are only action functions.
-
-##### `Forms.Messager`
-
-Display the messages resulting from the done checks, as a stack ordered by level order first, and push time order then.
-
-##### `Forms.Panel`
-
-Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `Field.Set` object.
-
-Usage:
-
-```js
-    import { Field } from 'meteor/pwix:field';
-    import { Forms } from 'meteor/pwix:forms';
-
-const panel = new Forms.Panel({
-        username: {
-            js: '.js-username'
-        },
-        loginAllowed: {
-            js: '.js-login-allowed'
-        }
-    }, myCollection.fieldsSet );
-```
-
-Only available on the client.
 
 ### Blaze components
 
