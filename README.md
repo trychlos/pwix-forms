@@ -35,6 +35,8 @@ This Meteor package is installable with the usual command:
 
 ```js
     import { Forms } from 'meteor/pwix:forms';
+    import { ReactiveVar } from 'meteor/reactive-var';
+    import { Tracker } from 'meteor/tracker';
 
     Template.my_app_template.onCreated( function(){
         const self = this;
@@ -49,19 +51,23 @@ This Meteor package is installable with the usual command:
         });
     });
 
-    Template.my_app_template.onCreated( function(){
+    Template.my_app_template.onRendered( function(){
         const self = this;
-        this.autorun( async () => {
+        this.autorun(() => {
             let checker = self.checker.get();
             if( !checker ){
-                checker = new Form.Checker( self );
-                await checker.init({
-                    panel: self.panel,
-                    data: {
-                        item: Template.currentData().item
-                    }
+                Tracker.nonreactive(() => {
+                    checker = new Forms.Checker( self );
+                    checker.init({
+                        panel: self.panel,
+                        parent: Template.currentData().checker.get(),
+                        data: {
+                            item: Template.currentData().item
+                        }
+                    }).then(() => {
+                        self.checker.set( checker );
+                    });
                 });
-                self.checker.set( checker );
             }
         });
     });
@@ -100,50 +106,42 @@ The argument object is optional, and may contain following keys:
 
 - at the checker level:
 
-    - `name`: an optional instance name
-    - `parent`: an optional parent Checker instance
+    - `data`: an optional opaque object to be passed to field-defined or cross check functions as second argument
+    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
     - `messager`: an optional [`Forms.IMessager`](#forms-imessager) implementation
         > this is a caller's design decision to have a message zone per panel, or globalized at a higher level;
         in this later case, caller doesn't need to address the globalized messager at any lower panel level: it is enough there to identify the parent Checker (if any).
-    - `validityEvent`: if set, the event used to advertise of each Checker validity status, defaulting to 'checker-validity'
-    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
+    - `name`: an optional instance name
+    - `onCrossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called when all defined field check have return `null` (aka not any message); Forms propagate this function call up to the topmost checker of the hierarchy
+        > prototype is `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`
+    - `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update; Forms propagate this function call up to the topmost checker of the hierarchy
+        > prototype is `async updateFn( data<Any>, opts<Object> ): void`
+    - `onValidityChangeRegisterFn`: if set, a function or an array of functions to be called when the validity of the checker changes
+        > prototype is `async validityChangeFn( valid<Boolean> ): void`
+        > this used to be a `okFn()` function argument, which has been deprecated starting with v1.6
+    - `panel`: an optional `Forms.Panel` instance which defines the managed fields
+    - `parent`: an optional parent Checker instance
+    - `trace`: whether to trace the initialization, defaulting to false
+    - `validityEvent`: if set, the event used to advertise of each Checker validity status, defaulting to 'forms-checker-validity'
+    - `validityObject`: if set, a JQuery object which will be automatically enabled/disabled on validity changes
+        > this used to be a `$ok` argument, which has been deprecated starting with v1.6
 
 - at the panel level if one is defined:
 
-- `panel`: an optional Panel instance which defines the managed fields
-- `data`: an optional data opaque object to be passed to field-defined check functions as additional argument
-- `id`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
+    - `fieldStatusShow`: whether and how to display the result indicator on the right of the field, either `false` or a value from `Forms.C.ShowStatus`; only considered if the corresponding package configured value is overridable
+    - `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+    - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+    - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+    - `rowId`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
+        > this used to be an `id` argument, which has been deprecated starting with v1.6
+    - `setForm`: if set, the item to be used to fill-in the form at initialization, defaulting to none
 
-- `$ok`: an optional jQuery object which defines the OK button (to enable/disable it)
-- `okFn( valid<Boolean> )`: an optional function to be called when OK button must be enabled/disabled
-- `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-- `fieldStatusShow`: whether and how to display the result indicator on the right of the field; only considered if the corresponding package configured value is overridable
-- `setForm`: if set, the item to be used to fill-in the form at startup, defaulting to none
-- `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
-- `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+The `Forms.Checker` triggers a `forms-checker-initialized` event on the Blaze topmost DOM element at the end of the initialization. The event holds data as:
 
-- `crossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called after each individual field check when this later returns `null` (aka not any message)
-- `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update
-
-**`crossCheckRegisterFn` note:**
-
-The `Checker` behaviour is to call the defined field check function each time the corresponding input handler is run. The field check function should only check for an intrinsic validity as this is the source of the displayed field status. Nonetheless, cross checks are always needed to check one field against another, and so on. The result messages are pushed as usual, but do not change the fields status.
-
-When installed at checker instanciation, the `crossCheckFn()` registered functions are called with the configured `data`.
-
-The Checker has also a `Checker.crossCheckRegisterFn()` method which let any caller add a cross check function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
-
-Cross check functions protoype is: `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`. Inside of the functions, `this` is the calling `Checker`.
-
-**`onUpdateRegisterFn` note:**
-
-When installed at checker instanciation, the `onUpdateFn()` registered functions are called with the configured `data`.
-
-The Checker has also a `Checker.onUpdateRegisterFn()` method which let any caller add an 'onUpdate() function to the checker. All functions are pushed in array, and called one by one in this same order. These functions can bring their own data arguments, which defaults to the data attached to the checker.
-
-'onUpdate()' functions protoype is: `async onUpdateFn( data<Any>, opts<Object> )`. Inside of the functions, `this` is the calling `Checker`.
-
-Contrarily to 'crossCheckFn()' functions, the 'onUpdate()' ones are called on every field update whatever be the current status or validity of the checker(s), and before the 'crossCheckFn()' if apply. They are not expected to return anything, but are only action functions.
+- `checker`
+- `checkableId`
+- `status`
+- `validity`
 
 ##### `Forms.Messager`
 
@@ -159,7 +157,7 @@ Usage:
     import { Field } from 'meteor/pwix:field';
     import { Forms } from 'meteor/pwix:forms';
 
-const panel = new Forms.Panel({
+    const panel = new Forms.Panel({
         username: {
             js: '.js-username'
         },
@@ -277,6 +275,10 @@ Parameters:
 The package's behavior can be configured through a call to the `Forms.configure()` method, with just a single javascript object argument, which itself should only contains the options you want override.
 
 Known configuration options are:
+
+- `checkerInitializationEvent`
+
+    The event to be fired when a checker is successfully initialized, defaulting to `forms-checker-initialized`.
 
 - `fieldStatusShow`
 

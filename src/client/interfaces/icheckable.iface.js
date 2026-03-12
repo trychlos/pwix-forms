@@ -31,6 +31,7 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
     // arguments at instanciation time
 
     /**
+     * @constructor
      * @returns {ICheckable} the instance
      */
     constructor(){

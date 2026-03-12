@@ -38,7 +38,7 @@ export class FormField extends mix( Field.Def ).with( IFieldRun, IFieldSpec, ICh
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @locus Client
      * @summary Instanciates a new FormField instance
      * @param {Object} args the Field.Def definition merged with the specification for this panel

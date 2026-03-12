@@ -17,7 +17,7 @@ export class Base {
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @returns {Base}
      */
     constructor(){

@@ -23,6 +23,38 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
 
     // private methods
 
+    /*
+     * @summary Register a new child Checker
+     * @param {Checker} child
+     */
+    _registerChild( child ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy._registerChild()', child );
+        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
+        this.#children.push( child );
+    }
+
+    /*
+     * @summary Unregister against the parent (if any)
+     */
+    _removeChild( child ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy._removeChild()', child );
+        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
+        const removedRowId = child.confRowId();
+        const children = this.rtChildren();
+        let found = -1;
+        for( let i=0 ; i<children.length ; ++i ){
+            if( children[i].confRowId() === removedRowId ){
+                found = i;
+                break;
+            }
+        }
+        if( found >= 0 ){
+            children.splice( found, 1 );
+        } else {
+            logger.warn( 'ICheckerHierarchy._removeChild() id not found', removedId );
+        }
+    }
+
     // find the topmost Checker parent
     _topmostParent(){
         const parent = this.confParent();
@@ -30,9 +62,11 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
     }
 
     /**
+     * @constructor
+     * @param {Blaze.TemplateInstance} instance the bound Blaze template instance
      * @returns {ICheckerHierarchy} the instance
      */
-    constructor( name, args ){
+    constructor( instance ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.ICheckerHierarchy()' );
         super( ...arguments );
         return this;
@@ -45,18 +79,8 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRegister()' );
         const parent = this.confParent();
         if( parent ){
-            parent.hierarchyRegisterChild( this );
+            parent._registerChild( this );
         }
-    }
-
-    /**
-     * @summary Register a new child Checker
-     * @param {Checker} child
-     */
-    hierarchyRegisterChild( child ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRegisterChild()', child );
-        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
-        this.#children.push( child );
     }
 
     /**
@@ -66,29 +90,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
     hierarchyRemove( parent ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRemove()', parent );
         assert( parent && parent instanceof Checker, 'expects an instance of Checker, got '+parent );
-        parent.hierarchyRemoveChild( this );
-    }
-
-    /**
-     * @summary Unregister against the parent (if any)
-     */
-    hierarchyRemoveChild( child ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRemoveChild()', child );
-        assert( child && child instanceof Checker, 'expects an instance of Checker, got '+child );
-        const removedId = child.confId();
-        const children = this.rtChildren();
-        let found = -1;
-        for( let i=0 ; i<children.length ; ++i ){
-            if( children[i].confId() === removedId ){
-                found = i;
-                break;
-            }
-        }
-        if( found >= 0 ){
-            children.splice( found, 1 );
-        } else {
-            logger.warn( 'ICheckerHierarchy.hierarchyRemoveChild() id not found', removedId );
-        }
+        parent._removeChild( this );
     }
 
     /**
@@ -101,9 +103,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
         if( this.enabled()){
             let args = [ ...arguments ];
             args.shift();
-            if( false && fn === '_messagerPush' && args.length ){
-                logger.debug( 'ICheckerHierarchy.hierarchyUp()', this.iCheckableId(), fn, this.confName(), args );
-            }
+            //if( fn === '_onUpdate' ) logger.debug( 'hierarchyUp()', this.iSeq(), args );
             // apply the function to this checker
             if( this[fn] ){
                 this[fn]( ...args );

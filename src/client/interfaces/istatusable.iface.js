@@ -35,10 +35,11 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
     // private methods
 
     /**
+     * @constructor
      * @returns {IStatusable} the instance
      */
-    constructor( name, args ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.IStatusable()', name, args );
+    constructor(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IStatusable.IStatusable()' );
         super( ...arguments );
         return this;
     }
@@ -121,7 +122,6 @@ export const IStatusable = DeclareMixin(( superclass ) => class extends supercla
             assert( valid == true || valid === false, 'validity must be a Boolean, found '+valid );
             this.#validity.set( valid );
         }
-        //if( this instanceof Forms.Checker && this.confName() === 'TenantEditPanel' ) logger.debug( 'iStatusableValidity()', this, valid );
         return this.#validity.get();
     }
 });

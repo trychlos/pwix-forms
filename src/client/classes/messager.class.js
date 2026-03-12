@@ -155,7 +155,7 @@ export class Messager extends mix( Base ).with( IMessager ){
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @locus Client
      * @returns {Messager} this Messager instance
      */

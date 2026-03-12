@@ -13,6 +13,7 @@
     - Define new onUpdateRegisterFn() to be called on each field update at Checker level
     - Remove IInstanciationArgs and IEnumerable interfaces, consolidating them in Panel class
     - Checker.getForm() and Checker.setForm() are moved to Panel class
+    - Restructure instanciation/initialization process, defining a new 'forms-checker-initialized' initialization event
 
 ### 1.5.0
 

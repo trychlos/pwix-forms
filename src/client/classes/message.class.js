@@ -48,7 +48,7 @@ export class Message extends mix( Base ).with(){
     // public data
 
     /**
-     * Constructor
+     * @constructor
      * @locus Everywhere
      * @param {TypedMessage} tm
      * @param {String} id the emitter ICheckable identifier

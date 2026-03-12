@@ -26,7 +26,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     // private data
 
     /**
-     * @summary Constructor
+     * @constructor
      * @returns {IMessager} the instance
      */
     constructor(){

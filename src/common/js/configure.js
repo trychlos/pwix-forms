@@ -13,6 +13,7 @@ let _conf = {};
 Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
+    checkerInitializationEvent: 'forms-checker-initialized',
     fieldStatusShow: Forms.C.ShowStatus.INDICATOR,
     fieldTypeShow: true,
     showStatusOverridable: true,

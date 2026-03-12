@@ -8,6 +8,8 @@
  * FormField specification is provided as a plain javascript object, with following keys:
  *  - js: a CSS selector; it is expected to let us address the field and its content, primarily used to setup the UI indicators
  *    it must be either the INPUT/SELECT element itself, or a parent of this element
+ *  - dom: a CSS selector to address the value itself when 'js' is not enough or too high, or the element is special
+ *    defaults to js css selector
  *  - valFrom( <item> ): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - valTo( <item>, <value> ): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
  *  - formFrom( <$node> ): a function to read the value from the form, defaulting to the 'val()' function
@@ -41,6 +43,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     // private methods
 
     /**
+     * @constructor
      * @returns {IFieldSpec} the instance
      */
     constructor( name, args ){
@@ -76,15 +79,6 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
     }
 
     /**
-     * @returns {String} the js css selector, or null
-     */
-    iSpecSelector(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecSzelector()' );
-        const defn = this._defn();
-        return defn.js || null;
-    }
-
-    /**
      * @summary This is the way the status should be displayed for this field.
      *  It is only considered if the package is configured for this way be overridable on a per-field basis.
      * @returns {String} a value from Forms.C.ShowStatus, or null
@@ -109,6 +103,16 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         return defn.form_type || null;
     }
 
+    /**
+     * @returns {String} the js css selector, or null
+     *  This UI selector is notably used for all UI operations, i.e. setting the status and validity indicators
+     */
+    iSpecUISelector(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecUISelector()' );
+        const defn = this._defn();
+        return defn.js || null;
+    }
+
     /* Maintainer note:
      *  iSpecValueFrom() get the value from the item
         It is only used if there is not specific formTo() function.
@@ -131,5 +135,16 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             value = item[this.name()];
         }
         return value;
+    }
+
+    /**
+     * @returns {String} the dom css selector, or null
+     *  This DOM selector is used for getting from / setting into the value
+     *  It defaults to UI selector.
+     */
+    iSpecDOMSelector(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldSpec.iSpecUISelector()' );
+        const defn = this._defn();
+        return defn.dom || this.iSpecUISelector();
     }
 });

@@ -11,6 +11,7 @@ import { strict as assert } from 'node:assert';
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
 import { Logger } from 'meteor/pwix:logger';
+import { Tracker } from 'meteor/tracker';
 
 import { FieldStatus } from '../../common/definitions/field-status.def.js'
 
@@ -65,10 +66,12 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
     }
 
     /**
+     * @constructor
+     * @param {Blaze.TemplateInstance} instance the bound Blaze template instance
      * @returns {ICheckerStatus} the instance
      */
-    constructor( name, args ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.ICheckerStatus()', name, args );
+    constructor( instance ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.ICheckerStatus()' );
         super( ...arguments );
         return this;
     }
@@ -89,24 +92,36 @@ export const ICheckerStatus = DeclareMixin(( superclass ) => class extends super
 
     /**
      * @summary Setup an autorun to update the OK button
+     *  At the moment, there is no update possible after the init() - so only install if they are something to do
      */
     statusInstallOkAutorun(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerStatus.statusInstallOkAutorun()' );
         const self = this;
-        //if( this instanceof Forms.Checker ) logger.debug( 'statusInstallOkAutorun()', this );
-        this.argInstance().autorun(() => {
-            const valid = self.iStatusableValidity();
-            //if( this.confName() === 'TenantEditPanel' ) logger.debug( 'statusInstallOkAutorun()', this, valid );
-            const $ok = self.conf$Ok()
-            if( $ok && $ok.length ){
-                //logger.debug( 'calling $ok autorun', self, valid );
-                $ok.prop( 'disabled', !valid );
-            }
-            const okFn = self.confOkFn()
-            if( okFn ){
-                //logger.debug( 'calling okFn autorun', self, valid );
-                okFn( valid );
-            }
-        });
+        const $object = this.confValidityObject();
+        const fnArray = this.confValidityFn().get();
+        // doesn't test now the length of $object as dom can be not yet completed
+        if(( $object ) || ( fnArray && fnArray.length )){
+            Tracker.nonreactive(() => {
+                this.argInstance().autorun( async ( c ) => {
+                    if( c.firstRun ){
+                        c.onStop(() => {
+                            // only warn when debugging - this is the normal life for a computation to finish by stop
+                            //logger.warning( 'statusInstallOkAutorun() computation stopped' );
+                        });
+                    }
+                    try {
+                        const valid = self.iStatusableValidity();
+                        if( $object && $object.length ){
+                            $object.prop( 'disabled', !valid );
+                        }
+                        for( const fn of fnArray ){
+                            Promise.resolve( fn( valid )).catch(( e ) => { logger.error( e ); });
+                        }
+                    } catch( e ){
+                        logger.error( e );
+                    }
+                });
+            });
+        }
     }
 });

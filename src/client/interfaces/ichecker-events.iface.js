@@ -52,10 +52,12 @@ export const ICheckerEvents = DeclareMixin(( superclass ) => class extends super
     }
 
     /**
+     * @constructor
+     * @param {Blaze.TemplateInstance} instance the bound Blaze template instance
      * @returns {ICheckerEvents} the instance
      */
-    constructor( name, args ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents.ICheckerEvents()', name, args );
+    constructor( instance ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents.ICheckerEvents()' );
         super( ...arguments );
         return this;
     }
