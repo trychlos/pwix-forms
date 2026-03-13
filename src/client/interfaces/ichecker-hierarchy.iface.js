@@ -114,7 +114,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
                 parent.hierarchyUp( ...arguments );
             }
         } else {
-            logger.warn( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
+            logger.info( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
         }
     }
 

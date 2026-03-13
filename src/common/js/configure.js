@@ -18,7 +18,8 @@ Forms._defaults = {
     fieldTypeShow: true,
     showStatusOverridable: true,
     showTypeOverridable: true,
-    verbosity: Forms.C.Verbose.CONFIGURE
+    verbosity: Forms.C.Verbose.CONFIGURE,
+    warnOnDuplicateName: false
 };
 
 /**

@@ -51,11 +51,17 @@ This Meteor package is installable with the usual command:
         });
     });
 
+    // because checker initialization is an async task, we have to guard against re-running the same piece of code before having set the variable
+    // because app wants a single checker as soon as it has got the ad-hoc data context, the computation is stopped when done
+    // because Forms installs an autorun() to advertise of checker validity and status, we must run under the nonreactive() protection
+
     Template.my_app_template.onRendered( function(){
         const self = this;
-        this.autorun(() => {
+        let running = false;
+        this.autorun(( comp ) => {
             let checker = self.checker.get();
-            if( !checker ){
+            if( !checker && !running ){
+                running = true;
                 Tracker.nonreactive(() => {
                     checker = new Forms.Checker( self );
                     checker.init({
@@ -66,6 +72,7 @@ This Meteor package is installable with the usual command:
                         }
                     }).then(() => {
                         self.checker.set( checker );
+                        comp.stop();
                     });
                 });
             }
@@ -269,7 +276,6 @@ Parameters:
 
 - classes: classes to be added to the displayed message whatever be its type, defaulting to none
 
-
 ## Configuration
 
 The package's behavior can be configured through a call to the `Forms.configure()` method, with just a single javascript object argument, which itself should only contains the options you want override.
@@ -348,7 +354,13 @@ Known configuration options are:
 
     - `Forms.C.Verbose.CONFIGURE`
 
-        Trace `Forms.configure()` calls and their result
+        Trace `Forms.configure()` calls and their result.
+
+        This is the default.
+
+- `warnOnDuplicateName`
+
+    Whether to warn when a checker duplicate name is detected, defaulting to `false`.
 
 Please note that `Forms.configure()` method should be called in the same terms both in client and server sides.
 

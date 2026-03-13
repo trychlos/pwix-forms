@@ -14,6 +14,7 @@
     - Remove IInstanciationArgs and IEnumerable interfaces, consolidating them in Panel class
     - Checker.getForm() and Checker.setForm() are moved to Panel class
     - Restructure instanciation/initialization process, defining a new 'forms-checker-initialized' initialization event
+    - Define a configurable guard againt checker duplicate names
 
 ### 1.5.0
 

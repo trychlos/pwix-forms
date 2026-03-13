@@ -61,6 +61,10 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
 
     // static data
 
+    // if initialized checker has a name, then register it here
+    //  then use that as a guard to warn when a same name is initialized more than once
+    static initialized = {};
+
     static confKeys(){
         return [
             'data',
@@ -595,6 +599,15 @@ export class Checker extends mix( Base ).with( ICheckerEvents, ICheckerHierarchy
             if( !panelKeys.includes( key ) && !checkerKeys.includes( key )){
                 logger.warning( 'init() \''+key+'\' is unknown from both Checker and Panel configuration keys' );
             }
+        }
+        // warns if a name has been already initialized
+        if( Forms.configure().warnOnDuplicateName && args.name && Checker.initialized[args.name] ){
+            logger.warning( 'init() a \''+args.name+'\' checker has already been initialized, the two will be kept distinct (but is that really what you want ?)');
+        }
+
+        // register the name
+        if( args.name ){
+            Checker.initialized[args.name] = true;
         }
 
         // build the configuration

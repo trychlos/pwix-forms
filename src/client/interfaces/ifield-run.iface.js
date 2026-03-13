@@ -317,13 +317,15 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
         const instance = this.iRunPanel().checker().argInstance();
         const selector = this.iSpecDOMSelector();
-        // iSpecUISelector() targets the UI node while we want here the exect DOM node where get/set the value
+        // iSpecUISelector() targets the UI node while we want here the exact DOM node where get/set the value
         // we are almost sure this is a child of UI node
         let $node = instance.$( selector+attrs );
+        //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( selector+attrs, $node, $node.length ? ( 'editable: '+$node[0].isContentEditable ) : 'no-node' );
         if( $node.length ){
             let tagName = $node.prop( 'tagName' );
             if( !inputTags.includes( tagName ) && !$node[0].isContentEditable ){
                 $node = instance.$( selector+' :input'+attrs );
+                //logger.debug( selector+' :input'+attrs, $node, 'editable', $node[0].isContentEditable );
             }
         }
         return $node.length ? $node : null;
@@ -407,7 +409,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueFrom()', this.name());
         let $node = this.iRunInputNode();
-        //if( this.name() === 'baseUrl' ) logger.debug( this, $node );
+        //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this, $node );
         let value = null;
         if( $node && $node.length ){
             const defn = this._defn();
@@ -420,15 +422,24 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 value = defn.form_formFrom( $node );
             } else {
                 value = $node.val();
-                //if( this.name() === 'baseUrl' ) logger.debug( this.name(), 'value', value );
+                //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this.name(), 'value', value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
-                //if( this.name() === 'baseUrl' ) logger.debug( this.name(), 'value', value, 'tagName', tagName, 'eltType', eltType, 'isContentEditable', $node[0].isContentEditable );
+                //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this.name(), 'value', value, 'tagName', tagName, 'eltType', eltType, 'isContentEditable', $node[0].isContentEditable );
                 if( tagName === 'INPUT' && eltType === 'checkbox' ){
                     value = $node.prop( 'checked' );
+
+                // the specified selector addresses a radio element, but we don't know if it addresses just one radio (and so each radio item should be specified too) or several items - test both
                 } else if( tagName === 'INPUT' && eltType === 'radio' ){
                     $node = this.iRunInputNode( ':checked' );
-                    value = $node.val();
+                    if( $node && $node.length ){
+                        value = $node.val();
+                    } else {
+                        $node = this.iRunInputNode( ' :checked' );
+                        if( $node && $node.length ){
+                            value = $node.val();
+                        }
+                    }
                 } else if( tagName === 'DIV' && $node[0].isContentEditable ){
                     value = $node.text();
                     //if( this.name() === 'effectEnd' ) logger.debug( this.name(), value );
@@ -456,8 +467,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunValueTo( item, opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueTo()', this.name(), item, opts );
+        //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo()', this.name(), item, opts );
         const defn = this._defn();
         const $node = this.iRunInputNode();
+        //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo()', this.name(), $node );
         if( $node ){
             if( defn.formTo ){
                 assert( typeof defn.formTo === 'function', 'expect formTo() be a function, found '+defn.formTo );
@@ -467,6 +480,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 defn.form_formTo( $node, item );
             } else {
                 const value = Object.keys( opts ).includes( 'value' ) ? opts.value : this.iSpecValueFrom( item );
+                //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo() value', this.name(), value );
                 $node.val( value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
