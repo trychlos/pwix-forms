@@ -13,8 +13,14 @@
     - Define new onUpdateRegisterFn() to be called on each field update at Checker level
     - Remove IInstanciationArgs and IEnumerable interfaces, consolidating them in Panel class
     - Checker.getForm() and Checker.setForm() are moved to Panel class
-    - Restructure instanciation/initialization process, defining a new 'forms-checker-initialized' initialization event
-    - Define a configurable guard againt checker duplicate names
+    - Restructure instanciation/initialization process, defining a new configurable 'forms-checker-initialized' initialization event
+    - Define a configurable guard against checker duplicate names
+    - Remove the Panel class
+    - Deprecate validityEvent initialization argument, replacing it with a configuration argument
+    - Define new configurable status and update events
+    - Rename 'parent' initialization argument by 'parentChecker'
+    - IStatusable and ICheckable interfaces are merged into ICheckable
+    - Better manage arrayed items thus simplifying the provided fields needed structure in that case
 
 ### 1.5.0
 
@@ -95,7 +101,7 @@
     - Fix Checker/enabled() getter
     - Stop the hierarchy up propagation when a checker is disabled
     - Make sure children are also checked
-    - Checker.messagerPush() now defaults to be self-emitted
+    - Checker.intMessagerPush() now defaults to be self-emitted
     - Fix IFieldRun._checkConsolidate() level usage
     - Honors checkStatusShow to modify the DOM context of each element field
     - Be tolerant when the HTML INPUT event emitter is a descendant of the JS-addressed node

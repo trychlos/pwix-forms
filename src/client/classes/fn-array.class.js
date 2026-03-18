@@ -56,10 +56,11 @@ export class FnArray extends mix( Base ).with(){
     /**
      * Setter
      * @locus Client
+     * @summary Register new function(s) into the functions array
      * @param {Function|Array<Function>} arg either a function or an array of function
      * @returns {FnArray} this instance
      */
-    set( arg ){
+    register( arg ){
         if( !arg || ( !_.isFunction( arg ) && !_.isArray( arg ))){
             logger.error( 'set() expects \'arg\' be a function or an array of functions, got', arg, 'throwing...' );
             throw new Error( 'bad argument: arg' );

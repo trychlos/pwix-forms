@@ -5,7 +5,7 @@
  */
 
 import _ from 'lodash';
-import { strict as assert } from 'node:assert'; // up to nodejs v16.x
+import { strict as assert } from 'node:assert';
 import mix from '@vestergaard-company/js-mixin';
 
 import { Logger } from 'meteor/pwix:logger';
@@ -61,10 +61,9 @@ export class Messager extends mix( Base ).with( IMessager ){
      */
     _first(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._first()' );
-        //this._dump({ msg: 'before' });
         const set = this._order( this.#set.get());
         const msg = set.length ? set[0].tm() : null;
-        //this._dump({ msg: 'after', set: set });
+        //logger.debug( 'first()', set.length, msg );
         return msg;
     }
 
@@ -75,11 +74,16 @@ export class Messager extends mix( Base ).with( IMessager ){
     _last(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._last()' );
         const set = this._order( this.#set.get());
-        return set.length ? set[set.length-1].tm() : null;
+        const msg = set.length ? set[set.length-1].tm() : null;
+        //logger.debug( 'last()', set.length, msg );
+        return msg;
     }
 
     /*
-     * @summary Order the set of message by increasing level order (decreasing severity) and increasing push time
+     * @summary Order the set of message by decreasing level order (decreasing severity) and decreasing push time
+     *  According to ITypedMessage interface: "we so have EMERG > ALERT > CRIT > ERR > WARNING > NOTICE > INFO > DEBUG"
+     *  and for each level, order from the most recent to the oldest
+     *  the last one being so both the less important to show and the oldest one.
      * @param {Array<Message>} set
      * @returns {Array<Message>} the ordered set
      */
@@ -91,11 +95,13 @@ export class Messager extends mix( Base ).with( IMessager ){
             if( res === 0 ){
                 const epoch_a = a.epoch();
                 const epoch_b = b.epoch();
-                res = epoch_a < epoch_b ? -1 : ( epoch_a > epoch_b ? +1 : 0 );
+                res = epoch_a < epoch_b ? +1 : ( epoch_a > epoch_b ? -1 : 0 );
             }
             return res;
         };
-        return set.sort( cmpFn );
+        set = set.sort( cmpFn );
+        //logger.debug( 'order()', set );
+        return set;
     }
 
     /*
@@ -128,7 +134,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         let newset = [];
         this.#set.get().forEach(( it ) => {
             if( ids.includes( it.emitter())){
-                //console.debug( 'removing', this, it );
+                //logger.debug( 'removing', this, it );
             } else {
                 newset.push( it );
             }
@@ -141,6 +147,7 @@ export class Messager extends mix( Base ).with( IMessager ){
      */
     _reset(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._reset()' );
+        logger.debug( 'reset()' );
         this.#set.set( [] );
     }
 

@@ -6,7 +6,7 @@
  * Usage:
  * - derive a simple class from TM.MessagesSet
  * - make it implements this interface
- * - provides it at Checker intanciation as the target of error messages.
+ * - provides it at Checker initialization as the target of error messages.
  *
  * Rationale: Checker doesn't depend of the TM.IStack interface which is a bit too complex for its needs.
  */
@@ -47,7 +47,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     }
 
     /**
-     * @summary Ask to clear the message(s) displayed in the message zone
+     * @summary Ask to dump the stacked message(s)
      */
     iMessagerDump(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerDump()' );
@@ -56,6 +56,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
 
     /**
      * @returns {TypedMessage} the first pushed TypedMessage in level order
+     *  both the greater level (lesser severity) and the last pushed
      */
     iMessagerFirst(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerFirst()' );

@@ -14,6 +14,9 @@ Forms._conf = new ReactiveVar( _conf );
 
 Forms._defaults = {
     checkerInitializationEvent: 'forms-checker-initialized',
+    checkerStatusEvent: 'forms-checker-status',
+    checkerUpdateEvent: 'forms-checker-update',
+    checkerValidityEvent: 'forms-checker-validity',
     fieldStatusShow: Forms.C.ShowStatus.INDICATOR,
     fieldTypeShow: true,
     showStatusOverridable: true,

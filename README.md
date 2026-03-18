@@ -4,7 +4,9 @@
 
 A package to manage forms in Meteor.
 
-Ideally this would be an extension of `aldeed:autoform`, but this later is not yet Meteor 3.0 compatible, while the previous `pwix:core-app.FormChecker` family was already async-ready.
+Ideally this would be an extension of `aldeed:autoform`, but this later is not (at the moment) Meteor 3.0 compatible, while the previous `pwix:core-app.FormChecker` family was already async-ready.
+
+It aims to provide a dynamic user interface where the user can easily see the result of his/her changes.
 
 ## Conceptuals
 
@@ -18,9 +20,13 @@ In the above example, the whole page should be checked for consistency, so anoth
 
 And, because a tab may itself include a tab, which itself may include another level of tabs, and so on, there must not be any limit to the count of levels of checks.
 
-So each field definition (see below) can be included in a panel, and will be managed by a `Forms.Checker` associated to this panel.
+So each field definition (see below) can be attached to a checker, and will be managed by the `Forms.Checker`.
 
 Each `Forms.Checker` may itself be a child of some other `Forms.Checker` (for example the page of tabbed panes) up to having no more parent. We build an arbitrary depth of `Forms.Checker`'s hierarchy.
+
+So the `Forms.Checker` both manages individual fields directly attached to it, and then propagates to its collaterals and its parents.
+
+Messages are stacked, and the most recent or the most important is shown first.
 
 ## Installation
 
@@ -40,15 +46,15 @@ This Meteor package is installable with the usual command:
 
     Template.my_app_template.onCreated( function(){
         const self = this;
-        self.checker = new ReactiveVar( null );
-        self.panel = new Forms.Panel({
+        self.checker = null;
+        self.fields = {
             username: {
                 js: '.js-username'
             },
             loginAllowed: {
                 js: '.js-login-allowed'
             }
-        });
+        };
     });
 
     // because checker initialization is an async task, we have to guard against re-running the same piece of code before having set the variable
@@ -59,19 +65,22 @@ This Meteor package is installable with the usual command:
         const self = this;
         let running = false;
         this.autorun(( comp ) => {
-            let checker = self.checker.get();
+            let checker = self.checker;
             if( !checker && !running ){
                 running = true;
                 Tracker.nonreactive(() => {
                     checker = new Forms.Checker( self );
                     checker.init({
-                        panel: self.panel,
                         parent: Template.currentData().checker.get(),
                         data: {
                             item: Template.currentData().item
+                        },
+                        panel: {
+                            fields: self.fields,
+                            set: app.fieldSet
                         }
                     }).then(() => {
-                        self.checker.set( checker );
+                        self.checker = checker;
                         comp.stop();
                     });
                 });
@@ -92,7 +101,7 @@ The exported `Forms` global object provides following items:
 
 This is the class which manages all the checks to be done in a panel, publishing relevant messages if any.
 
-It should be instanciated as a ReactiveVar when the DOM is rendered.
+It may be instanciated as a ReactiveVar when the DOM is rendered, so that other code can reacts when it has been instanciated.
 
 Only available on the client.
 
@@ -101,8 +110,11 @@ Only available on the client.
 Instanciation takes a single argument which is the current Blaze.TemplateInstance instance:
 
 - let us defines autorun() functions
+
 - provides a '$' jQuery operator which is tied to this template instance
+
 - provides the DOM element which will act as a global event receiver
+
 - provides the topmost DOM element to let us find all managed fields.
 
 ###### `async Forms.Checker.init( <Object> ): <Forms.Checker>`:
@@ -111,70 +123,57 @@ Before to be useful for anything, the Forms.Checker MUST be initialized, even wi
 
 The argument object is optional, and may contain following keys:
 
-- at the checker level:
+- `check`: whether a first check() is run at end of the initialization, defaulting to `true`
 
-    - `data`: an optional opaque object to be passed to field-defined or cross check functions as second argument
-    - `enabled`: whether the new checker will start with checks enabled, defaulting to true; a disabled Checker also stops messages up propagation
-    - `messager`: an optional [`Forms.IMessager`](#forms-imessager) implementation
-        > this is a caller's design decision to have a message zone per panel, or globalized at a higher level;
-        in this later case, caller doesn't need to address the globalized messager at any lower panel level: it is enough there to identify the parent Checker (if any).
-    - `name`: an optional instance name
-    - `onCrossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called when all defined field check have return `null` (aka not any message); Forms propagate this function call up to the topmost checker of the hierarchy
-        > prototype is `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`
-    - `onUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update; Forms propagate this function call up to the topmost checker of the hierarchy
-        > prototype is `async updateFn( data<Any>, opts<Object> ): void`
-    - `onValidityChangeRegisterFn`: if set, a function or an array of functions to be called when the validity of the checker changes
-        > prototype is `async validityChangeFn( valid<Boolean> ): void`
-        > this used to be a `okFn()` function argument, which has been deprecated starting with v1.6
-    - `panel`: an optional `Forms.Panel` instance which defines the managed fields
-    - `parent`: an optional parent Checker instance
-    - `trace`: whether to trace the initialization, defaulting to false
-    - `validityEvent`: if set, the event used to advertise of each Checker validity status, defaulting to 'forms-checker-validity'
-    - `validityObject`: if set, a JQuery object which will be automatically enabled/disabled on validity changes
-        > this used to be a `$ok` argument, which has been deprecated starting with v1.6
+- `crossCheckRegisterFn`: if set, a cross check function or an array of cross check functions to be called when the checker is valid (aka not any message); `Forms` propagate this function call up to the topmost checker of the hierarchy
+    prototype is `async crossCheckFn( data<Any>, opts<Object> ): null|Array<TypedMessage>`
 
-- at the panel level if one is defined:
+- `data`: an optional opaque object to be passed to field-defined functions as second argument, or cross check function as first argument
 
-    - `fieldStatusShow`: whether and how to display the result indicator on the right of the field, either `false` or a value from `Forms.C.ShowStatus`; only considered if the corresponding package configured value is overridable
-    - `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
-    - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
-    - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
-    - `rowId`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
-        > this used to be an `id` argument, which has been deprecated starting with v1.6
-    - `setForm`: if set, the item to be used to fill-in the form at initialization, defaulting to none
+- `enabled`: whether the new checker will start with checks enabled, defaulting to `true`; a disabled Checker doesn't check nor propagates
 
-The `Forms.Checker` triggers a `forms-checker-initialized` event on the Blaze topmost DOM element at the end of the initialization. The event holds data as:
+- `fieldStatusShow`: whether and how to display the result indicator on the right of the field, either `false` or a value from `Forms.C.ShowStatus`; only considered if the corresponding package configured value is overridable
 
-- `checker`
-- `checkableId`
-- `status`
-- `validity`
+- `fieldTypeShow`: whether to display a field type indicator on the left of each field; this value overrides the configured default value; it only applies if the field is itself qualified with a 'type' in the Forms.FieldType set
+
+- `messager`: an optional [`Forms.IMessager`](#forms-imessager) implementation
+
+    this is a caller's design decision to have a message zone per form panel, or globalized at a higher level;
+    in this later case, caller doesn't need to address the globalized messager at any lower panel level: it is enough to identify it at the parent Checker level (if any); the up-propagation will eventually feed the messager.
+
+- `name`: an optional instance name
+
+- `onFieldUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update; Forms propagate this function call up to the topmost checker of the hierarchy
+    prototype is `async onFieldUpdateFn( data<Any>, opts<Object> ): void`
+
+- `onValidityChangeRegisterFn`: if set, a function or an array of functions to be called when the validity of the checker changes
+    prototype is `async onValidityChangeFn( valid<Boolean> ): void`
+    this used to be a `okFn()` function argument, which has been deprecated starting with v1.6
+
+- `panel`: an optional object which describes the fields to be managed, with following keys:
+
+    - `fields`: the fields to be managed in this form panel, as an object indexed by the fields name
+
+    - `set`: an optional `Field.Set` object which will provide default definitions for the fields.
+
+- `parentChecker`: an optional parent Checker instance
+    this used to be `parent`, which has been deprecated starting with v1.6
+
+- `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
+
+- `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
+
+- `rowId`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
+    this used to be an `id` argument, which has been deprecated starting with v1.6
+
+- `trace`: whether to trace the initialization, defaulting to `false`
+
+- `validityObject`: if set, a JQuery object which will be automatically enabled/disabled on validity changes
+    this used to be a `$ok` argument, which has been deprecated starting with v1.6
 
 ##### `Forms.Messager`
 
 Display the messages resulting from the done checks, as a stack ordered by level order first, and push time order then.
-
-##### `Forms.Panel`
-
-Let the calling application defines the fields managed in the panel, taking most of its values from a previously defined `Field.Set` object.
-
-Usage:
-
-```js
-    import { Field } from 'meteor/pwix:field';
-    import { Forms } from 'meteor/pwix:forms';
-
-    const panel = new Forms.Panel({
-        username: {
-            js: '.js-username'
-        },
-        loginAllowed: {
-            js: '.js-login-allowed'
-        }
-    }, myCollection.fieldsSet );
-```
-
-Only available on the client.
 
 #### Functions
 
@@ -192,11 +191,29 @@ Available both on the client and the server.
 
 ##### `Forms.ICheckable`
 
-An interface whichs adds to the implementor the capability of being checked (i.e. have a `check()` function), and to provide the expected result.
+An interface whichs adds to the implementor the capability of being checked (i.e. have a `check()` function), and to provide the expected result. It so has too a status and a validity.
 
 Each implementation instance is provided a random unique identifier at instanciation time. This identifier let us manages the published `TypedMessage`'s by emitter.
 
 Both `Checker` and `FormField` classes implement this interface.
+
+Main available methods are:
+
+- `Forms.ICheckable.iCheckableId()`
+
+Returns the internal identifier of this `ICheckable`.
+
+- `Forms.ICheckable.iCheckableTMsResult()`
+
+Returns the last check result of this `ICheckable`, as an array of `TypedMessage`'s, or null.
+
+- `Forms.ICheckable.iCheckableStatus()`
+
+Returns the last `FieldStatus` of this `ICheckable`, may be `FieldStatus.C.NONE`.
+
+- `Forms.ICheckable.iCheckableValidity()`
+
+Returns the last `true`|`false` validity of this `ICheckable`.
 
 ##### `Forms.IMessager`
 
@@ -276,6 +293,50 @@ Parameters:
 
 - classes: classes to be added to the displayed message whatever be its type, defaulting to none
 
+## Events
+
+Following events are sent by the package:
+
+- `forms-checker-initialized`
+
+    On the Blaze topmost DOM element of the checker.
+
+    Sent at the end of the initialization.
+    
+    Held data is:
+
+    - `checker`
+    - `checkableId`
+    - `status`
+    - `validity`
+
+- `forms-checker-update`
+
+    On the Blaze topmost DOM element of the checker.
+
+    Sent each time a user input is detected after field checks.
+    
+    Held data is:
+
+    - `checker`
+    - `checkableId`
+    - `status`
+    - `validity`
+    - `origin`
+
+- `forms-checker-validity`
+
+    On the Blaze topmost DOM element of the checker.
+
+    Sent each time the validity status of the checker changes.
+    
+    Held data is:
+
+    - `checker`
+    - `checkableId`
+    - `status`
+    - `validity`
+
 ## Configuration
 
 The package's behavior can be configured through a call to the `Forms.configure()` method, with just a single javascript object argument, which itself should only contains the options you want override.
@@ -285,6 +346,10 @@ Known configuration options are:
 - `checkerInitializationEvent`
 
     The event to be fired when a checker is successfully initialized, defaulting to `forms-checker-initialized`.
+
+- `checkerValidityEvent`
+
+    The event to be fired when the validity of the checker changes, defaulting to `forms-checker-validity`.
 
 - `fieldStatusShow`
 

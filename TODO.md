@@ -12,14 +12,16 @@
 | ---: | :---       | :---                       |
 |    1 | 2024- 6-15 | get rid of Meteor.isDevelopment, replacing with a value from EnvSettings |
 |    2 | 2024- 1-13 | Checker doesn't work for radio buttons (moved from pwix:core-app) |
-|    3 | 2024- 9-13 | panel.class: warn only once when a name is unknowned |
-|    4 |  |  |
+|    4 | 2026- 3-17 | Panel class is obsoleted starting with v1.6 - remove it sometime in the future |
+|    5 |  |  |
 
 ---
 ## Done
 
 |   Id | Date       | Description and comment(s) |
 | ---: | :---       | :---                       |
+|    3 | 2024- 9-13 | panel.class: warn only once when a name is unknowned |
+|      | 2026- 3-17 | obsoleted as Panel class is obsoleted |
 
 ---
 P. Wieser

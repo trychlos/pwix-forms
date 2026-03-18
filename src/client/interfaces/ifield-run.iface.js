@@ -1,7 +1,7 @@
 /*
  * pwix:forms/src/client/interfaces/ifield-run.iface.js
  *
- * IFieldRun is the interface to let an application's panel manage the field at runtime.
+ * IFieldRun is the interface to let an application's manage the field at runtime.
  */
 
 import _ from 'lodash';
@@ -21,7 +21,6 @@ import { FieldStatus } from '../../common/definitions/field-status.def.js';
 import { FieldType } from '../../common/definitions/field-type.def.js'
 
 import { Checker } from '../classes/checker.class.js';
-import { Panel } from '../classes/panel.class.js';
 
 const logger = Logger.get();
 
@@ -31,8 +30,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     // runtime data
 
-    // the parent Panel
-    #panel = null;
+    // the parent Checker
+    #checker = null;
 
     // dynamically rendered Blaze views
     #views = [];
@@ -44,21 +43,20 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     //  cf. Checker.check for a description of known options
     async _checkAfter( checker, opts, value, checkRes ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkAfter()', this.name(), opts, value, checkRes );
-        checkRes = this.iCheckableResult( checkRes );
-        // consolidate received TypedMessage's into a single validity and status for the field
-        this._checkTMConsolidate( value, checkRes );
-        // set the status indicator
+        // compute a single validity and status for the field from the received result
+        this._checkComputeFieldState( value, checkRes );
+        // set the status indicator in the UI
         const display = this.iRunShowStatus();
         if( display === Forms.C.ShowStatus.BOOTSTRAP ){
             const $node = this.iRunUINode();
             if( $node ){
-                $node.addClass( this.iStatusableValidity() ? 'is-valid' : 'is-invalid' );
+                $node.addClass( this.iCheckableValidity() ? 'is-valid' : 'is-invalid' );
             }
         }
-        // push all returned TypedMessage's up to the hierarchy - stopping if a checker is not enabled
-        checker.messagerPush( checkRes, this.iCheckableId());
-        // consolidate the status at the Checker level
-        await checker.statusConsolidate( opts );
+        // propagate all returned TypedMessage's up to first available messager the hierarchy (stopping if a checker is not enabled)
+        checker.intMessagerPush( checkRes, this.iCheckableId());
+        // consolidate status and validity at the Checker level
+        await checker.intConsolidateState( opts );
     }
 
     // some initializations and clearings before any check of the field
@@ -70,20 +68,25 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         if( $node ){
             $node.removeClass( 'is-valid is-invalid' );
         }
-        // clear the last messages we have emitted
-        checker.messagerRemove([ this.iCheckableId() ]);
+        // clear the last messages we have emitted previously
+        // and the messages sent by checker and up
+        checker.intMessagerRemoveByIds([ this.iCheckableId() ]);
+        checker.intCheckersClear();
     }
 
     /*
      * @summary Compute one validity boolean flag and one status value for this field from the Array<TypedMessage>'s result
      *  Do not display any status if the field is empty
      */
-    _checkTMConsolidate( value, res ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkConsolidate()', this.name(), value, res );
+    _checkComputeFieldState( value, res ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkComputeFieldState()', this.name(), value, res );
+        // first store the result for this field and get the normalized result
+        res = this.iCheckableTMsResult( res );
+        // and compute a state from the array of messages
         let valid = true;
         let status = FieldStatus.C.NONE;
         if( res ){
-            const o = this.iStatusableConsolidate( res );
+            const o = this.iCheckableComputeFromTMs( res );
             status = o.status;
             valid = o.valid;
         // if no err has been reported, may want show a status depending of the type of the field
@@ -100,9 +103,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         }
         // do not change the field status if it has been defined as transparent
         if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
-            this.iStatusableStatus( status );
+            this.iCheckableStatus( status );
         }
-        this.iStatusableValidity( valid );
+        this.iCheckableValidity( valid );
     }
 
     /*
@@ -117,7 +120,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             const data = {
                 type: type
             };
-            const parentNode = $node.closest( '.'+this.iRunPanel().confParentClass())[0];
+            const parentNode = $node.closest( '.'+this.iRunChecker().confParentClass())[0];
             this.#views.push( Blaze.renderWithData( Template.FormsTypeIndicator, data, parentNode, $node[0] ));
         }
     }
@@ -128,7 +131,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     async _initRightSibling(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initRightSibling()', this.name());
-        const siblingClass = this.iRunPanel().confRightSiblingClass();
+        const siblingClass = this.iRunChecker().confRightSiblingClass();
         const $node = this.iRunUINode();
         let res = null;
         if( siblingClass && $node ){
@@ -157,18 +160,18 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     async _initSuffixStatus(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initSuffixStatus()', this.name());
         const display = this.iRunShowStatus();
-        const panel = this.iRunPanel();
-        assert( panel && panel instanceof Forms.Panel, 'expects an instance of Forms.Panel' );
+        const checker = this.iRunChecker();
+        assert( checker && checker instanceof Forms.Checker, 'expects an instance of Forms.Checker, got'+checker );
         if( display === Forms.C.ShowStatus.INDICATOR || display === Forms.C.ShowStatus.TRANSPARENT ){
             const $node = this.iRunUINode();
             if( $node ){
-                const $parentNode = $node.closest( '.'+panel.confParentClass());
+                const $parentNode = $node.closest( '.'+checker.confParentClass());
                 assert( $parentNode && $parentNode.length, 'unexpected parent not found' );
-                const siblingClass = panel.confRightSiblingClass();
+                const siblingClass = checker.confRightSiblingClass();
                 const $sibling = $parentNode.find( '.'+siblingClass );
                 assert( $sibling && $sibling.length, 'unexpected sibling not found' );
                 const data = {
-                    statusRv: this.iStatusableStatusRv()
+                    statusRv: this.iCheckableStatusRv()
                 };
                 this.#views.push( Blaze.renderWithData( Template.FormsStatusIndicator, data, $parentNode[0], $sibling[0] ));
             }
@@ -185,7 +188,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._initWrapParent()', this.name(), opts );
         if( opts.trace ) logger.debug( '_initWrapParent()', this.name(), 'entering with', opts );
 
-        const parentClass = this.iRunPanel().confParentClass();
+        const parentClass = this.iRunChecker().confParentClass();
         if( opts.trace ) logger.debug( '_initWrapParent()', this.name(), 'parentClass', parentClass );
 
         const $node = this.iRunUINode();
@@ -226,7 +229,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /**
      * @locus Anywhere
-     * @summary Check the field
+     * @summary Check the field - and that's all
      * @param {Any} opts an optional behaviour options
      *  cf. Checker.check() for a description of the known options
      * @returns {Boolean} the true|false validity status for this field
@@ -234,9 +237,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     async iFieldRunCheck( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunCheck()', this.name(), opts );
         let valid = true;
-        const panel = this.iRunPanel();
-        assert( panel && panel instanceof Forms.Panel, 'expects an instance of Forms.Panel, got '+panel );
-        const checker = panel.checker();
+        const checker = this.iRunChecker();
         assert( checker && checker instanceof Forms.Checker, 'expects an instance of Forms.Checker, got '+checker );
         if( checker.enabled()){
             // some initializations and clearings before any check of this field
@@ -245,34 +246,33 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             // if a check function has been defined, calls it (warning once if not exists)
             const checkFn = this.iSpecCheck();
             if( checkFn ){
-                opts.rowId = panel.confRowId();
+                opts.rowId = checker.confRowId();
                 const value = this.iRunValueFrom();
                 const res = await checkFn( value, checker.confData(), opts );
                 await this._checkAfter( checker, opts, value, res );
             }
-            valid = this.iStatusableValidity();
             // run onUpdate() hooks
             if( opts.update !== false ){
-                //logger.debug( 'iFieldRunCheck()', this.name(), 'calling checker.onUpdate()' );
-                await checker.onUpdate( opts );
+                await checker.intOnUpdate( this, opts );
             }
+            valid = this.iCheckableValidity();
         }
         return valid;
     }
 
     /**
      * @summary Initialize the runtime data at Checker instanciation
-     * @param {Panel} panel
+     * @param {Checker} checker
      * @param {Object} opts an optional options object with following keys:
      *  - trace: whether to verbosely trace, defaulting to false
      */
-    async iFieldRunInit( panel, opts={} ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunInit()', this.name(), panel );
-        assert( panel && panel instanceof Forms.Panel, 'expects an instance of Forms.Panel, got '+panel );
-        if( opts.trace ) logger.debug( 'iFieldRunInit()', this.name(), 'entering with', panel, opts );
+    async iFieldRunInit( checker, opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iFieldRunInit()', this.name(), checker );
+        assert( checker && checker instanceof Forms.Checker, 'expects an instance of Forms.Checker, got '+checker );
+        if( opts.trace ) logger.debug( 'iFieldRunInit()', this.name(), 'entering with', checker, opts );
 
-        this.iRunPanel( panel );
-        if( opts.trace ) logger.debug( 'iFieldRunInit()', this.name(), 'panel set' );
+        this.iRunChecker( checker );
+        if( opts.trace ) logger.debug( 'iFieldRunInit()', this.name(), 'checker set' );
 
         await this._initWrapParent( opts );
         if( opts.trace ) logger.debug( 'iFieldRunInit()', this.name(), '_initWrapParent() done' );
@@ -315,7 +315,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunInputNode( attrs='' ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunInputNode()', this.name(), attrs );
         const inputTags = [ 'INPUT', 'SELECT', 'TEXTAREA' ];
-        const instance = this.iRunPanel().checker().argInstance();
+        const instance = this.iRunChecker().intInstance();
         const selector = this.iSpecDOMSelector();
         // iSpecUISelector() targets the UI node while we want here the exact DOM node where get/set the value
         // we are almost sure this is a child of UI node
@@ -332,16 +332,16 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     }
 
     // Getter/Setter
-    // Getter is called from iFieldRunInit() at Panel instanciation time
-    // the attached panel
-    iRunPanel( panel ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunPanel()', this.name(), panel );
-        if( panel !== undefined ){
-            assert( panel && panel instanceof Forms.Panel, 'expects an instance of Forms.Panel' );
-            this.#panel = panel;
+    // Getter is called from iFieldRunInit() at FormField initialization time
+    // the attached checker
+    iRunChecker( checker ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunChecker()', this.name(), checker );
+        if( checker !== undefined ){
+            assert( checker && checker instanceof Forms.Checker, 'expects an instance of Forms.Checker' );
+            this.#checker = checker;
         }
-        const o = this.#panel;
-        assert( o && o instanceof Forms.Panel, 'expects an instance of Forms.Panel' );
+        const o = this.#checker;
+        assert( o && o instanceof Forms.Checker, 'expects an instance of Forms.Checker' );
         return o;
     }
 
@@ -353,7 +353,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunShowStatus(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunShowStatus()', this.name());
-        let display = this.iRunPanel().confDisplayStatus();
+        let display = this.iRunChecker().confDisplayStatus();
         const overridable = Forms.configure().showStatusOverridable;
         if( overridable ){
             const status = this.iSpecStatus();
@@ -371,7 +371,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunShowType(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunShowType()', this.name());
-        let display = this.iRunPanel().confDisplayType();
+        let display = this.iRunChecker().confDisplayType();
         const overridable = Forms.configure().showTypeOverridable;
         if( overridable ){
             const status = this.iSpecType();
@@ -388,7 +388,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunUINode(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunUINode()', this.name());
-        const instance = this.iRunPanel().checker().argInstance();
+        const instance = this.iRunChecker().intInstance();
         const selector = this.iSpecUISelector();
         const $node = instance.$( selector );
         return $node.length ? $node : null;
@@ -398,8 +398,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      *  iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
      *  see iSpecValueFrom() to get the value from the item
      * 
-     *  formFrom(), formTo() functions can be defined at the panel level
-     *  form_formFrom(), form_formTo() functions can be defined at the fieldset level (though not suggested as they are rather panel specifics)
+     *  formFrom(), formTo() functions can be defined at the checker level
+     *  form_formFrom(), form_formTo() functions can be defined at the fieldset level (though not suggested as they are rather form specifics)
      */
 
     /**

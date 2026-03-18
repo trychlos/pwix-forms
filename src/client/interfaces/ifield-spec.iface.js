@@ -118,6 +118,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         It is only used if there is not specific formTo() function.
      *  Setting (whether reactively or not) the value into the item is the responsability of checkfFn functions
      *  see iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
+     * 
+     *  If the name is an arrayed one ('emails.$.label'), then the provided 'item' is the row. So only consider the last part of the name
      */
 
     /**
@@ -132,7 +134,12 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             assert( typeof defn.form_itemFrom === 'function', 'expect form_itemFrom() be a function, found '+defn.form_itemFrom );
             value = defn.form_itemFrom( item );
         } else {
-            value = item[this.name()];
+            let name = this.name();
+            if( name.match( /\.\$\./ )){
+                const w = name.split( '.' );
+                name = w[w.length-1];
+            }
+            value = item[name];
         }
         return value;
     }

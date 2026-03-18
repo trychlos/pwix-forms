@@ -57,7 +57,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
 
     // find the topmost Checker parent
     _topmostParent(){
-        const parent = this.confParent();
+        const parent = this.confParentChecker();
         return parent ? parent._topmostParent() : this;
     }
 
@@ -77,7 +77,7 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      */
     hierarchyRegister(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyRegister()' );
-        const parent = this.confParent();
+        const parent = this.confParentChecker();
         if( parent ){
             parent._registerChild( this );
         }
@@ -98,23 +98,24 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      * @param {String} fn function name
      * @param {Any} args to pass to the function
      */
-    hierarchyUp( fn ){
+    async hierarchyUp( fn ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyUp()' );
         if( this.enabled()){
             let args = [ ...arguments ];
             args.shift();
-            //if( fn === '_onUpdate' ) logger.debug( 'hierarchyUp()', this.iSeq(), args );
             // apply the function to this checker
             if( this[fn] ){
-                this[fn]( ...args );
+                await this[fn]( ...args );
             }
             // up to the parent if any
-            const parent = this.confParent();
+            const parent = this.confParentChecker();
             if( parent ){
-                parent.hierarchyUp( ...arguments );
+                await parent.hierarchyUp( ...arguments );
             }
         } else {
-            logger.info( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
+            // since we have an init() async function, the checker is disabled at least until the end of the initialization
+            // so this becomes a bit verbose
+            //logger.info( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
         }
     }
 

@@ -18,7 +18,7 @@
  */
 
 import _ from 'lodash';
-import { strict as assert } from 'node:assert'; // up to nodejs v16.x
+import { strict as assert } from 'node:assert';
 import mix from '@vestergaard-company/js-mixin';
 
 import { Logger } from 'meteor/pwix:logger';
@@ -62,6 +62,7 @@ export class Message extends mix( Base ).with(){
         this.#tm = tm;
         this.#id = id;
         this.#epoch = Date.now();
+        //logger.debug( this, tm.iTypedMessageLevel(), tm.iTypedMessageMessage());
         return this;
     }
 
