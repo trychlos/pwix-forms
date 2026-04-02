@@ -21,6 +21,7 @@
     - Rename 'parent' initialization argument by 'parentChecker'
     - IStatusable and ICheckable interfaces are merged into ICheckable
     - Better manage arrayed items thus simplifying the provided fields needed structure in that case
+    - FormField and Checker can now have a 'form_trace' (resp. 'trace') attribute
 
 ### 1.5.0
 

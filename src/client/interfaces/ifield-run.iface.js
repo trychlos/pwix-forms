@@ -70,8 +70,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         }
         // clear the last messages we have emitted previously
         // and the messages sent by checker and up
-        checker.intMessagerRemoveByIds([ this.iCheckableId() ]);
-        checker.intCheckersClear();
+        await checker.intMessagerRemoveByIds([ this.iCheckableId() ]);
+        await checker.intCheckersClear();
+        //await checker.intMessagerDump();
     }
 
     /*
@@ -221,8 +222,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      * @constructor
      * @returns {IFieldRun} the instance
      */
-    constructor( name, args ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.IFieldRun()', name );
+    constructor( args ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.IFieldRun()', args );
         super( ...arguments );
         return this;
     }
@@ -409,11 +410,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     iRunValueFrom(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueFrom()', this.name());
         let $node = this.iRunInputNode();
-        //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this, $node );
+        if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), $node );
         let value = null;
         if( $node && $node.length ){
             const defn = this._defn();
-            //if( this.name() === 'effectEnd' ) logger.debug( this.name(), 'defn:', defn );
+            if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), defn );
             if( defn.formFrom ){
                 assert( typeof defn.formFrom === 'function', 'expect formFrom() be a function, found '+defn.formFrom );
                 value = defn.formFrom( $node );
@@ -422,10 +423,11 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 value = defn.form_formFrom( $node );
             } else {
                 value = $node.val();
-                //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this.name(), 'value', value );
+                // attributes are initial markup, properties are live runtime data
+                if( this.iSpecTrace()) logger.debug( this.name(), 'jquery value', value, 'attr value', $node[0].getAttribute( 'value' ), 'prop value', $node[0].value, 'prop checked', $node[0].checked );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );
-                //if( this.name() === 'token_endpoint_auth_method' ) logger.debug( this.name(), 'value', value, 'tagName', tagName, 'eltType', eltType, 'isContentEditable', $node[0].isContentEditable );
+                if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), 'value', value, 'tagName', tagName, 'eltType', eltType, 'isContentEditable', $node[0].isContentEditable );
                 if( tagName === 'INPUT' && eltType === 'checkbox' ){
                     value = $node.prop( 'checked' );
 
@@ -434,10 +436,12 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     $node = this.iRunInputNode( ':checked' );
                     if( $node && $node.length ){
                         value = $node.val();
+                        if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), $node, ':checked', value );
                     } else {
                         $node = this.iRunInputNode( ' :checked' );
                         if( $node && $node.length ){
                             value = $node.val();
+                            if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), $node, ' :checked', value );
                         }
                     }
                 } else if( tagName === 'DIV' && $node[0].isContentEditable ){
@@ -455,7 +459,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 */
             }
         }
-        //if( this.name() === 'baseUrl' ) logger.debug( 'returning', value );
+        if( this.iSpecTrace()) logger.debug( 'iRunValueFrom()', this.name(), 'eventually returning', value );
         return value;
     }
 
@@ -467,20 +471,22 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
      */
     iRunValueTo( item, opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun.iRunValueTo()', this.name(), item, opts );
-        //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo()', this.name(), item, opts );
+        if( this.iSpecTrace()) logger.debug( 'iRunValueTo()', this.name(), item, opts );
         const defn = this._defn();
         const $node = this.iRunInputNode();
-        //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo()', this.name(), $node );
+        if( this.iSpecTrace()) logger.debug( 'iRunValueTo()', this.name(), $node );
         if( $node ){
             if( defn.formTo ){
                 assert( typeof defn.formTo === 'function', 'expect formTo() be a function, found '+defn.formTo );
+                if( this.iSpecTrace()) logger.debug( 'iRunValueTo()', this.name(), 'calling defn.formTo()');
                 defn.formTo( $node, item );
             } else if( defn.form_formTo ){
                 assert( typeof defn.form_formTo === 'function', 'expect form_formTo() be a function, found '+defn.form_formTo );
+                if( this.iSpecTrace()) logger.debug( 'iRunValueTo()', this.name(), 'calling defn.form_formTo()');
                 defn.form_formTo( $node, item );
             } else {
                 const value = Object.keys( opts ).includes( 'value' ) ? opts.value : this.iSpecValueFrom( item );
-                //if( this.name() === 'contacts.$.email' ) logger.debug( 'RunValueTo() value', this.name(), value );
+                if( this.iSpecTrace()) logger.debug( 'iRunValueTo()', this.name(), value );
                 $node.val( value );
                 const tagName = $node.prop( 'tagName' );
                 const eltType = $node.attr( 'type' );

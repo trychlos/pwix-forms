@@ -16,11 +16,13 @@ import { Tracker } from 'meteor/tracker';
 import { Base } from './base.class.js';
 import { Message } from './message.class.js';
 
+import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
+import { ISeq } from '../interfaces/iseq.iface.js';
 
 const logger = Logger.get();
 
-export class Messager extends mix( Base ).with( IMessager ){
+export class Messager extends mix( Base ).with( IMessager, ISeq ){
 
     // static data
 
@@ -50,7 +52,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         let msg = opts.msg || '';
         msg = msg ? '.'+msg : msg;
         set.forEach(( it ) => {
-            logger.debug( 'dump['+i+'] tm'+msg, it.tm().iTypedMessageLevel(), it.tm(), 'emitter', it.emitter());
+            logger.debug( 'dump() iSeq='+this.iSeq(), '['+i+'/'+set.length+']: tm'+msg, it.tm().iTypedMessageLevel(), it.tm(), 'emitter', it.emitter(), ICheckable.byId( it.emitter()));
             i += 1;
         });
     }
@@ -134,7 +136,7 @@ export class Messager extends mix( Base ).with( IMessager ){
         let newset = [];
         this.#set.get().forEach(( it ) => {
             if( ids.includes( it.emitter())){
-                //logger.debug( 'removing', this, it );
+                //logger.debug( 'removing', this, it, it.tm());
             } else {
                 newset.push( it );
             }
@@ -170,6 +172,8 @@ export class Messager extends mix( Base ).with( IMessager ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager.Messager()' );
         super( ...arguments );
         const self = this;
+
+        this.iSeqAllocate( 'Messager' );
 
         // track the length
         if( false ){

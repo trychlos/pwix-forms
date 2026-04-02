@@ -321,6 +321,12 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
         return rowId;
     }
 
+    // whether to be verbose on the execution
+    confTrace(){
+        const trace = this.#conf.trace;
+        return !!trace;
+    }
+
     // returns the function(s) to be called on a validity changes, may be empty
     confValidityChangeFn(){
         return this.#conf.hooks.validityChange || new FnArray();

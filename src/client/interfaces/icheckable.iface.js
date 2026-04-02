@@ -53,7 +53,13 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
     constructor(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable.ICheckable()' );
         super( ...arguments );
+        
+        // allocate a random identifier
         this.#id = Random.id();
+
+        // register this checkable
+        ICheckable._registry[this.#id] = this;
+
         return this;
     }
 
@@ -171,3 +177,9 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
         return this.#validity.get();
     }
 });
+
+ICheckable._registry = {};
+
+ICheckable.byId = function( id ){
+    return ICheckable._registry[id];
+};

@@ -137,7 +137,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      */
     async _inHierarchyCrossCheck( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._inHierarchyCrossCheck()' );
-        //logger.debug( 'Checker._inHierarchyCrossCheck()', this.iSeq());
+        if( this.confTrace()) logger.debug( '_inHierarchyCrossCheck()', this.iSeq());
         const valid = this.iCheckableValidity();
         if( valid ){
             await this.crossCheck( opts );
@@ -158,6 +158,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._inHierarchyMessagerDump()', this.iSeq());
         const messager = this.confIMessager();
         if( messager ){
+            if( this.conTrace()) logger.debug( '_inHierarchyMessagerDump() checker='+this.iSeq(), 'has a messager' );
             messager.iMessagerDump();
         }
     }
@@ -166,8 +167,8 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     async _inHierarchyMessagerPush( tms, id ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._inHierarchyMessagerPush()',this.iSeq(), tms, id );
         const messager = this.confIMessager();
-        //if( this.confName()) logger.debug( '_inHierarchyMessagerPush', this.confName(), this.iCheckableId(), messager, tms );
         if( messager ){
+            if( this.confTrace()) logger.debug( '_inHierarchyMessagerPush', this.confName(), this.iCheckableId(), messager, tms, id );
             messager.iMessagerPush( tms, id );
         }
     }
@@ -212,7 +213,6 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.intConsolidateState()', opts );
         await this._consolidateFields( opts );
         await this._consolidateChildren( opts );
-        //logger.debug( 'checker valid', this.iSeq(), this.iCheckableValidity());
         const parent = this.confParentChecker();
         if( parent ){
             await parent.hierarchyUp( '_inHierarchyConsolidateState' );
@@ -224,6 +224,15 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         const instance = this.#instance || null;
         assert( instance && instance instanceof Blaze.TemplateInstance, 'instance is expected to be a Blaze.TemplateInstance instance' );
         return instance;
+    }
+
+    /*
+     * @summary Dump the messages stack
+     */
+    async intMessagerDump(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.intMessagerDump()', this.iSeq(),);
+        if( this.confTrace()) logger.debug( 'intMessagerDump() checker='+this.iSeq());
+        await this.hierarchyUp( '_inHierarchyMessagerDump' );
     }
 
     /*
@@ -355,6 +364,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      */
     async clearForm( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.clearForm()', this.iSeq(), opts );
+        if( this.confTrace()) logger.debug( 'clearForm()', this.name())
         for( const it of this.fieldsArray()){
             it.spec.iRunValueTo({}, { value: null });
         }
@@ -374,7 +384,6 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      */
     async crossCheck( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.crossCheck()', this.iSeq(), opts );
-        //logger.debug( 'crossCheck()', this.iSeq());
         let msgs = [];
         // clear the last messages we may have emitted previously
         await this.intMessagerRemoveByIds( this.iCheckableId());
@@ -461,6 +470,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      */
     async setForm( item, opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.setForm()', this.iSeq(), item, opts );
+        if( this.confTrace()) logger.debug( 'setForm()', this.name())
         for( const it of this.fieldsArray()){
             await it.spec.iRunValueTo( item, opts );
         }

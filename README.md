@@ -166,7 +166,7 @@ The argument object is optional, and may contain following keys:
 - `rowId`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
     this used to be an `id` argument, which has been deprecated starting with v1.6
 
-- `trace`: whether to trace the initialization, defaulting to `false`
+- `trace`: whether to be verbose on the execution, defaulting to `false`
 
 - `validityObject`: if set, a JQuery object which will be automatically enabled/disabled on validity changes
     this used to be a `$ok` argument, which has been deprecated starting with v1.6
