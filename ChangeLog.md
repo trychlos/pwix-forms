@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Re-install missing Checker.messagerPush()
 
 ### 1.6.0
 

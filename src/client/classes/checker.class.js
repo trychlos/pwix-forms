@@ -227,21 +227,12 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     }
 
     /*
-     * @summary Dump the messages stack
-     */
-    async intMessagerDump(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.intMessagerDump()', this.iSeq(),);
-        if( this.confTrace()) logger.debug( 'intMessagerDump() checker='+this.iSeq());
-        await this.hierarchyUp( '_inHierarchyMessagerDump' );
-    }
-
-    /*
      * @summary Propagate the given TypedMessage's originated from the given 'id' up to first available Messager
      * @param {TypedMessage|Array<TypedMessage>} tms
      * @param {String} id the emitter ICheckable identifier, defaulting to this Checker
      */
-    async intMessagerPush( tms, id=null ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.intMessagerPush()', this.iSeq(), tms, id );
+    async messagerPush( tms, id=null ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerPush()', this.iSeq(), tms, id );
         await this.hierarchyUp( '_inHierarchyMessagerPush', tms, id || this.iCheckableId());
     }
 
@@ -401,7 +392,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         this.iCheckableStatus( o.status  );
         this.iCheckableValidity( o.valid );
         // propagate all returned TypedMessage's up to first available messager the hierarchy (stopping if a checker is not enabled)
-        this.intMessagerPush( msgs, this.iCheckableId());
+        this.messagerPush( msgs, this.iCheckableId());
         // and ask the parent to consolidate the state of its children
         const parent = this.confParentChecker();
         if( parent ){
@@ -435,6 +426,15 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     async messagerDump(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerDump()', this.iSeq());
         await this.hierarchyUp( '_inHierarchyMessagerDump' );
+    }
+
+    /**
+     * @param {TypedMessage|Array<TypedMessage>} tms
+     * @param {String} id the emitter ICheckable identifier, defaulting to this Checker
+     */
+    messagerPush( tms, id=null ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerPush()', this.iSeq(), tms, id );
+        this.hierarchyUp( '_inHierarchyMessagerPush', tms, id || this.iCheckableId());
     }
 
     /**
@@ -621,8 +621,8 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     errorSet( tm ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.errorSet()', this.iSeq(), tm );
         // in our model, only fields have TypedMessage's
-        logger.warn( 'Checker.errorSet() is obsoleted, please use intMessagerPush()' );
-        this.intMessagerPush( tm );
+        logger.warn( 'Checker.errorSet() is obsoleted, please use messagerPush()' );
+        this.messagerPush( tm );
     }
         */
 
