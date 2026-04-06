@@ -144,10 +144,13 @@ The argument object is optional, and may contain following keys:
 - `name`: an optional instance name
 
 - `onFieldUpdateRegisterFn`: if set, a function or an array of functions to be called on each field update; Forms propagate this function call up to the topmost checker of the hierarchy
+
     prototype is `async onFieldUpdateFn( data<Any>, opts<Object> ): void`
 
 - `onValidityChangeRegisterFn`: if set, a function or an array of functions to be called when the validity of the checker changes
+
     prototype is `async onValidityChangeFn( valid<Boolean> ): void`
+
     this used to be a `okFn()` function argument, which has been deprecated starting with v1.6
 
 - `panel`: an optional object which describes the fields to be managed, with following keys:
@@ -157,6 +160,7 @@ The argument object is optional, and may contain following keys:
     - `set`: an optional `Field.Set` object which will provide default definitions for the fields.
 
 - `parentChecker`: an optional parent Checker instance
+
     this used to be `parent`, which has been deprecated starting with v1.6
 
 - `parentClass`: if set, the class to be set on the parent DIV inserted on top of each field, defaulting to 'form-indicators-parent'
@@ -164,11 +168,13 @@ The argument object is optional, and may contain following keys:
 - `rightSiblingClass`: if set, the class to be set on the DIV inserted just after each field, defaulting to 'form-indicators-right-sibling'
 
 - `rowId`: when the panel is array-ed, the row identifier; will be passed as an option to field-defined check functions
+
     this used to be an `id` argument, which has been deprecated starting with v1.6
 
 - `trace`: whether to be verbose on the execution, defaulting to `false`
 
 - `validityObject`: if set, a JQuery object which will be automatically enabled/disabled on validity changes
+
     this used to be a `$ok` argument, which has been deprecated starting with v1.6
 
 ##### `Forms.Messager`

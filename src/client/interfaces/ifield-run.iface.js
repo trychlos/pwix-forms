@@ -82,16 +82,9 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
     _checkComputeFieldState( value, res ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkComputeFieldState()', this.name(), value, res );
         // first store the result for this field and get the normalized result
-        res = this.iCheckableTMsResult( res );
-        // and compute a state from the array of messages
-        let valid = true;
-        let status = FieldStatus.C.NONE;
-        if( res ){
-            const o = this.iCheckableComputeFromTMs( res );
-            status = o.status;
-            valid = o.valid;
+        let { status, valid } = this.iCheckableComputeState( res, { updateState: false })
         // if no err has been reported, may want show a status depending of the type of the field
-        } else if( value ){
+        if( !res && value ){
             const type = this.iSpecType();
             switch( type ){
                 case FieldType.C.INFO:

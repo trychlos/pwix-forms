@@ -56,6 +56,7 @@ Template.FormsMessager.helpers({
     //  because we do not want have several lines, or bold, or any other singularities here
     //  nevertheless the Blaze template itself is HTML-capable to be able to handle the '&nbsp;' character
     msgLabel(){
+        //logger.debug( 'count', this.messager, this.messager.iMessagerSize());
         const msg = this.messager?.iMessagerFirst() || null;
         return msg ? msg.iTypedMessageMessage() : '&nbsp;';
     },

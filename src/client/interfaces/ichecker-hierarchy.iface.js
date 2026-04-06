@@ -100,23 +100,25 @@ export const ICheckerHierarchy = DeclareMixin(( superclass ) => class extends su
      */
     async hierarchyUp( fn ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerHierarchy.hierarchyUp()' );
+        let res;
         if( this.enabled()){
             let args = [ ...arguments ];
             args.shift();
             // apply the function to this checker
             if( this[fn] ){
-                await this[fn]( ...args );
+                res = await this[fn]( ...args );
             }
             // up to the parent if any
             const parent = this.confParentChecker();
             if( parent ){
-                await parent.hierarchyUp( ...arguments );
+                res = await parent.hierarchyUp( ...arguments );
             }
         } else {
             // since we have an init() async function, the checker is disabled at least until the end of the initialization
             // so this becomes a bit verbose
             //logger.info( 'ICheckerHierarchy.hierarchyUp() stopping the up propagation on disabled', this.confName());
         }
+        return res;
     }
 
     /**

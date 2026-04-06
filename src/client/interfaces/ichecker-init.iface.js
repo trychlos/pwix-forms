@@ -10,6 +10,7 @@ import _ from 'lodash';
 import { strict as assert } from 'node:assert';
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { check, Match } from 'meteor/check';
 import { Field } from 'meteor/pwix:field';
 import { Logger } from 'meteor/pwix:logger';
 import { Tracker } from 'meteor/tracker';
@@ -60,10 +61,10 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
     _fieldSpecFromEvent( event ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerEvents._fieldSpecFromEvent()' );
         let found = null;
-        for( const field of this.fieldsArray()){
-            const uiNode = field.spec.iRunUINode();
+        for( const { name, spec } of this.fieldsArray()){
+            const uiNode = spec.iRunUINode();
             if( uiNode[0].isSameNode( event.target ) || $.contains( uiNode[0], event.target )){
-                found = field.spec;
+                found = spec;
                 break;
             }
         }
@@ -162,6 +163,7 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
         const self = this;
         const $object = this.confValidityObject();
         const fnArray = this.confValidityChangeFn().get();
+        //logger.debug( 'fnArray', this.iSeq(), fnArray );
         // doesn't test now the length of $object as dom can be not yet completed
         Tracker.nonreactive(() => {
             self.intInstance().autorun( async ( c ) => {
@@ -560,9 +562,11 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
         if( args.trace ) logger.debug( 'init()', this.iSeq(), 'hooks setup', this.#conf.hooks );
 
         // install our own validityChange hook for manage crossCheck functions at that checker level
-        const _validityChange = function(){
-            //logger.debug( '_validityChange()' );
-            self.hierarchyUp( '_inHierarchyCrossCheck', { rowId: self.confRowId() });
+        // cross checks are only run when other fields are valid
+        const _validityChange = async function( valid ){
+            if( valid ){
+                await self.hierarchyUp( '_inHierarchyCrossCheck', { rowId: self.confRowId() });
+            }
         };
         this.#conf.hooks.validityChange.register( _validityChange );
 

@@ -2,6 +2,7 @@
  * pwix:forms/src/client/classes/messager.class.js
  *
  * Manage a Message's ordered stack.
+ * Most of the management is actually done by the IMessager interface that we implement here.
  */
 
 import _ from 'lodash';
@@ -10,13 +11,10 @@ import mix from '@vestergaard-company/js-mixin';
 
 import { Logger } from 'meteor/pwix:logger';
 import { ReactiveVar } from 'meteor/reactive-var';
-import { TM } from 'meteor/pwix:typed-message';
 import { Tracker } from 'meteor/tracker';
 
 import { Base } from './base.class.js';
-import { Message } from './message.class.js';
 
-import { ICheckable } from '../interfaces/icheckable.iface.js';
 import { IMessager } from '../interfaces/imessager.iface.js';
 import { ISeq } from '../interfaces/iseq.iface.js';
 
@@ -30,136 +28,27 @@ export class Messager extends mix( Base ).with( IMessager, ISeq ){
 
     // private data
 
+    #stack = new ReactiveVar( [] );
+
     // runtime data
-    #set = new ReactiveVar( [] );
-    #saved = [];
+
+    // interfaces methods
+
+    // methods which MUST be overriden by the implementation class
+    //  a stack getter / setter
+    //  the immplementation class can choose the implementation its wants as long the IMessager interface can get and set an array of objects
+    _imessager_stack_get(){
+        return this.#stack.get();
+    }
+    _imessager_stack_set( array ){
+        this.#stack.set( array );
+    }
 
     // private methods
 
+    // protected data
+
     // protected methods
-    //  notably used by the IMessager interface
-
-    /*
-     * @summary dump the content
-     * @param {Object} an optional options object with following keys:
-     *  - msg: a prefix message to be added, defaulting to none
-     *  - set: the set to be dumped, defaulting to this.#set
-     */
-    _dump( opts={} ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._dump()', opts );
-        let i = 0;
-        const set = opts.set || this.#set.get();
-        let msg = opts.msg || '';
-        msg = msg ? '.'+msg : msg;
-        set.forEach(( it ) => {
-            logger.debug( 'dump() iSeq='+this.iSeq(), '['+i+'/'+set.length+']: tm'+msg, it.tm().iTypedMessageLevel(), it.tm(), 'emitter', it.emitter(), ICheckable.byId( it.emitter()));
-            i += 1;
-        });
-    }
-
-    /*
-     * @returns {TypedMessage} the first pushed message in the highest level order
-     *  A reactive data source
-     */
-    _first(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._first()' );
-        const set = this._order( this.#set.get());
-        const msg = set.length ? set[0].tm() : null;
-        //logger.debug( 'first()', set.length, msg );
-        return msg;
-    }
-
-    /*
-     * @returns {TypedMessage} the last pushed message in the highest level order
-     *  A reactive data source
-     */
-    _last(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._last()' );
-        const set = this._order( this.#set.get());
-        const msg = set.length ? set[set.length-1].tm() : null;
-        //logger.debug( 'last()', set.length, msg );
-        return msg;
-    }
-
-    /*
-     * @summary Order the set of message by decreasing level order (decreasing severity) and decreasing push time
-     *  According to ITypedMessage interface: "we so have EMERG > ALERT > CRIT > ERR > WARNING > NOTICE > INFO > DEBUG"
-     *  and for each level, order from the most recent to the oldest
-     *  the last one being so both the less important to show and the oldest one.
-     * @param {Array<Message>} set
-     * @returns {Array<Message>} the ordered set
-     */
-    _order( set ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._order()', set );
-        assert( _.isArray( set ), 'expects an array, got ', set );
-        const cmpFn = function( a, b ){
-            let res = -1 * a.tm().iTypedMessageCompare( b.tm());
-            if( res === 0 ){
-                const epoch_a = a.epoch();
-                const epoch_b = b.epoch();
-                res = epoch_a < epoch_b ? +1 : ( epoch_a > epoch_b ? -1 : 0 );
-            }
-            return res;
-        };
-        set = set.sort( cmpFn );
-        //logger.debug( 'order()', set );
-        return set;
-    }
-
-    /*
-     * @summary Push a new TypedMessage
-     * @param {TypedMessage|Array<TypedMessage>} tms
-     * @param {String} id the ICheckable identifier
-     */
-    _push( tms, id ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._push()', id );
-        let set = this.#set.get();
-        if( tms ){
-            if( tms instanceof TM.TypedMessage ){
-                tms = [ tms ];
-            }
-            tms.forEach(( tm ) => {
-                assert( tm instanceof TM.TypedMessage, 'expects an instance of TM.TypedMessage, got '+tm );
-                set.push( new Message( tm, id ));
-            });
-        }
-        this.#set.set( set );
-    }
-
-    /*
-     * @summary Remove listed identifiers from the stack
-     * @param {String|Array} ids a list of ICheckable identifiers to be removed
-     */
-    _removeById( ids ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._removeById()', ids, this.#set.get());
-        ids = _.isArray( ids ) ? ids : [ ids ];
-        let newset = [];
-        this.#set.get().forEach(( it ) => {
-            if( ids.includes( it.emitter())){
-                //logger.debug( 'removing', this, it, it.tm());
-            } else {
-                newset.push( it );
-            }
-        });
-        this.#set.set( newset );
-    }
-
-    /*
-     * @summary Clears the set of messages
-     */
-    _reset(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._reset()' );
-        logger.debug( 'reset()' );
-        this.#set.set( [] );
-    }
-
-    /*
-     * @summary Save the set of messages
-     */
-    _save(){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Messager._save()' );
-        this.#saved = this.#set.get();
-    }
 
     // public data
 
@@ -178,15 +67,15 @@ export class Messager extends mix( Base ).with( IMessager, ISeq ){
         // track the length
         if( false ){
             Tracker.autorun(() => {
-                logger.debug( 'set.length', self.#set.get().length );
+                logger.debug( 'set.length', self.#stack.get().length );
             });
         }
 
         // track the content
         if( false ){
             Tracker.autorun(() => {
-                logger.debug( 'set.content' );
-                self._dump();
+                logger.debug( 'stack content' );
+                self.iMessagerDump();
             });
         }
 

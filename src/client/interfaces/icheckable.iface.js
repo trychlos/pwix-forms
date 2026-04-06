@@ -19,6 +19,7 @@ import _ from 'lodash';
 import { strict as assert } from 'node:assert';
 import { DeclareMixin } from '@vestergaard-company/js-mixin';
 
+import { check, Match } from 'meteor/check';
 import { Logger } from 'meteor/pwix:logger';
 import { Random } from 'meteor/random';
 import { ReactiveVar } from 'meteor/reactive-var';
@@ -46,6 +47,65 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
 
     // arguments at instanciation time
 
+    // not public methods
+
+    // Getter/Setter
+    // @param {*} result the last check result of the field or the Checker, as a TypedMessage, or an array of TypedMessage's, or null
+    // @returns {Array|null} the last check result of the field or the Checker, as an array of TypedMessage's, or null
+    _icheckable_tms_normalize( tms ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable._icheckable_tms_normalize()', tms );
+        if( tms !== undefined ){
+            if( tms ){
+                if( tms instanceof TM.TypedMessage ){
+                    tms = [ tms ];
+                } else if( !Match.test( tms, [TM.TypedMessage] )){
+                    logger.error( 'expects tms be null or a TypedMessage or an Array of TypedMessage\'s, got', tms );
+                }
+            }
+            this.#tm.set( tms );
+        }
+        return this.#tm.get();
+    }
+
+    // @summary Compute the status/validity from an array of TypedMessage's
+    // @param {Array<TypedMessage>} tms
+    // @param {Object>} opts an optional options object with following keys:
+    //  - startFromCurrent: whether we initialize the computed state wit the current state, defaulting to false
+    // @returns {Object} an object with following keys:
+    //  - status: the worst status computed from the messages
+    //  - valid: whether the result is valid or not
+    _icheckable_tms_state( tms, opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable._icheckable_tms_state()', tms );
+        check( tms, Match.OneOf( null, [TM.TypedMessage] ));
+        let valid;
+        let statuses = [];
+        if( opts.startFromCurrent === true ){
+            valid = this.iCheckableValidity();
+            statuses.push( this.iCheckableStatus());
+        }
+        if( tms ){
+            let level;
+            tms.forEach(( tm ) => {
+                let tmValid = true;
+                if( tm instanceof TM.TypedMessage ){
+                    level = tm.iTypedMessageLevel();
+                    // cf. man syslog 3: the higher the level, the lower the severity
+                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
+                    valid = ( valid === undefined ) ? tmValid : valid && tmValid;
+                } else {
+                    logger.warn( 'ICheckable._icheckable_tms_state() expected ITypedMessage, got', tm );
+                }
+                // compute the status
+                if( !tmValid ){
+                    statuses.push( FieldStatus.C.INVALID );
+                } else if( level === TM.MessageLevel.C.WARNING ){
+                    statuses.push( FieldStatus.C.UNCOMPLETE );
+                }
+            });
+        }
+        return { status: FieldStatus.worst( statuses ), valid: valid };
+    }
+
     /**
      * @constructor
      * @returns {ICheckable} the instance
@@ -65,45 +125,34 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
 
     /**
      * @summary Compute the status/validity from an array of TypedMessage's
-     *  Doesn't update anything
-     * @param {Array<TypedMessage>} tms
+     *  Update this ICheckable status and validity
+     * 
+     * @param {Array<TypedMessage>} tms if specified, then we compute the status / validity from these messages
+     *  else we compute the status/validity from last messages
+     * 
      * @param {Object>} opts an optional options object with following keys:
-     *  - startFromCurrent: whether we initialize the computed state wit the current state, defaulting to false
+     *  - startFromCurrent: whether we initialize the computed state with the current state, defaulting to false
+     *  - updateState: whether to update the ICheckable state, defaulting to true
+     * 
      * @returns {Object} an object with following keys:
      *  - status: the worst status computed from the messages
      *  - valid: whether the result is valid or not
+     * This is returned for the caller convenience, as the ICheckable status and validity have been set by this method.
      */
-    iCheckableComputeFromTMs( tms, opts={} ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable.iCheckableComputeFromTMs()', tms );
-        let valid = true;
-        let status = FieldStatus.C.NONE;
-        if( opts.startFromCurrent === true ){
-            valid = this.iCheckableValidity();
-            status = this.iCheckableStatus();
+    iCheckableComputeState( tms, opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable.iCheckableComputeState()', tms, opts );
+        tms = this._icheckable_tms_normalize( tms, opts );
+        const res = this._icheckable_tms_state( tms, opts );
+        // if we are unable to cmpute a state, because nobody has said anything then just consider it is valid
+        if( res.status === undefined && res.valid === undefined ){
+            res.valid = true;
+            res.status = FieldStatus.C.VALID;
         }
-        if( tms ){
-            let statuses = [ FieldStatus.C.VALID ];
-            let level;
-            tms.forEach(( tm ) => {
-                let tmValid = true;
-                if( tm instanceof TM.TypedMessage ){
-                    level = tm.iTypedMessageLevel();
-                    // cf. man syslog 3: the higher the level, the lower the severity
-                    tmValid = ( TM.LevelOrder.compare( level, TM.MessageLevel.C.ERROR ) > 0 );
-                    valid &&= tmValid;
-                } else {
-                    logger.warn( 'ICheckable.iCheckableComputeFromTMs() expected ITypedMessage, got', tm );
-                }
-                // compute the status
-                if( !tmValid ){
-                    statuses.push( FieldStatus.C.INVALID );
-                } else if( level === TM.MessageLevel.C.WARNING ){
-                    statuses.push( FieldStatus.C.UNCOMPLETE );
-                }
-            });
-            status = FieldStatus.worst( statuses );
+        if( opts.updateState !== false ){
+            this.iCheckableStatus( res.status  );
+            this.iCheckableValidity( res.valid );
         }
-        return { status: status, valid: valid };
+        return res;
     }
 
     // getter
@@ -140,26 +189,6 @@ export const ICheckable = DeclareMixin(( superclass ) => class extends superclas
     iCheckableStatusRv(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable.iCheckableStatusRv()' );
         return this.#status;
-    }
-
-    /**
-     * Getter/Setter
-     * @param {*} result the last check result of the field or the Checker, as a TypedMessage, or an array of TypedMessage's, or null
-     * @returns {Array|null} the last check result of the field or the Checker, as an array of TypedMessage's, or null
-     */
-    iCheckableTMsResult( result ){
-        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckable.iCheckableTMsResult()', result );
-        if( result !== undefined ){
-            if( result ){
-                if( result instanceof TM.TypedMessage ){
-                    result = [ result ];
-                } else if( !( result instanceof Array )){
-                    assert( result === null || result instanceof Array, 'expects result be null or a TypedMessage or an Array of TypedMessage\'s' );
-                }
-            }
-            this.#tm.set( result );
-        }
-        return this.#tm.get();
     }
 
     /**
