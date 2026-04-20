@@ -563,12 +563,26 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
 
         // install our own validityChange hook for manage crossCheck functions at that checker level
         // cross checks are only run when other fields are valid
-        const _validityChange = async function( valid ){
-            if( valid ){
+        // nb: installing this validityChange hook is ok because it only tries to cross check when all fields are valid
+        //  but unfortunately doesn't re-cross check when validity is not changed - which is bad because each field may be individually correct while cross is not
+        if( 0 ){
+            const _validityChange = async function( valid ){
+                if( valid ){
+                    await self.hierarchyUp( '_inHierarchyCrossCheck', { rowId: self.confRowId() });
+                }
+            };
+            this.#conf.hooks.validityChange.register( _validityChange );
+        }
+
+        // install our own update hook for manage crossCheck functions at that checker level
+        // cross checks are only run when other fields are valid
+        //  cross check each time a field is changed as long as the checker is still valid
+        const _updateHook = async function( data, opts ){
+            if( self.iCheckableValidity()){
                 await self.hierarchyUp( '_inHierarchyCrossCheck', { rowId: self.confRowId() });
             }
         };
-        this.#conf.hooks.validityChange.register( _validityChange );
+        this.#conf.hooks.fieldUpdate.register( _updateHook );
 
         // initialize checker-level runtime data
         // have to wait for having returned from super() and have built the configuration

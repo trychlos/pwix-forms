@@ -56,6 +56,12 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
 
     // static data
 
+    static hooks = [
+        'crossCheck',
+        'fieldUpdate',
+        'validityChange'
+    ];
+
     // static methods
 
     // private data
@@ -108,9 +114,13 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
             }
         }
         // set state of this checker as the consolidation of the fields
+        // defaulting to valid
         if( hasSomething ){
             this.iCheckableValidity( valid );
             this.iCheckableStatus( FieldStatus.worst( statuses ));
+        } else {
+            this.iCheckableValidity( true );
+            this.iCheckableStatus( FieldStatus.C.VALID );
         }
     }
 
@@ -124,7 +134,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      * @summary Consolidate the validity/status of that checker up
      *  Do not consider children nor besides, (so begins with children of parent)
      */
-    async _inHierarchyConsolidateState(){
+    async _inHierarchyConsolidateState( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._inHierarchyConsolidateState()' );
         let valid = true;
         let statuses = [];
@@ -134,7 +144,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         });
         this.iCheckableValidity( valid );
         this.iCheckableStatus( FieldStatus.worst( statuses ));
-        //logger.debug( '_inHierarchyConsolidateState()', this.iSeq(), this.validity(), this.status());
+        if( opts.trace ) logger.debug( '_inHierarchyConsolidateState()', this.iSeq(), this.validity(), this.status());
     }
 
     /*
@@ -227,10 +237,12 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     async intConsolidateState( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.intConsolidateState()', opts );
         await this._consolidateFields( opts );
+        if( opts.trace ) logger.debug( 'after fields', this.iSeq(), this.validity(), this.status());
         await this._consolidateChildren( opts );
+        if( opts.trace ) logger.debug( 'after children', this.iSeq(), this.validity(), this.status());
         const parent = this.confParentChecker();
         if( parent ){
-            await parent.hierarchyUp( '_inHierarchyConsolidateState' );
+            await parent.hierarchyUp( '_inHierarchyConsolidateState', opts );
         }
     }
 
@@ -391,10 +403,10 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
                 msgs = msgs.concat( res );
             }
         };
-        //logger.debug( 'crossCheck()', msgs );
+        //logger.debug( 'crossCheck()', this.iSeq(), msgs );
         // set the checker state as the consolidated cross check result
         const o = this.iCheckableComputeState( msgs );
-        //logger.debug( 'crossCheck()', o );
+        //logger.debug( 'crossCheck()', this.iSeq(), o );
         this.messagerPush( msgs, this.iCheckableId());
         // and ask the parent to consolidate the state of its children
         const parent = this.confParentChecker();
@@ -477,7 +489,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         const parent = this.confParentChecker();
         if( parent ){
             await this.hierarchyRemove( parent );
-            await parent.intConsolidateState( parent );
+            await parent.intConsolidateState();
         }
     }
 
@@ -542,6 +554,20 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
             }
         }
         return FieldStatus.worst( statuses );
+    }
+
+    /**
+     * @returns {Checker} the topmost checker of the hierarchy this checker belongs to
+     */
+    topmostChecker(){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.topmostChecker()', this.iSeq());
+        let topmost = this;
+        let parent = this.confParentChecker();
+        while( parent ){
+            topmost = parent;
+            parent = parent.confParentChecker();
+        }
+        return topmost;
     }
 
     /**
