@@ -56,12 +56,6 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
 
     // static data
 
-    static hooks = [
-        'crossCheck',
-        'fieldUpdate',
-        'validityChange'
-    ];
-
     // static methods
 
     // private data
@@ -473,6 +467,16 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         this.iCheckableComputeState();
         // and consolidate up
         await this.intConsolidateState();
+    }
+
+    /**
+     * @summary Register a new function on the specified hook
+     * @param {String} hook
+     * @param {Function} fn
+     */
+    registerHook( hook, fn ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.registerHook()', this.iSeq());
+        this._registerHook( hook, fn );
     }
 
     /**

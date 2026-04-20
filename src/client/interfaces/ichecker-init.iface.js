@@ -206,6 +206,22 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
         $node.on( validityEvent, ( event ) => { self._validityHandler( event ); });
     }
 
+    /*
+     * @summary Register a new function on the specified hook
+     * @param {String} hook
+     * @param {Function} fn
+     */
+    _registerHook( hook, fn ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerInit._registerHook()', this.iSeq(), hook, fn );
+        if( ICheckerInit.Hooks.includes( hook )){
+            const array = this.#conf.hooks[hook] || new FnArray();
+            array.register( fn );
+            this.#conf.hooks[hook] = array;
+        } else {
+            logger.warning( 'unkown hook', hook );
+        }
+    }
+
     // validity handler
     _validityHandler( event ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerInit._validityHandler()', event );
@@ -637,6 +653,12 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
 /*
  * This type of interface cannot have static data - so install it here
  */
+
+ICheckerInit.Hooks = [
+    'crossCheck',
+    'fieldUpdate',
+    'validityChange'
+];
 
 // if initialized checker has a name, then register it here
 //  then use that as a guard to warn when a same name is initialized more than once

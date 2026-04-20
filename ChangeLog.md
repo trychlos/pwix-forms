@@ -8,6 +8,7 @@
 
     - Re-install missing Checker.messagerPush()
     - Define new Checker.topmostChecker() method
+    - Define new Checker.registerHook() method
 
 ### 1.6.0
 
