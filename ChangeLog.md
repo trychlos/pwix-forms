@@ -2,11 +2,11 @@
 
 ## ChangeLog
 
-### 1.7.1-rc.0
+### 1.8.0-rc.0
 
     Release date: 
 
-    - 
+    - Introduce new 'TRANSPARENT_IF_EMPTY' show status to be used on valid empty fields
 
 ### 1.7.0
 

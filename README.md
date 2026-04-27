@@ -379,6 +379,10 @@ Known configuration options are:
 
         Do not show any status indicator, but make it transparent allowing the user interface to keept a consistent width.
 
+    - `Forms.C.ShowStatus.TRANSPAREN_IF_EMPTY_`
+
+        Same than `Forms.C.ShowStatus.TRANSPARENT` when the field is empty and has been checked as valid.
+
     Defaults to `Forms.C.ShowStatus.INDICATOR`.
 
     `pwix:forms` is able to automagically add a status indicator on the right of each field, unless this feature is disabled by the package configuration, or at the `Checker` level, or individually for each field.

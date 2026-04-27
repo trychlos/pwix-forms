@@ -77,7 +77,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
 
     /*
      * @summary Compute one validity boolean flag and one status value for this field from the Array<TypedMessage>'s result
-     *  Do not display any status if the field is empty
+     *  Do not display any status if the field is empty and asked for
      */
     _checkComputeFieldState( value, res ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._checkComputeFieldState()', this.name(), value, res );
@@ -94,6 +94,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                     status = FieldStatus.C.VALID;
                     break
             }
+        }
+        // honors none-if-empty field status if the field is valid
+        if( valid && !value && this.iSpecStatus() === Forms.C.ShowStatus.TRANSPARENT_IF_EMPTY ){
+            status = FieldStatus.C.TRANSPARENT;
         }
         // do not change the field status if it has been defined as transparent
         if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
@@ -156,7 +160,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         const display = this.iRunShowStatus();
         const checker = this.iRunChecker();
         assert( checker && checker instanceof Forms.Checker, 'expects an instance of Forms.Checker, got'+checker );
-        if( display === Forms.C.ShowStatus.INDICATOR || display === Forms.C.ShowStatus.TRANSPARENT ){
+        if( display === Forms.C.ShowStatus.INDICATOR || display === Forms.C.ShowStatus.TRANSPARENT || display === Forms.C.ShowStatus.TRANSPARENT_IF_EMPTY ){
             const $node = this.iRunUINode();
             if( $node ){
                 const $parentNode = $node.closest( '.'+checker.confParentClass());
