@@ -99,6 +99,10 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         if( valid && !value && this.iSpecStatus() === Forms.C.ShowStatus.TRANSPARENT_IF_EMPTY ){
             status = FieldStatus.C.TRANSPARENT;
         }
+        // same if the field is optional, and empty, and checked as valid
+        if( Forms.configure().withTransparentIndicatorWhenOptionalEmptyValid && valid && !value && this.iSpecType() === FieldType.C.OPTIONAL ){
+            status = FieldStatus.C.TRANSPARENT;
+        }
         // do not change the field status if it has been defined as transparent
         if( this.iSpecStatus() !== Forms.C.ShowStatus.TRANSPARENT ){
             this.iCheckableStatus( status );

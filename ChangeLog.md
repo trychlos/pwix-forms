@@ -7,6 +7,7 @@
     Release date: 
 
     - Introduce new 'TRANSPARENT_IF_EMPTY' show status to be used on valid empty fields
+    - Introduce new 'withTransparentIndicatorWhenOptionalEmptyValid' configuration option
 
 ### 1.7.0
 

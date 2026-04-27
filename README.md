@@ -437,6 +437,12 @@ Known configuration options are:
 
     Whether to warn when a checker duplicate name is detected, defaulting to `false`.
 
+- `withTransparentIndicatorWhenOptionalEmptyValid`
+
+    As its name says: make the status indicator transparent on an optional empty field which has been checked as valid, defaulting to `true`.
+
+    When `false`, the 'valid' indicator is shown, which can be a bit disturbing on empty fields, or can too be exactly what your applications wants.
+
 Please note that `Forms.configure()` method should be called in the same terms both in client and server sides.
 
 Remind too that Meteor packages are instanciated at application level. They are so only configurable once, or, in other words, only one instance has to be or can be configured. Addtionnal calls to `Forms.configure()` will just override the previous one. You have been warned: **only the application should configure a package**.

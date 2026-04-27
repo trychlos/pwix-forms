@@ -22,7 +22,8 @@ Forms._defaults = {
     showStatusOverridable: true,
     showTypeOverridable: true,
     verbosity: Forms.C.Verbose.CONFIGURE,
-    warnOnDuplicateName: false
+    warnOnDuplicateName: false,
+    withTransparentIndicatorWhenOptionalEmptyValid: true
 };
 
 /**
