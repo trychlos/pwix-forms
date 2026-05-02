@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.8.0-rc.0
+### 1.8.0
 
-    Release date: 
+    Release date: 2026- 5- 2
 
     - Introduce new 'TRANSPARENT_IF_EMPTY' show status to be used on valid empty fields
     - Introduce new 'withTransparentIndicatorWhenOptionalEmptyValid' configuration option
@@ -147,4 +147,4 @@
 
 ---
 P. Wieser
-- Last updated on 2026, Apr. 23rd
+- Last updated on 2026, May. 2nd
