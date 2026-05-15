@@ -63,9 +63,11 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
         let found = null;
         for( const { name, spec } of this.fieldsArray()){
             const uiNode = spec.iRunUINode();
-            if( uiNode[0].isSameNode( event.target ) || $.contains( uiNode[0], event.target )){
-                found = spec;
-                break;
+            if( uiNode ){
+                if( uiNode[0].isSameNode( event.target ) || $.contains( uiNode[0], event.target )){
+                    found = spec;
+                    break;
+                }
             }
         }
         return found;

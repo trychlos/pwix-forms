@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - fieldSpecFromEvent() gets a guard against undefined node
 
 ### 1.8.0
 
