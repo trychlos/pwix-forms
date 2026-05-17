@@ -405,6 +405,12 @@ Known configuration options are:
     - `Forms.FieldType.C.WORK`
     - `Forms.FieldType.C.NONE`
 
+- `fieldValidityEvent`
+
+    The event to be fired when the validity of a field changes, defaulting to `forms-field-validity`.
+
+    The event is fired on each field change, with data as an object `{ checker, field }`.
+
 - `showStatusOverridable`
 
     Whether the previous `fieldStatusShow` is overridable when instanciating a `Checker` or specifying a field in the panel.

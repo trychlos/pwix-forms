@@ -108,6 +108,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             this.iCheckableStatus( status );
         }
         this.iCheckableValidity( valid );
+        if( this.iSpecTrace()) logger.debug( 'checkComputeFieldState()', this.name(), 'status', status, 'valid', valid );
+        this._triggerValidityEvent();
     }
 
     /*
@@ -219,6 +221,20 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
         return res;
     }
 
+    /*
+     * @summary Triggers the validity event for this field
+     * @param {Object} opts an optional options object with following keys:
+     *  - trace: whether to verbosely trace, defaulting to false
+     */
+    async _triggerValidityEvent( opts={} ){
+        logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IFieldRun._triggerValidityEvent()', this.name(), opts );
+        if( opts.trace ) logger.debug( '_triggerValidityEvent()', this.name(), 'entering with', opts );
+        const $node = this.iRunUINode();
+        if( $node && $node.length ){
+            $node.trigger( Forms.configure().fieldValidityEvent, { checker: this.iRunChecker(), field: this });
+        }
+    }
+
     /**
      * @constructor
      * @returns {IFieldRun} the instance
@@ -251,6 +267,7 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
                 opts.rowId = checker.confRowId();
                 const value = this.iRunValueFrom();
                 const res = await checkFn( value, checker.confData(), opts );
+                if( this.iSpecTrace()) logger.debug( 'iFieldRunCheck()', this.name(), res );
                 await this._checkAfter( checker, opts, value, res );
             }
             // run onUpdate() hooks

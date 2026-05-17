@@ -19,6 +19,7 @@ Forms._defaults = {
     checkerValidityEvent: 'forms-checker-validity',
     fieldStatusShow: Forms.C.ShowStatus.INDICATOR,
     fieldTypeShow: true,
+    fieldValidityEvent: 'forms-field-validity',
     showStatusOverridable: true,
     showTypeOverridable: true,
     verbosity: Forms.C.Verbose.CONFIGURE,

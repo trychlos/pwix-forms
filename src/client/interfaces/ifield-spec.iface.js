@@ -10,8 +10,7 @@
  *    it must be either the INPUT/SELECT element itself, or a parent of this element
  *  - dom: a CSS selector to address the value itself when 'js' is not enough or too high, or the element is special
  *    defaults to js css selector
- *  - form_valFrom( <item> ): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
- *  - form_valTo( <item>, <value> ): a function to set the value into the provided item, defaulting to just setting the field value as item[name] = value
+ *  - form_itemFrom( <item> ): a function to get the value from the provided item, defaulting to just getting the field value as `value = item[name]`
  *  - form_formFrom( <$node> ): a function to read the value from the form, defaulting to the 'val()' function
  *  - form_formTo( <$node>, <item> ): a function to write the value into the form, defaulting to the 'val( <value> )' function
  *  - form_check: a check function, or false (warns if unset)
