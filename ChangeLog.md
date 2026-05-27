@@ -8,6 +8,7 @@
 
     - fieldSpecFromEvent() gets a guard against undefined node
     - Define (and honor) new 'fieldValidityEvent' configuration parameter and new 'forms-field-validity' event
+    - Fix the search of a topmost node in the case where a template doesn't have one
 
 ### 1.8.0
 

@@ -279,9 +279,13 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
         if( !this.#$topmost ){
             const instance = this.intInstance();
             this.#$topmost = instance.$( instance.firstNode );
+            // it may happen that the template doesn't contain a parent node, but is for example two concatenated nodes - so up to the parent
+            if( !this.#$topmost.length ){
+                this.#$topmost = $( instance.firstNode.parentNode );
+            }
         }
         const $elt = this.#$topmost;
-        assert( $elt && $elt instanceof jQuery && $elt.length, '$topmost node is expected to be non-null jQuery object' );
+        assert( $elt && $elt instanceof jQuery && $elt.length, '$topmost node is expected to be non-empty jQuery object' );
         return $elt;
     }
 
