@@ -54,6 +54,8 @@ export const IFieldRun = DeclareMixin(( superclass ) => class extends superclass
             }
         }
         // propagate all returned TypedMessage's up to first available messager the hierarchy (stopping if a checker is not enabled)
+        if( this.iSpecTrace()) logger.debug( 'checkAfter()', this.name(), 'checkRes', checkRes, 'iCheckableId', this.iCheckableId());
+        if( this.iSpecTrace()) opts.trace = true;
         await checker.messagerPush( checkRes, this.iCheckableId());
         // consolidate status and validity at the Checker level
         await checker.intConsolidateState( opts );
