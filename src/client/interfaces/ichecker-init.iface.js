@@ -407,7 +407,7 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
      *  - $ok: an optional jquery object to be enabled/disabled on validity changes
      *    > deprecated in favor of validityObject in v1.6
      *  - okFn( valid<Boolean> ): an optional function which will be called on validity status changes
-     *    > deprecated in favor of onvalidityChangeRegisterFn in v1.6
+     *    > deprecated in favor of onValidityChangeRegisterFn in v1.6
      *  - onValidityChangeRegisterFn: if set, a function or an array of functions to be called when the validity of the checker changes
      *  - panel: the fields as an object { fields, set }
      *  - parent: an optional parent Checker instance

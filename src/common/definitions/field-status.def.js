@@ -11,10 +11,11 @@ const logger = Logger.get();
 
 export const FieldStatus = {
     C: {
-        INVALID:    'INVALID',
-        NONE:       'NONE',
-        UNCOMPLETE: 'UNCOMPLETE',
-        VALID:      'VALID'
+        INVALID:     'INVALID',
+        NONE:        'NONE',
+        TRANSPARENT: 'TRANSPARENT',
+        UNCOMPLETE:  'UNCOMPLETE',
+        VALID:       'VALID'
     },
     K: {
         INVALID: {
@@ -23,6 +24,11 @@ export const FieldStatus = {
             title: 'field_check.invalid_title'
         },
         NONE: {
+            class: 'fcsi-none',
+            icon: 'fa-ellipsis',
+            title: 'field_check.none_title'
+        },
+        TRANSPARENT: {
             class: 'fcsi-none',
             icon: 'fa-ellipsis',
             title: 'field_check.none_title'
@@ -42,6 +48,7 @@ export const FieldStatus = {
 _.merge( FieldStatus, {
     Order: [
         FieldStatus.C.NONE,
+        FieldStatus.C.TRANSPARENT,
         FieldStatus.C.VALID,
         FieldStatus.C.UNCOMPLETE,
         FieldStatus.C.INVALID
