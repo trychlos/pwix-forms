@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.9.0-rc.0
+### 1.9.0
 
-    Release date: 
+    Release date: 2026- 5-31
 
     - fieldSpecFromEvent() gets a guard against undefined node
     - Define (and honor) new 'fieldValidityEvent' configuration parameter and new 'forms-field-validity' event
@@ -157,4 +157,4 @@
 
 ---
 P. Wieser
-- Last updated on 2026, May. 2nd
+- Last updated on 2026, May. 31st
