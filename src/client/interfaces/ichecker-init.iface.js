@@ -116,7 +116,7 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
             await spec.iFieldRunInputHandler();
         } else {
             // maybe not *all* the input fields of the topmost element are managed by a Checker
-            logger.debug( 'unable to find a field spec from event', event.type, event.currentTarget, event.target );
+            //logger.debug( 'unable to find a field spec from event', event.type, event.currentTarget, event.target );
         }
     }
 
