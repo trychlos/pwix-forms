@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Fix the IMessager ordering to have message in the same order they have been emitted
 
 ### 1.9.0
 

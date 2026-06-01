@@ -419,6 +419,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
      */
     async messagerClear(){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerClear()', this.iSeq());
+        if( this.confTrace()) logger.debug( 'Checker.messagerClear()', this.iSeq(), this.name());
         await this.hierarchyUp( '_inHierarchyMessagerClear' );
     }
 

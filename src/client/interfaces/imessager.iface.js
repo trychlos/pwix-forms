@@ -117,8 +117,8 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
 
     // @summary Order the set of message by decreasing level order (decreasing severity) and decreasing push time
     //  According to ITypedMessage interface: "we so have EMERG > ALERT > CRIT > ERR > WARNING > NOTICE > INFO > DEBUG"
-    //  and for each level, order from the most recent to the oldest
-    //  the last one being so both the less important to show and the oldest one.
+    //  and for each level, order from the oldest to the most recent
+    //  the last one being so both the less important to show and the newest one (older have greater priority: say they are waiting for a longer time).
     // @param {Array<Message>} set
     // @returns {Array<Message>} the ordered set
     _imessager_order( set ){
@@ -129,7 +129,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
             if( res === 0 ){
                 const epoch_a = a.epoch();
                 const epoch_b = b.epoch();
-                res = epoch_a < epoch_b ? +1 : ( epoch_a > epoch_b ? -1 : 0 );
+                res = epoch_a < epoch_b ? -1 : ( epoch_a > epoch_b ? +1 : 0 );
             }
             return res;
         };
@@ -213,7 +213,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
      * @summary Ask to dump the stacked message(s)
      * @param {Object} an optional options object with following keys:
      *  - msg: a prefix message to be added, defaulting to none
-     *  - set: the set to be dumped, defaulting to the immplementation stack
+     *  - set: the set to be dumped, defaulting to the implementation stack
      */
     iMessagerDump( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerDump()' );
