@@ -8,6 +8,7 @@
 
     - Fix the IMessager ordering to have message in the same order they have been emitted
     - Log (and comment out the log line) situations where we do not find the target field from the input handler
+    - Better manage the fields addressed as an object
 
 ### 1.9.0
 

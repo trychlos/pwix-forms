@@ -133,6 +133,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
      *  see iRunValueFrom() (resp. iRunValueTo()) get (resp. set) the value from (resp. to) the form
      * 
      *  If the name is an arrayed one ('emails.$.label'), then the provided 'item' is the row. So only consider the last part of the name
+     *  If the name addresses an object ('policy.storage'), then we have to iter through each level
      */
 
     /**
@@ -150,11 +151,24 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
             if( this.iSpecTrace()) logger.debug( 'iSpecValueFrom()', this.name(), 'defn.form_itemFrom() returns', value );
         } else {
             let name = this.name();
-            if( name.match( /\.\$\./ )){
-                const w = name.split( '.' );
-                name = w[w.length-1];
+            const words = name.split( '.' );
+            const isArrayed = name.match( /\.\$\./ );
+            const isObject = !isArrayed && name.match( /\./ );
+
+            if( isArrayed ){
+                name = words[words.length-1];
+                value = item[name];
+
+            } else if( isObject ){
+                for( const w of words ){
+                    item = item[w];
+                }
+                value = item;
+
+            } else {
+                value = item[name];
             }
-            value = item[name];
+            if( this.iSpecTrace()) logger.debug( 'iSpecValueFrom()', 'isArrayed', isArrayed, 'isObject', isObject, 'item', item, 'name', name, 'value', value );
         }
         return value;
     }
