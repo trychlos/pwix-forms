@@ -155,11 +155,11 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     }
 
     // clear the IMessager if any
-    async _inHierarchyMessagerClear(){
+    async _inHierarchyMessagerClear( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker._inHierarchyMessagerClear()', this.iSeq());
         const messager = this.confIMessager();
         if( messager ){
-            messager.iMessagerClear();
+            messager.iMessagerClear( opts );
         }
     }
 
@@ -380,7 +380,7 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
                 await it.clearPanel( opts );
             }
         }
-        await this.messagerClear();
+        await this.messagerClear( opts );
     }
 
     /**
@@ -417,10 +417,10 @@ export class Checker extends mix( Base ).with( ICheckerHierarchy, ICheckerInit, 
     /**
      * @summary Clears the messages stack
      */
-    async messagerClear(){
+    async messagerClear( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'Checker.messagerClear()', this.iSeq());
         if( this.confTrace()) logger.debug( 'Checker.messagerClear()', this.iSeq(), this.name());
-        await this.hierarchyUp( '_inHierarchyMessagerClear' );
+        await this.hierarchyUp( '_inHierarchyMessagerClear', opts );
     }
 
     /**

@@ -47,9 +47,9 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
 
     // clear the messages zone
     //  which actually means just empty the stack
-    _imessager_clear(){
+    _imessager_clear( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager._imessager_clear()', opts );
-        this._messager_empty_stack();
+        this._messager_empty_stack( opts );
     }
 
     // dump the current state of the stack
@@ -80,7 +80,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     }
 
     // empty the stack
-    _imessager_empty_stack(){
+    _imessager_empty_stack( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager._imessager_empty_stack()', opts );
         this._imessager_stack_set( [] );
     }
@@ -204,9 +204,9 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     /**
      * @summary Ask to clear the message(s) displayed in the message zone
      */
-    iMessagerClear(){
+    iMessagerClear( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager.iMessagerClear()' );
-        this._imessager_clear();
+        this._imessager_clear( opts );
     }
 
     /**
