@@ -13,7 +13,8 @@
 |    1 | 2024- 6-15 | get rid of Meteor.isDevelopment, replacing with a value from EnvSettings |
 |    2 | 2024- 1-13 | Checker doesn't work for radio buttons (moved from pwix:core-app) |
 |    4 | 2026- 3-17 | Panel class is obsoleted starting with v1.6 - remove it sometime in the future |
-|    5 |  |  |
+|    5 | 2026- 6-11 | 'id' parameter has been renamed as 'rowId' - the change should be advertised when an 'id' parameter is detected by ICHeckerInit |
+|    6 |  |  |
 
 ---
 ## Done
