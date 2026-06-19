@@ -10,6 +10,7 @@
     - Log (and comment out the log line) situations where we do not find the target field from the input handler
     - Better manage the fields addressed as an object
     - Have an optional 'opts' from checker.clearForm() to IMessager.iMessagerClear()
+    - Fix stylesheet to better handle Firefox
 
 ### 1.9.0
 
