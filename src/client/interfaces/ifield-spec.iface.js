@@ -152,8 +152,8 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
         } else {
             let name = this.name();
             const words = name.split( '.' );
-            const isArrayed = name.match( /\.\$\./ );
-            const isObject = !isArrayed && name.match( /\./ );
+            const isArrayed = Boolean( name.match( /\.\$\./ ));
+            const isObject = !isArrayed && Boolean( name.match( /\./ ));
 
             if( isArrayed ){
                 name = words[words.length-1];
@@ -161,9 +161,11 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
             } else if( isObject ){
                 for( const w of words ){
-                    item = item[w];
+                    if( item && item[w] ){
+                        item = item[w];
+                    }
                 }
-                value = item;
+                value = item; // may be undefined
 
             } else {
                 value = item[name];

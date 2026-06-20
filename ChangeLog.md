@@ -11,6 +11,7 @@
     - Better manage the fields addressed as an object
     - Have an optional 'opts' from checker.clearForm() to IMessager.iMessagerClear()
     - Fix stylesheet to better handle Firefox
+    - Fix iSpecValueFrom() when getting value from an object item
 
 ### 1.9.0
 
