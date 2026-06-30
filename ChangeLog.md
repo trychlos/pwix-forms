@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.9.1-rc.0
+### 1.9.1
 
-    Release date: 
+    Release date: 2026- 6-30
 
     - Fix the IMessager ordering to have message in the same order they have been emitted
     - Log (and comment out the log line) situations where we do not find the target field from the input handler
@@ -168,4 +168,4 @@
 
 ---
 P. Wieser
-- Last updated on 2026, May. 31st
+- Last updated on 2026, Jun. 30th
