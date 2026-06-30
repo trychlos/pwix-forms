@@ -161,7 +161,7 @@ export const IFieldSpec = DeclareMixin(( superclass ) => class extends superclas
 
             } else if( isObject ){
                 for( const w of words ){
-                    if( item && item[w] ){
+                    if( item ){
                         item = item[w];
                     }
                 }

@@ -6,7 +6,7 @@
 
     Release date: 
 
-    - 
+    - Doesn't overguard iSpecValueFrom() to let zero values be passed through
 
 ### 1.9.1
 
