@@ -2,6 +2,12 @@
 
 ## ChangeLog
 
+### 1.9.2-rc.0
+
+    Release date: 
+
+    - 
+
 ### 1.9.1
 
     Release date: 2026- 6-30
