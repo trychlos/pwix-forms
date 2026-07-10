@@ -49,7 +49,7 @@ export const IMessager = DeclareMixin(( superclass ) => class extends superclass
     //  which actually means just empty the stack
     _imessager_clear( opts={} ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'IMessager._imessager_clear()', opts );
-        this._messager_empty_stack( opts );
+        this._imessager_empty_stack( opts );
     }
 
     // dump the current state of the stack
