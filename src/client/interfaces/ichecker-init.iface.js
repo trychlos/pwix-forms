@@ -112,6 +112,7 @@ export const ICheckerInit = DeclareMixin(( superclass ) => class extends supercl
     async _inputHandler( event ){
         logger.verbose({ verbosity: Forms.configure().verbosity, against: Forms.C.Verbose.FUNCTIONS }, 'ICheckerInit._inputHandler()', event );
         const spec = this._fieldSpecFromEvent( event );
+        //logger.debug( event, spec );
         if( spec ){
             await spec.iFieldRunInputHandler();
         } else {

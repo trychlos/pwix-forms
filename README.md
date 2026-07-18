@@ -283,6 +283,7 @@ Parameters:
     - `Forms.FieldType.C.INFO`,
     - `Forms.FieldType.C.OPTIONAL`,
     - `Forms.FieldType.C.MANDATORY`,
+    - `Forms.FieldType.C.NONE`,
     - `Forms.FieldType.C.WORK`.
 
 - `classes`: if set, a list of classes to be added to the default

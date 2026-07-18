@@ -8,6 +8,7 @@
 
     - Doesn't overguard iSpecValueFrom() to let zero values be passed through
     - Fix iMessagerClear() calls stack
+    - Minor documentation update
 
 ### 1.9.1
 
