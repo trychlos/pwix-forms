@@ -2,9 +2,9 @@
 
 ## ChangeLog
 
-### 1.9.2-rc.0
+### 1.9.2
 
-    Release date: 
+    Release date: 2026-10-24
 
     - Doesn't overguard iSpecValueFrom() to let zero values be passed through
     - Fix iMessagerClear() calls stack
@@ -176,4 +176,4 @@
 
 ---
 P. Wieser
-- Last updated on 2026, Jun. 30th
+- Last updated on 2026, Oct. 24th
